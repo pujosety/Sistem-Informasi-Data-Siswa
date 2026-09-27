@@ -23,7 +23,21 @@
         <env name="BCRYPT_ROUNDS" value="4"/>
         <env name="BROADCAST_CONNECTION" value="null"/>
         <env name="CACHE_STORE" value="array"/>
-        <!-- MUST NOT point at the dev DB: RefreshDatabase would migrate:fresh it away. -->
+        <!--
+            MUST NOT point at the dev DB: RefreshDatabase would migrate:fresh it away.
+
+            DB_HOST is deliberately NOT declared here. The host differs by
+            execution model and must come from the environment:
+
+              local Docker Compose  -> "mysql"   (Compose service name)
+              GitHub Actions runner -> 127.0.0.1 (published port on the host)
+              Wasmer production    -> injected by the platform
+
+            Hardcoding either one breaks the other: pinning 127.0.0.1 here
+            fails every test locally, because Compose publishes 3307 and the
+            container is reached by service name only. The CI workflow supplies
+            its own host to each step instead.
+        -->
         <env name="DB_CONNECTION" value="mysql"/>
         <env name="DB_DATABASE" value="siswa_data_testing"/>
         <env name="DB_URL" value=""/>

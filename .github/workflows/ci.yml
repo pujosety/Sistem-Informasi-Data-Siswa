@@ -11,6 +11,15 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
+# Database values used by the throwaway service below. TEST-ONLY: these are not
+# production credentials and are not read by any deployed environment.
+env:
+  CI_DB_HOST: 127.0.0.1
+  CI_DB_PORT: "3306"
+  CI_DB_DATABASE: siswa_data_testing
+  CI_DB_USERNAME: siswa
+  CI_DB_PASSWORD: secret
+
 jobs:
   php:
     name: PHP (${{ matrix.php }})
@@ -26,11 +35,14 @@ jobs:
           MYSQL_PASSWORD: secret
         ports:
           - 3306:3306
+        # Migrations must not start before MySQL actually accepts connections;
+        # a fixed sleep would only make the race less likely, not impossible.
         options: >-
-          --health-cmd="mysqladmin ping -h 127.0.0.1 -proot"
-          --health-interval=10s
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -usiswa -psecret --silent"
+          --health-interval=5s
           --health-timeout=5s
-          --health-retries=10
+          --health-retries=20
+          --health-start-period=20s
 
     strategy:
       fail-fast: false
@@ -53,22 +65,64 @@ jobs:
       - name: Install PHP dependencies
         run: composer install --no-interaction --prefer-dist --no-progress
 
-      # The application's own .env.testing supplies a throwaway database and
-      # APP_KEY. No production credential is involved: DB_HOST has to point at
-      # the service container, which is the only secret-adjacent value here.
-      - name: Point .env.testing at the MySQL service
+      # PHP runs DIRECTLY on the runner, not inside a container, so the MySQL
+      # service is reachable only through its published port on localhost. The
+      # name "mysql" is a Docker Compose service name and does not resolve here —
+      # that was the getaddrinfo failure.
+      #
+      # The host is passed as an environment variable to each step below and is
+      # never written into a tracked file. Editing .env.testing inside the
+      # runner's checkout cannot affect the committed state, and phpunit.xml
+      # deliberately does not hardcode DB_HOST either, because the host differs
+      # per environment: "mysql" locally, 127.0.0.1 on the runner, and whatever
+      # the platform injects in production.
+      - name: Wait for MySQL to accept connections
         run: |
-          cp .env.testing .env.testing.ci
-          sed -i 's/^DB_HOST=.*/DB_HOST=127.0.0.1/' .env.testing
-          mv .env.testing.ci .env.testing
+          for i in $(seq 1 30); do
+            if php -r '
+              $h = getenv("CI_DB_HOST");
+              $p = (int) getenv("CI_DB_PORT");
+              $u = getenv("CI_DB_USERNAME");
+              $w = getenv("CI_DB_PASSWORD");
+              try {
+                new PDO("mysql:host=$h;port=$p", $u, $w, [PDO::ATTR_TIMEOUT => 3]);
+                exit(0);
+              } catch (Throwable $e) {
+                exit(1);
+              }
+            '; then
+              echo "MySQL is accepting connections"
+              exit 0
+            fi
+            echo "  waiting for mysql ($i/30)"
+            sleep 2
+          done
+          echo "MySQL never became reachable" >&2
+          exit 1
 
       - name: Prepare application key
         run: php artisan key:generate --env=testing --force
 
       - name: Run migrations
+        env:
+          APP_ENV: testing
+          DB_CONNECTION: mysql
+          DB_HOST: ${{ env.CI_DB_HOST }}
+          DB_PORT: ${{ env.CI_DB_PORT }}
+          DB_DATABASE: ${{ env.CI_DB_DATABASE }}
+          DB_USERNAME: ${{ env.CI_DB_USERNAME }}
+          DB_PASSWORD: ${{ env.CI_DB_PASSWORD }}
         run: php artisan migrate --force --env=testing
 
       - name: Run test suite
+        env:
+          APP_ENV: testing
+          DB_CONNECTION: mysql
+          DB_HOST: ${{ env.CI_DB_HOST }}
+          DB_PORT: ${{ env.CI_DB_PORT }}
+          DB_DATABASE: ${{ env.CI_DB_DATABASE }}
+          DB_USERNAME: ${{ env.CI_DB_USERNAME }}
+          DB_PASSWORD: ${{ env.CI_DB_PASSWORD }}
         run: php artisan test
 
   frontend:
