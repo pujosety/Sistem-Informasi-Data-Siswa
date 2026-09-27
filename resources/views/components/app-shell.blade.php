@@ -43,7 +43,7 @@
     <aside class="hidden lg:flex shrink-0 flex-col bg-[var(--app-sidebar-bg)] transition-[width] duration-200 ease-out"
            :data-collapsed="$store.app.sidebarCollapsed ? 'true' : 'false'"
            :class="$store.app.sidebarCollapsed ? 'w-[72px]' : 'w-64'">
-        <x-sidebar :navigation="$navigation" />
+        <x-sidebar :navigation="$navigation" :workspaces="$workspaces ?? []" />
     </aside>
 
     {{-- ============ Mobile drawer ============ --}}
@@ -56,7 +56,7 @@
                x-transition:leave-start="translate-x-0" x-transition:leave-end="-translate-x-full"
                transition:enter="transition duration-200 ease-out" transition:leave="transition duration-150 ease-in"
                class="absolute inset-y-0 left-0 w-[280px] max-w-[85vw] bg-[var(--app-sidebar-bg)] flex flex-col">
-            <x-sidebar :navigation="$navigation" />
+            <x-sidebar :navigation="$navigation" :workspaces="$workspaces ?? []" />
         </aside>
     </div>
 
@@ -95,8 +95,11 @@
     </div>
 </div>
 
-{{-- ============ Mobile bottom dock ============ --}}
-<x-mobile-dock :items="$dockItems" />
+{{-- ============ Mobile bottom dock + more sheet ============ --}}
+{{-- The sheet lists what the dock could not fit; the dock is capped at four
+     destinations plus this Menu button so the bar never exceeds five slots. --}}
+<x-mobile-dock :items="$dockItems" :more="$moreItems ?? []" />
+<x-more-menu :items="$moreItems ?? []" />
 
 {{-- ============ Toasts ============ --}}
 <div class="fixed z-[60] bottom-20 sm:bottom-6 right-3 sm:right-6 left-3 sm:left-auto sm:w-96 flex flex-col gap-2 pointer-events-none"

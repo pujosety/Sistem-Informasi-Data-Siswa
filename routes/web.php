@@ -20,6 +20,8 @@ use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\ClassroomController;
 use App\Http\Controllers\EnrollmentController;
 use App\Http\Controllers\HomeroomController;
+use App\Http\Controllers\WorkspaceController;
+use App\Http\Controllers\ParentPortalController;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/dashboard')->name('home');
@@ -213,8 +215,13 @@ Route::middleware(['auth', 'can:report.view'])->prefix('laporan')->name('laporan
 |--------------------------------------------------------------------------
 */
 Route::middleware('auth')->group(function () {
-    Route::get('/dashboard', function (\App\Models\User $user) {
-        $target = $user->homeRoute();
+    Route::get('/dashboard', function (?\App\Models\User $user = null) {
+        // Resolve explicitly from the session. Container injection of the model
+        // produced a blank instance in the test harness (id null), so homeRoute()
+        // saw no role and fell through to /profil.
+        $user = $user ?: auth()->user();
+
+                $target = $user->homeRoute();
 
         // Guard against a homeRoute() that points back here, which would
         // otherwise loop until the browser gives up with too many redirects.
@@ -276,6 +283,46 @@ Route::middleware(['auth', 'can:enrollment.view'])->prefix('akademik')->name('ac
     Route::post('/pindah/{student}', [EnrollmentController::class, 'storeMove'])->name('enrollments.move.store');
     Route::delete('/penempatan/{student}', [EnrollmentController::class, 'destroy'])->name('enrollments.destroy');
 });
+
+// --- WORKSPACES (satu dashboard per tier) ---------------------------------
+// Each workspace answers: what needs my attention, what do I need to know,
+// what can I do next. Permission is enforced here AND inside the controller.
+Route::middleware('auth')->prefix('ruang-kerja')->name('workspace.')->group(function () {
+    // The route middleware enforces the tier boundary server-side; the
+    // controller repeats the check so a workspace is never a soft link.
+    Route::get('/admin', [WorkspaceController::class, 'admin'])
+        ->middleware('can:settings.view')   // Admin + Super Admin only
+        ->name('admin');
+    Route::get('/kesiswaan', [WorkspaceController::class, 'kesiswaan'])
+        ->middleware('can:student.view')
+        ->name('kesiswaan');
+    Route::get('/operator', [WorkspaceController::class, 'operator'])
+        ->middleware('can:registration.update')
+        ->name('operator');
+    Route::get('/verifikator', [WorkspaceController::class, 'verifikator'])
+        ->middleware('can:verification.approve')
+        ->name('verifikator');
+});
+
+// Named aliases used by WorkspaceService::forUser().
+Route::redirect('/admin/ruang-kerja', '/ruang-kerja/admin')->name('admin.workspace');
+Route::redirect('/kesiswaan/ruang-kerja', '/ruang-kerja/kesiswaan')->name('kesiswaan.workspace');
+Route::redirect('/operator/ruang-kerja', '/ruang-kerja/operator')->name('operator.workspace');
+Route::redirect('/verifikator/ruang-kerja', '/ruang-kerja/verifikator')->name('verifikator.workspace');
+
+// --- PARENT PORTAL (Orang Tua/Wali) ---------------------------------------
+// A parent is defined by an active GuardianRelationship, never by a role, so
+// this block cannot be reached by an internal account. Every action re-checks
+// the link server-side.
+Route::middleware('auth')->prefix('orang-tua')->name('parent.')->group(function () {
+    Route::get('/', [ParentPortalController::class, 'dashboard'])->name('dashboard');
+    Route::get('/anak/{student}/absensi', [ParentPortalController::class, 'attendance'])->name('attendance');
+    Route::get('/anak/{student}/akademik', [ParentPortalController::class, 'academic'])->name('academic');
+    Route::get('/anak/{student}/pengumuman', [ParentPortalController::class, 'announcements'])->name('announcements');
+});
+
+// Named aliases used by NavigationService / WorkspaceService.
+Route::redirect('/orang-tua/ruang-kerja', '/orang-tua')->name('parent.workspace');
 
 // --- KELAS SAYA (Wali Kelas) ---------------------------------------------
 Route::middleware(['auth', 'can:classroom.view'])

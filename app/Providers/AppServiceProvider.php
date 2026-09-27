@@ -63,10 +63,13 @@ class AppServiceProvider extends ServiceProvider
 
         // Navigation + unread badge are needed by the shell on every page.
         View::composer('components.app-shell', function ($view) {
-            $nav = app(NavigationService::class)->forUser(auth()->user());
+            $user = auth()->user();
+            $nav = app(NavigationService::class)->forUser($user);
 
             $view->with('navigation', $nav['items'])
                 ->with('dockItems', $nav['dock'])
+                ->with('moreItems', $nav['more'])
+                ->with('workspaces', app(\App\Services\WorkspaceService::class)->forUser($user))
                 ->with('unreadNotifications', $this->unreadCount());
         });
 

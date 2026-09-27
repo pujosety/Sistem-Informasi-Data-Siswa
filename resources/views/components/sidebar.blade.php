@@ -1,59 +1,102 @@
 @php
-    $role = match (true) {
-        auth()->user()?->hasRole('admin') => 'admin',
-        auth()->user()?->hasRole('kesiswaan') => 'kesiswaan',
-        default => 'siswa',
-    };
+    // The workspace is resolved from ROLE + ASSIGNMENT, never hardcoded here.
+    // A Wali Kelas is a kesiswaan with an assignment, so the label reflects
+    // their tier and the switcher offers "Kelas Saya" when it exists.
+    $user = auth()->user();
+    $activeWorkspace = collect($workspaces ?? [])
+        ->first(fn ($w) => request()->routeIs($w['route']));
 
-    $roleMeta = [
-        'siswa'     => ['label' => 'Siswa',       'icon' => 'graduation-cap'],
-        'kesiswaan' => ['label' => 'Kesiswaan',   'icon' => 'briefcase'],
-        'admin'     => ['label' => 'Administrator', 'icon' => 'shield-check'],
-    ];
-
-    $roleLabel = $roleMeta[$role]['label'];
-    $roleIcon  = $roleMeta[$role]['icon'];
-
-    $pendingBadge = \App\Models\Registration::where('status', \App\Models\Registration::STATUS_PENDING)->count();
+    $workspaceLabel = $activeWorkspace['label']
+        ?? (($workspaces ?? [])[0]['label'] ?? 'Siswa');
+    $workspaceIcon = $activeWorkspace['icon'] ?? 'graduation-cap';
 @endphp
 
 <div class="flex flex-col h-full">
 
-    {{-- Brand ------------------------------------------------------------- --}}
+    {{-- Brand + workspace ---------------------------------------------------- --}}
     <div class="flex items-center gap-2.5 h-16 px-4 shrink-0 border-b border-white/8">
         <span class="grid place-items-center w-8 h-8 rounded-[var(--radius-md)] bg-white/10 shrink-0">
-            <x-icon :name="$roleIcon" class="w-[18px] h-[18px] text-white" />
+            <x-icon :name="$workspaceIcon" class="w-[18px] h-[18px] text-white" />
         </span>
+
         <div class="min-w-0 nav-label">
-            <p class="text-body font-bold text-white leading-tight">SIDA</p>
-            <p class="text-[11px] text-[var(--app-sidebar-text)] leading-tight truncate">{{ $roleLabel }}</p>
+            <p class="text-body font-bold text-white leading-tight truncate">SIDA</p>
+            <p class="text-[11px] text-[var(--app-sidebar-text)] leading-tight truncate">{{ $workspaceLabel }}</p>
         </div>
 
         <button type="button" @click="$store.app.toggle()"
-                class="ml-auto hidden lg:grid place-items-center w-8 h-8 rounded-[var(--radius-md)] text-[var(--app-sidebar-text)] hover:text-white hover:bg-white/10 transition-colors"
+                class="ml-auto hidden lg:grid place-items-center w-8 h-8 rounded-[var(--radius-md)]
+                       text-[var(--app-sidebar-text)] hover:text-white hover:bg-white/10 transition-colors"
                 aria-label="Ciutkan atau perluas navigasi">
             <x-icon name="panel-left" class="w-[18px] h-[18px]" />
         </button>
     </div>
 
-    {{-- Navigation -------------------------------------------------------- --}}
-    <nav class="flex-1 overflow-y-auto overflow-x-hidden p-3 space-y-0.5 scrollbar-thin" aria-label="Navigasi utama">
+    {{-- Workspace switcher ----------------------------------------------------- --}}
+    @php $switchable = array_values(array_filter($workspaces ?? [], fn ($w) => count($workspaces ?? []) > 1)); @endphp
+    @if ($switchable)
+        <div class="px-3 pt-3 shrink-0 nav-label" x-data="{ open: false }">
+            <button type="button" @click="open = !open" :aria-expanded="open"
+                    class="w-full flex items-center gap-2 px-2.5 py-2 rounded-[var(--radius-md)]
+                           bg-white/5 hover:bg-white/10 transition-colors text-left">
+                <span class="grid place-items-center w-7 h-7 shrink-0 rounded-[var(--radius-sm)] bg-white/10">
+                    <x-icon :name="$workspaceIcon" class="w-4 h-4 text-white" />
+                </span>
+                <span class="min-w-0 flex-1">
+                    <span class="block text-caption text-[var(--app-sidebar-text)] leading-none">Ruang Kerja</span>
+                    <span class="block text-small font-semibold text-white leading-tight truncate mt-0.5">{{ $workspaceLabel }}</span>
+                </span>
+                <x-icon name="chevrons-up-down" class="w-3.5 h-3.5 text-[var(--app-sidebar-text)] shrink-0" />
+            </button>
+
+            <div x-show="open" x-cloak @click.outside="open = false"
+                 x-transition:enter="transition ease-out duration-150"
+                 x-transition:enter-start="opacity-0 -translate-y-1"
+                 x-transition:enter-end="opacity-100 translate-y-0"
+                 class="mt-1 rounded-[var(--radius-md)] bg-ink-900 ring-1 ring-white/10 overflow-hidden shadow-lg">
+                @foreach ($switchable as $w)
+                    @php $isCurrent = ($activeWorkspace['key'] ?? null) === $w['key']; @endphp
+                    <a href="{{ route($w['route']) }}"
+                       @class([
+                           'flex items-center gap-2.5 px-3 py-2.5 text-small transition-colors',
+                           'bg-white/10 text-white font-semibold' => $isCurrent,
+                           'text-[var(--app-sidebar-text)] hover:bg-white/5 hover:text-white' => ! $isCurrent,
+                       ])>
+                        <x-icon :name="$w['icon']" class="w-4 h-4 shrink-0" />
+                        <span class="min-w-0 flex-1">
+                            <span class="block truncate">{{ $w['label'] }}</span>
+                            <span class="block text-[11px] opacity-70">{{ \Illuminate\Support\Str::headline($w['tier']) }}</span>
+                        </span>
+                        @if ($isCurrent)
+                            <x-icon name="check" class="w-4 h-4 shrink-0" />
+                        @endif
+                    </a>
+                @endforeach
+            </div>
+        </div>
+    @endif
+
+    {{-- Navigation ------------------------------------------------------------- --}}
+    <nav class="flex-1 overflow-y-auto overflow-x-hidden p-3 space-y-0.5 scrollbar-thin"
+         aria-label="Navigasi utama">
         <x-nav-items :items="$navigation" />
     </nav>
 
-    {{-- User ------------------------------------------------------------- --}}
+    {{-- Account ---------------------------------------------------------------- --}}
     <div class="p-3 shrink-0 border-t border-white/8">
         <div class="flex items-center gap-2.5 px-2 py-2 rounded-[var(--radius-md)] bg-white/5">
             <span class="grid place-items-center w-8 h-8 shrink-0 rounded-full bg-white/15 text-white text-caption font-bold">
-                {{ strtoupper(mb_substr(auth()->user()?->name ?? '?', 0, 2)) }}
+                {{ strtoupper(mb_substr($user?->name ?? '?', 0, 2)) }}
             </span>
             <div class="min-w-0 flex-1 nav-label">
-                <p class="text-small font-semibold text-white truncate">{{ auth()->user()?->name }}</p>
-                <p class="text-[11px] text-[var(--app-sidebar-text)] truncate">{{ auth()->user()?->email }}</p>
+                <p class="text-small font-semibold text-white truncate">{{ $user?->name }}</p>
+                <p class="text-[11px] text-[var(--app-sidebar-text)] truncate">{{ $user?->email }}</p>
             </div>
             <form method="POST" action="{{ route('logout') }}" class="nav-label shrink-0">
                 @csrf
-                <button type="submit" class="grid place-items-center w-8 h-8 rounded-[var(--radius-md)] text-[var(--app-sidebar-text)] hover:text-white hover:bg-white/10 transition-colors"
+                <button type="submit"
+                        class="grid place-items-center w-8 h-8 rounded-[var(--radius-md)]
+                               text-[var(--app-sidebar-text)] hover:text-white hover:bg-white/10 transition-colors"
                         aria-label="Keluar" title="Keluar">
                     <x-icon name="log-out" class="w-[18px] h-[18px]" />
                 </button>

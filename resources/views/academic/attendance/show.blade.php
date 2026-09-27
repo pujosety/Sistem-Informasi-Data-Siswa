@@ -63,7 +63,11 @@
                     @endif
                 </div>
 
-                <div class="mt-2.5 grid grid-cols-5 gap-1.5" role="group" aria-label="Status kehadiran">
+                {{-- 5 columns at 360px leaves ~60px per button, below the 44px
+                     touch target once padding is counted, and forces the labels
+                     to wrap. Two rows on a phone, five on a tablet. --}}
+                <div class="mt-2.5 grid grid-cols-3 gap-1.5 min-[480px]:grid-cols-5"
+                     role="group" aria-label="Status kehadiran">
                     @foreach ($statuses as $value => $label)
                         <label class="cursor-pointer">
                             <input type="radio" class="peer sr-only"

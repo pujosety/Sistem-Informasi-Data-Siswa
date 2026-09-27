@@ -30,6 +30,9 @@ class UserFactory extends Factory
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
+            // Must be explicit: the column is nullable, and (bool) null is false,
+            // which made every factory user look disabled to isActive().
+            'is_active' => true,
         ];
     }
 
@@ -40,6 +43,15 @@ class UserFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'email_verified_at' => null,
+        ]);
+    }
+
+    /** A disabled account: valid permissions, but must not act. */
+    public function disabled(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'is_active' => false,
+            'disabled_reason' => 'Factory fixture',
         ]);
     }
 }

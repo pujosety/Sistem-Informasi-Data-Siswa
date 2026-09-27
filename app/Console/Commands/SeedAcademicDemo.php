@@ -33,6 +33,7 @@ class SeedAcademicDemo extends Command
         $this->seedAcademicYears();
         $this->seedHomeroomTeacher();
         $this->backfillDemoStudentRoles();
+        $this->seedVerifier();
 
         $year = AcademicYear::where('status', AcademicYear::ACTIVE)->firstOrFail();
         $nextYear = AcademicYear::where('status', AcademicYear::UPCOMING)->firstOrFail();
@@ -77,6 +78,30 @@ class SeedAcademicDemo extends Command
         }
 
         return self::SUCCESS;
+    }
+
+    /**
+     * A verifier account, so the dedicated verification workspace has live
+     * coverage. Without it that tier could only be tested through admin, which
+     * also holds verification.approve and therefore hides the boundary.
+     */
+    private function seedVerifier(): void
+    {
+        $verifier = User::where('email', 'verifikator@demo.test')->first();
+
+        if (! $verifier) {
+            $verifier = User::create([
+                'name' => 'Verifikator Demo',
+                'email' => 'verifikator@demo.test',
+                'password' => bcrypt('password123'),
+                'email_verified_at' => now(),
+                'is_active' => true,
+            ]);
+        }
+
+        if (! $verifier->hasRole('verifikator')) {
+            $verifier->assignRole('verifikator');
+        }
     }
 
     /** Give any previously seeded demo student the `siswa` role. */

@@ -158,16 +158,27 @@ class User extends Authenticatable
      */
     public function homeRoute(): string
     {
-        return match (true) {
-            $this->can('dashboard.admin.view') => 'admin.dashboard',
-            $this->can('student.view') => 'kesiswaan.students',
-            $this->isStudent() => 'siswa.dashboard',
+        // WorkspaceService owns the tier decision so login, /dashboard and the
+        // navigation never disagree. Matching on role names here is what made
+        // a Wali Kelas land on the kesiswaan roster instead of "Kelas Saya".
+        $workspace = app(\App\Services\WorkspaceService::class)->primaryRouteFor($this);
 
-            // A staff account with no landing page of its own still needs a
-            // valid destination. Never 'login': the guest middleware would
-            // bounce it back to /dashboard and loop forever.
-            default => 'profile.edit',
-        };
+        if ($workspace) {
+            return $workspace;
+        }
+
+        // A staff account with no workspace of its own still needs a valid
+        // destination. Never 'login': the guest middleware would bounce it back
+        // to /dashboard and loop forever.
+        return 'profile.edit';
+    }
+
+    /**
+     * The tier this account belongs to, for the workspace switcher.
+     */
+    public function tier(): string
+    {
+        return app(\App\Services\WorkspaceService::class)->tierFor($this);
     }
 
     /**

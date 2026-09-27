@@ -16,6 +16,22 @@ document.addEventListener('alpine:init', () => {
         sidebarCollapsed: stored === '1',
         mobileNavOpen: storedMobile === '1',
         commandOpen: false,
+        // Phone "more" sheet. Kept out of the persisted sidebar state on
+        // purpose: it must always open closed.
+        moreOpen: false,
+
+        openMore() {
+            this.moreOpen = true;
+            document.body.classList.add('overflow-hidden');
+        },
+
+        closeMore() {
+            this.moreOpen = false;
+
+            if (! this.mobileNavOpen) {
+                document.body.classList.remove('overflow-hidden');
+            }
+        },
 
         toggle() {
             this.sidebarCollapsed = !this.sidebarCollapsed;
@@ -29,7 +45,10 @@ document.addEventListener('alpine:init', () => {
 
         closeMobileNav() {
             this.mobileNavOpen = false;
-            document.body.classList.remove('overflow-hidden');
+
+            if (! this.moreOpen) {
+                document.body.classList.remove('overflow-hidden');
+            }
         },
 
         toggleCommand() {
