@@ -119,7 +119,6 @@
         </button>
     </form>
 @endif
-@endsection
 
 @push('scripts')
 <script>

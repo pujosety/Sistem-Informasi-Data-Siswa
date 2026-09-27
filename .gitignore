@@ -57,3 +57,7 @@ yarn-error.log*
 /.vscode
 /.zed
 /.fleet
+
+# One-off local verification/scratch scripts (not part of the app)
+hermes-*
+sync-vendor.sh

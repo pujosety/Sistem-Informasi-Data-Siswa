@@ -47,7 +47,7 @@ class EnrollmentController extends Controller
         // that can actually be placed; showing enrolled ones would just produce
         // a wall of "already enrolled" errors.
         $students = Student::query()
-            ->whereNotHas('enrollments', fn ($q) => $q
+            ->whereDoesntHave('enrollments', fn ($q) => $q
                 ->where('academic_year_id', $classroom?->academic_year_id ?? $yearId)
                 ->active())
             ->when($request->filled('q'), function ($q) use ($request) {
