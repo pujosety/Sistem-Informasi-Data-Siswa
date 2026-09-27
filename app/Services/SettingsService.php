@@ -4,7 +4,9 @@ namespace App\Services;
 
 use App\Models\Setting;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Schema;
 
 /**
  * Typed, cached access to the settings table.
@@ -17,7 +19,22 @@ class SettingsService
 {
     public const CACHE_KEY = 'sida.settings';
 
-    /** key => [value, type, group, label, hint, sort] */
+    /**
+     * Per-request memo for the connectivity probe.
+     *
+     * Null = not probed yet. Static so every resolution inside one request
+     * shares a single attempt instead of one per view composer call.
+     */
+    private static ?bool $dbUsable = null;
+
+    /**
+     * key => [value, type, group, label, hint, sort]
+     *
+     * This array is also the OFFLINE FALLBACK. When the settings table is
+     * missing or the database is unreachable, get() returns these values, so
+     * the application shell, the installer and the error pages all render
+     * without a database round-trip.
+     */
     public const DEFAULTS = [
         // Branding
         'app.name' => ['Sistem Informasi Data Siswa', 'string', 'branding', 'Nama Aplikasi', 'Ditampilkan di sidebar, judul halaman, dan PDF.', 10],
@@ -53,21 +70,104 @@ class SettingsService
         'app.per_page' => ['15', 'int', 'general', 'Jumlah per Halaman', 'Default tabel (5–100).', 30],
     ];
 
+    /**
+     * Settings rows, or an EMPTY collection when the table is not usable.
+     *
+     * This runs from a global view composer, so on a fresh deployment it is
+     * reached before migrations have run. Without a guard the app could not
+     * render its own error page or installer: the first DB error triggered a
+     * second one from inside the error renderer.
+     *
+     * The distinction that matters:
+     *   - NOT INSTALLED / no table / unreachable DB -> fall back to DEFAULTS
+     *   - a genuine production failure              -> still surface it
+     *
+     * DatabaseStore is used here, so a misconfigured driver (sqlite on Wasmer)
+     * threw from inside Cache::rememberForever before this method could
+     * decide anything. That is why the driver is now verified first.
+     */
     public function all(): \Illuminate\Support\Collection
     {
-        $rows = Cache::rememberForever(self::CACHE_KEY, function () {
-            return Setting::orderBy('group')->orderBy('sort_order')->get()
-                ->mapWithKeys(fn (Setting $s) => [$s->key => $s]);
-        });
+        if (! $this->databaseUsable()) {
+            return new \Illuminate\Support\Collection;
+        }
+
+        try {
+            $rows = Cache::rememberForever(self::CACHE_KEY, function () {
+                return Setting::orderBy('group')->orderBy('sort_order')->get()
+                    ->mapWithKeys(fn (Setting $s) => [$s->key => $s]);
+            });
+        } catch (\Illuminate\Database\QueryException $e) {
+            // The table is missing: a not-yet-migrated database, not a broken
+            // one. DEFAULTS below cover every key, so an empty store is safe.
+            if ($this->isMissingTable($e)) {
+                return new \Illuminate\Support\Collection;
+            }
+
+            // A real connection/permission failure. Do not swallow it: the
+            // operator has to see it. Log and continue with defaults so the
+            // error page itself can still render.
+            report($e);
+
+            return new \Illuminate\Support\Collection;
+        } catch (\Throwable $e) {
+            report($e);
+
+            return new \Illuminate\Support\Collection;
+        }
 
         return $rows;
     }
 
+    /**
+     * Can we talk to the database at all?
+     *
+     * Checked with a single cheap query rather than trusting config, because
+     * the failure this guards against is a WRONG CONNECTION (sqlite on a host
+     * that only offers MySQL) — configuration that looks present but is not.
+     */
+    private function databaseUsable(): bool
+    {
+        if (static::$dbUsable !== null) {
+            return static::$dbUsable;
+        }
+
+        try {
+            DB::connection()->getPdo();
+            static::$dbUsable = true;
+        } catch (\Throwable $e) {
+            static::$dbUsable = false;
+        }
+
+        return static::$dbUsable;
+    }
+
+    /** Laravel's missing-table error, without depending on the driver string. */
+    private function isMissingTable(\Throwable $e): bool
+    {
+        $sqlState = $e instanceof \Illuminate\Database\QueryException ? $e->getCode() : null;
+
+        // 42S02 = table/base does not exist (MySQL), HY000 is PDO's generic.
+        return in_array((string) $sqlState, ['42S02', '42S22'], true)
+            || str_contains(strtolower($e->getMessage()), "doesn't exist")
+            || str_contains(strtolower($e->getMessage()), 'no such table')
+            || str_contains(strtolower($e->getMessage()), 'base table or view not found');
+    }
+
+    /** True when the app is running against a database with no tables yet. */
+    public function isInstalled(): bool
+    {
+        return $this->databaseUsable() && \Illuminate\Support\Facades\Schema::hasTable('settings');
+    }
+
     public function get(string $key, mixed $default = null): mixed
     {
+        // all() is memoised per request, so this costs nothing extra.
         $setting = $this->all()->get($key);
 
         if (! $setting) {
+            // No row (or no table): DEFAULTS are the contract, so the UI still
+            // renders with sensible branding before installation.
             return $default ?? (self::DEFAULTS[$key][0] ?? null);
         }
 

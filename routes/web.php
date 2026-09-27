@@ -21,8 +21,24 @@ use App\Http\Controllers\ClassroomController;
 use App\Http\Controllers\EnrollmentController;
 use App\Http\Controllers\HomeroomController;
 use App\Http\Controllers\WorkspaceController;
+use App\Http\Controllers\HealthController;
 use App\Http\Controllers\ParentPortalController;
 use Illuminate\Support\Facades\Route;
+
+/*
+|--------------------------------------------------------------------------
+| Health
+|--------------------------------------------------------------------------
+|
+| Separate from Laravel's built-in /up, which only proves PHP booted. This
+| one also reports whether the database is reachable, so a deploy with a wrong
+| DB_CONNECTION is visible instead of silent. Deliberately outside the auth
+| group and free of any session or settings dependency.
+|
+*/
+Route::get('/health', HealthController::class)
+    ->name('health')
+    ->middleware('throttle:60,1');
 
 Route::redirect('/', '/dashboard')->name('home');
 

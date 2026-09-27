@@ -255,3 +255,72 @@ chmod -R 775 storage bootstrap/cache
 - [ ] `storage/` writable dan persisten
 - [ ] `.env` tidak masuk repository
 - [ ] Installer web `/install` dinonaktifkan setelah setup
+
+---
+
+## 14. Ringkasan Perbaikan Produksi (SQLite → MySQL)
+
+### Akar masalah
+
+`config/database.php` sebelumnya:
+
+```php
+'default' => env('DB_CONNECTION', 'sqlite'),
+```
+
+Wasmer menyuntikkan `DB_HOST`, `DB_NAME`, `DB_USERNAME`, `DB_PASSWORD` —
+**tetapi tidak menyuntikkan `DB_CONNECTION`**. `env('DB_CONNECTION', 'sqlite')`
+karena itu mengembalikan `sqlite`, dan Laravel mencari
+`database/database.sqlite` yang tidak ada di image. Gejalanya muncul sebagai
+`SQLiteDatabaseDoesNotExistException` dari `DatabaseStore` (cache), karena
+`SettingsService` dipanggil oleh `AppServiceProvider` pada *setiap* render view.
+
+### Perbaikan
+
+| Area | Sebelum | Sesudah |
+|---|---|---|
+| Driver default | `sqlite` | `mysql` |
+| Nama database | `env('DB_DATABASE') ?: env('DB_NAME', 'laravel')` | `?: env('DB_NAME') ?: 'laravel'` |
+| `SettingsService::all()` | query langsung | probe koneksi sekali/request, fallback ke `DEFAULTS` |
+| `AppServiceProvider` composer | crash bila DB mati | try/catch + `fallbackBrand()` tanpa DB |
+| `unreadCount()` | crash bila DB mati | try/catch → 0 |
+| Error template | `NavigationService` bisa crash | try/catch → tanpa saran |
+| Health check | `/up` (PHP boot saja) | `/health` (boot + DB + tabel) |
+
+### Perintah start Wasmer (non-interaktif)
+
+```bash
+php artisan config:clear && \
+php artisan migrate --force --no-interaction && \
+php artisan config:cache && \
+php artisan route:cache && \
+php artisan serve --host=0.0.0.0 --port=${PORT:-8000}
+```
+
+`config:clear` **wajib ada lebih dulu**. `config:cache` membekukan konfigurasi ke
+file; bila file itu ikut ter-*build* dari environment lokal, Laravel memakai
+nilai lama (SQLite) dan mengabaikan variabel Wasmer.
+
+Tidak ada perintah yang meminta konfirmasi interaktif. `--force` hanya pada
+`migrate`, yang memang mewajibkannya di production.
+
+### Health check
+
+```bash
+curl -s https://<domain-anda>/health
+```
+
+```json
+{
+  "status": "ok",
+  "app": "Sistem Informasi Data Siswa",
+  "environment": "production",
+  "installed": true,
+  "database": { "state": "ok", "tables": true },
+  "time": "..."
+}
+```
+
+`database.state` bernilai `ok` | `booting` (tabel belum ada) |
+`unavailable` (koneksi gagal). Endpoint ini tidak pernah menampilkan
+kredensial, host, driver, maupun stack trace.

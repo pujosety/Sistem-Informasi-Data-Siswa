@@ -25,8 +25,23 @@
     $user = auth()->user();
     $destinations = [];
 
+    /*
+     | The suggested-destinations list comes from NavigationService, which reads
+     | the roles/permissions tables. When the database is unreachable — the
+     | exact situation this page exists to explain — that query throws, and a
+     | second failure inside the error renderer replaces a useful message with
+     | a blank screen. Suggesting nothing is strictly better than crashing.
+     */
     if ($user) {
-        foreach (app(\App\Services\NavigationService::class)->forUser($user)['items'] as $item) {
+        $nav = [];
+
+        try {
+            $nav = app(\App\Services\NavigationService::class)->forUser($user)['items'];
+        } catch (\Throwable $e) {
+            report($e);
+        }
+
+        foreach ($nav as $item) {
             if (! empty($item['route'])) {
                 $destinations[] = ['label' => $item['label'], 'url' => route($item['route'])];
             }

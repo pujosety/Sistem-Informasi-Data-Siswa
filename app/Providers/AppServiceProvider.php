@@ -21,13 +21,78 @@ class AppServiceProvider extends ServiceProvider
             return 0;
         }
 
+        if ($this->unreadCache !== null) {
+            return $this->unreadCache;
+        }
+
         // Cached per request: the shell and several components ask for it.
-        return $this->unreadCache ??= auth()->user()->unreadNotifications()->count();
+        //
+        // A missing badge is never worth an error page, and this runs from a
+        // '*' view composer — so an unreachable database (exactly what a fresh
+        // deployment or a wrong DB_CONNECTION looks like) would otherwise turn
+        // a single query failure into a 500 on every page, including errors.
+        try {
+            return $this->unreadCache = auth()->user()->unreadNotifications()->count();
+        } catch (\Throwable $e) {
+            report($e);
+
+            return $this->unreadCache = 0;
+        }
     }
 
     public function register(): void
     {
         //
+    }
+
+    /**
+     * Branding with no database involved.
+     *
+     * Used by the error renderer and by the branding composer when settings
+     * cannot be read. Values come from the DEFAULTS constant, never from the
+     * database, so an error page can always render.
+     *
+     * @return array<string, mixed>
+     */
+    private function fallbackBrand(): array
+    {
+        $defaults = SettingsService::DEFAULTS;
+
+        return [
+            'name' => $defaults['app.name'][0],
+            'shortName' => $defaults['app.short_name'][0],
+            'tagline' => $defaults['app.tagline'][0],
+            'logo' => null,
+            'icon' => null,
+            'primary' => $defaults['branding.primary_color'][0],
+            'accent' => $defaults['branding.accent_color'][0],
+            'school' => [
+                'name' => $defaults['school.name'][0],
+                'npsn' => $defaults['school.npsn'][0],
+                'address' => $defaults['school.address'][0],
+                'city' => $defaults['school.city'][0],
+                'headmaster' => $defaults['school.headmaster'][0],
+            ],
+        ];
+    }
+
+    /**
+     * Workspaces for the switcher, or an empty list when they cannot be read.
+     *
+     * WorkspaceService consults roles and assignments, so it is as
+     * database-dependent as NavigationService.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    private function safeWorkspaces($user): array
+    {
+        try {
+            return app(\App\Services\WorkspaceService::class)->forUser($user);
+        } catch (\Throwable $e) {
+            report($e);
+
+            return [];
+        }
     }
 
     public function boot(): void
@@ -64,12 +129,22 @@ class AppServiceProvider extends ServiceProvider
         // Navigation + unread badge are needed by the shell on every page.
         View::composer('components.app-shell', function ($view) {
             $user = auth()->user();
-            $nav = app(NavigationService::class)->forUser($user);
+
+            // Navigation reads roles/permissions/assignments. On an
+            // unmigrated or unreachable database it throws, and a shell that
+            // cannot build a menu must still render (the installer and the
+            // error pages both use the shell).
+            try {
+                $nav = app(NavigationService::class)->forUser($user);
+            } catch (\Throwable $e) {
+                report($e);
+                $nav = ['items' => [], 'dock' => [], 'more' => []];
+            }
 
             $view->with('navigation', $nav['items'])
                 ->with('dockItems', $nav['dock'])
                 ->with('moreItems', $nav['more'])
-                ->with('workspaces', app(\App\Services\WorkspaceService::class)->forUser($user))
+                ->with('workspaces', $this->safeWorkspaces($user))
                 ->with('unreadNotifications', $this->unreadCount());
         });
 
@@ -79,8 +154,27 @@ class AppServiceProvider extends ServiceProvider
             $view->with('unreadNotifications', $this->unreadCount());
         });
 
-        // Branding is global: expose it to every view, including components.
+        /*
+         | Branding is global and reaches EVERY view — including the 403/404/500
+         | error templates. That made the error renderer itself depend on the
+         | database: a DB failure raised a second failure while rendering the
+         | first one, and the operator saw nothing useful.
+         |
+         | SettingsService now degrades to its DEFAULTS when the table is
+         | missing or the connection is wrong, so this stays safe. The extra
+         | try/catch is a backstop for any OTHER settings failure, and it
+         | still renders an error page rather than a blank screen.
+         */
         View::composer('*', function ($view) {
+            try {
+                $settings = app(SettingsService::class);
+            } catch (\Throwable $e) {
+                report($e);
+                $view->with('brand', $this->fallbackBrand());
+
+                return;
+            }
+
             $view->with('brand', [
                 'name' => app(SettingsService::class)->get('app.name'),
                 'shortName' => app(SettingsService::class)->get('app.short_name'),

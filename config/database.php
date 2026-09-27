@@ -17,7 +17,18 @@ return [
     |
     */
 
-    'default' => env('DB_CONNECTION', 'sqlite'),
+    /*
+     | The default driver used to fall back to 'sqlite', which is what happened
+     | in production: Wasmer injects DB_HOST/DB_NAME/DB_USERNAME/DB_PASSWORD but
+     | no DB_CONNECTION, so Laravel picked sqlite and looked for
+     | database/database.sqlite that does not exist in the image.
+     |
+     | 'mysql' is the correct default for this application — the project ships
+     | MySQL migrations, MySQL-only storage assumptions and a docker-compose that
+     | runs MySQL 8.4. Defaulting to sqlite meant a MISSING DB_CONNECTION looked
+     | like a working config instead of a loud error.
+     */
+    'default' => env('DB_CONNECTION', 'mysql'),
 
     /*
     |--------------------------------------------------------------------------
@@ -49,10 +60,14 @@ return [
             'url' => env('DB_URL'),
             'host' => env('DB_HOST', '127.0.0.1'),
             'port' => env('DB_PORT', '3306'),
-            // Wasmer injects DB_NAME; stock Laravel reads DB_DATABASE. Fall back
-            // so no manual duplication is needed on managed hosts, while local
-            // .env / Docker keep working unchanged.
-            'database' => env('DB_DATABASE') ?: env('DB_NAME', 'laravel'),
+            // Wasmer injects DB_NAME; stock Laravel reads DB_DATABASE. Falling
+            // back means no manual duplication is needed on managed hosts,
+            // while local .env / Docker keep working unchanged.
+            //
+            // `?:` (not env()'s default argument) so an explicitly empty
+            // DB_DATABASE="" falls through to DB_NAME instead of producing an
+            // empty database name.
+            'database' => env('DB_DATABASE') ?: env('DB_NAME') ?: 'laravel',
             'username' => env('DB_USERNAME', 'root'),
             'password' => env('DB_PASSWORD', ''),
             'unix_socket' => env('DB_SOCKET', ''),
