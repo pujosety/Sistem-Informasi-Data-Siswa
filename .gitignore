@@ -1,0 +1,59 @@
+# --- Laravel / PHP ---------------------------------------------------------
+*.log
+*.log.*
+/vendor
+/.phpunit.cache
+/.phpunit.result.cache
+/.phpactor.json
+/auth.json
+Homestead.json
+Homestead.yaml
+Thumbs.db
+.DS_Store
+
+# --- Environment (NEVER commit real values) ---------------------------------
+.env
+.env.*
+!.env.example
+
+# .env.testing is tracked on purpose: CI needs a known test database
+# config. It only ever contains local/container credentials.
+!.env.testing
+
+# --- Node / frontend build -------------------------------------------------
+/node_modules
+/public/build
+/public/hot
+npm-debug.log*
+yarn-error.log*
+
+# --- Storage: keys, logs, sessions, cache, compiled views -------------------
+/storage/*.key
+/storage/pail
+/storage/logs/*
+!/storage/logs/.gitignore
+/storage/framework/cache/data/*
+/storage/framework/sessions/*
+/storage/framework/views/*
+/storage/framework/testing/*
+/storage/framework/.gitignore
+
+# --- Private / user-uploaded data -------------------------------------------
+# Student documents and photos must never enter version control.
+/public/storage
+/public/uploads
+/storage/app/private
+/storage/app/uploads
+/storage/app/public/uploads
+*.sql
+*.sql.gz
+*.dump
+/database/backups
+
+# --- IDE / OS ---------------------------------------------------------------
+/.idea
+/.nova
+/.fleet
+/.vscode
+/.zed
+/.fleet

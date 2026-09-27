@@ -1,0 +1,46 @@
+# Local development stack — deliberately minimal.
+#
+# One PHP container (artisan serve) + one MySQL. No nginx, no PHP-FPM, no
+# supervisord: that trio only earns its keep in production, and carrying it
+# here made local work slower and harder to reason about.
+#
+# vendor/ lives in a named volume because ~9k small files on a Windows bind
+# mount make every request crawl (artisan boot went from 0.4s to 11s).
+# Run `bash sync-vendor.sh` once after changing dependencies.
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: docker/php.Dockerfile
+    volumes:
+      - .:/var/www/html
+      - vendor-data:/var/www/html/vendor
+    working_dir: /var/www/html
+    ports:
+      - "8000:8000"
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  mysql:
+    image: mysql:8.4
+    environment:
+      MYSQL_DATABASE: siswa_data
+      MYSQL_USER: siswa
+      MYSQL_PASSWORD: secret
+      MYSQL_ROOT_PASSWORD: rootsecret
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-usiswa", "-psecret"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+volumes:
+  mysql-data:
+  vendor-data:
