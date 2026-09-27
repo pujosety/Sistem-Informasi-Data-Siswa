@@ -42,7 +42,7 @@
     </div>
     <div class="flex gap-2">
         <button class="btn btn-primary flex-1 justify-center" type="submit">Filter</button>
-        <a href="{{ route('admin.users.index') }}" class="btn btn-secondary shrink-0" aria-label="Reset">
+        <a href="{{ route('admin.users') }}" class="btn btn-secondary shrink-0" aria-label="Reset">
             <x-icon name="refresh-cw" class="w-4 h-4" />
         </a>
     </div>
@@ -60,7 +60,7 @@
             </thead>
             <tbody>
                 @forelse ($users as $u)
-                    <tr class="{{ $u->is_active() ? '' : 'opacity-60' }}">
+                    <tr class="{{ $u->isActive() ? '' : 'opacity-60' }}">
                         <td>
                             <div class="flex items-center gap-2.5">
                                 <span @class([

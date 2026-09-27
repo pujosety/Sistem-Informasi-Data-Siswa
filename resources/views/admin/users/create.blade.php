@@ -5,7 +5,7 @@
 @section('page-description', 'Buat akun internal untuk staff sekolah')
 
 @section('page-actions')
-    <a href="{{ route('admin.users.index') }}" class="btn btn-secondary">
+    <a href="{{ route('admin.users') }}" class="btn btn-secondary">
         <x-icon name="arrow-left" class="w-4 h-4" />
         Kembali
     </a>
@@ -65,7 +65,7 @@
         </x-card>
 
         <div class="flex flex-col sm:flex-row sm:justify-end gap-2">
-            <a href="{{ route('admin.users.index') }}" class="btn btn-secondary justify-center">Batal</a>
+            <a href="{{ route('admin.users') }}" class="btn btn-secondary justify-center">Batal</a>
             <button type="submit" class="btn btn-primary justify-center">
                 <x-icon name="user-plus" class="w-4 h-4" />
                 Buat Pengguna

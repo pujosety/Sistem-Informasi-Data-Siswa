@@ -13,13 +13,15 @@ class Department extends Model
 
     protected $fillable = ['name', 'code'];
 
+    /** Classes (rombel) in this department. */
     public function classes()
     {
         return $this->hasMany(SchoolClass::class);
     }
 
-    public function students()
+    /** Enrollments recorded against this department. */
+    public function enrollments()
     {
-        return $this->hasMany(Student::class);
+        return $this->hasMany(Enrollment::class);
     }
 }

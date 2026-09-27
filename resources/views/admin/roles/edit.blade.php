@@ -5,7 +5,7 @@
 @section('page-description', $role->users_count.' pengguna · '.$grantedCount.' izin aktif')
 
 @section('page-actions')
-    <a href="{{ route('admin.roles.index') }}" class="btn btn-secondary">
+    <a href="{{ route('admin.roles') }}" class="btn btn-secondary">
         <x-icon name="arrow-left" class="w-4 h-4" />
         Kembali
     </a>

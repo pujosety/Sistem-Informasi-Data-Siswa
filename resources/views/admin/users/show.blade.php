@@ -5,7 +5,7 @@
 @section('page-description', $user->email)
 
 @section('page-actions')
-    <a href="{{ route('admin.users.index') }}" class="btn btn-secondary">
+    <a href="{{ route('admin.users') }}" class="btn btn-secondary">
         <x-icon name="arrow-left" class="w-4 h-4" />
         Kembali
     </a>

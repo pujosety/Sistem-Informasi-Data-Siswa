@@ -92,15 +92,33 @@ class WorkspaceController extends Controller
                 'unplaced' => Student::whereDoesntHave('enrollments', fn ($q) => $q->active())->count(),
                 'incomplete' => Student::whereHas('registration', fn ($q) => $q->where('completeness', '<', 100))->count(),
             ],
+            // Grouping in PHP rather than SQL.
+            //
+            // This used to group by level in the database and add withCount(),
+            // which emitted a subselect referencing classes.id while grouping
+            // only on level. MySQL rejects that under its default
+            // sql_mode=only_full_group_by — the setting Wasmer's MySQL uses —
+            // so the whole Kesiswaan dashboard 500'd in production while
+            // working locally. Aggregating in PHP keeps the result identical
+            // and cannot depend on the server's SQL mode.
             'byLevel' => SchoolClass::query()
                 ->when($year, fn ($q) => $q->where('academic_year_id', $year->id))
-                ->selectRaw('level, COUNT(*) as c')
-                ->withCount(['liveEnrollments'])
-                ->groupBy('level')
+                ->withCount('liveEnrollments')
                 ->orderBy('level')
-                ->get(),
+                ->get()
+                ->groupBy('level')
+                ->map(fn ($classes, $level) => (object) [
+                    'level' => $level,
+                    'c' => $classes->count(),
+                    'live_enrollments_count' => $classes->sum('live_enrollments_count'),
+                ])
+                ->values(),
+            // The relation on Department is classes(), not schoolClasses().
+            // Calling a relation that does not exist is a BadMethodCallException
+            // at query-build time, so it surfaced as a 500 on this same
+            // dashboard before the grouping fix was applied.
             'byDepartment' => \App\Models\Department::query()
-                ->withCount(['schoolClasses as c'])
+                ->withCount(['classes as c'])
                 ->orderBy('name')
                 ->get(),
         ]);

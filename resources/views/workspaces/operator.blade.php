@@ -18,7 +18,7 @@
         <header class="flex items-center justify-between gap-3 border-b border-[var(--app-border)] px-4 py-3.5 sm:px-5">
             <h2 class="text-body font-semibold">Pendaftaran tersimpan sebagai draft</h2>
             @can('registration.create')
-                <a href="{{ route('daftar') }}" class="text-small font-semibold text-[var(--app-primary)] hover:underline">+ Tambah</a>
+                <a href="{{ route('register') }}" class="text-small font-semibold text-[var(--app-primary)] hover:underline">+ Tambah</a>
             @endcan
         </header>
 
