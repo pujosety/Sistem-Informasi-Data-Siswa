@@ -32,6 +32,7 @@ class SeedAcademicDemo extends Command
     {
         $this->seedAcademicYears();
         $this->seedHomeroomTeacher();
+        $this->backfillDemoStudentRoles();
 
         $year = AcademicYear::where('status', AcademicYear::ACTIVE)->firstOrFail();
         $nextYear = AcademicYear::where('status', AcademicYear::UPCOMING)->firstOrFail();
@@ -76,6 +77,19 @@ class SeedAcademicDemo extends Command
         }
 
         return self::SUCCESS;
+    }
+
+    /** Give any previously seeded demo student the `siswa` role. */
+    private function backfillDemoStudentRoles(): void
+    {
+        $users = User::where('email', 'like', '%@demo.test')
+            ->where('email', '!=', 'wali.kelas@demo.test')
+            ->whereDoesntHave('roles')
+            ->get();
+
+        foreach ($users as $user) {
+            $user->assignRole('siswa');
+        }
     }
 
     private function seedAcademicYears(): void
@@ -153,9 +167,14 @@ class SeedAcademicDemo extends Command
         );
     }
 
+    /**
+     * Demo students must carry the `siswa` role, otherwise they cannot open the
+     * student portal at all and a smoke test that logs in as one silently tests
+     * a guest.
+     */
     private function ensureUser(string $name, string $email): User
     {
-        return User::firstOrCreate(
+        $user = User::firstOrCreate(
             ['email' => $email],
             [
                 'name' => $name,
@@ -164,5 +183,11 @@ class SeedAcademicDemo extends Command
                 'is_active' => true,
             ],
         );
+
+        if (! $user->hasRole('siswa')) {
+            $user->assignRole('siswa');
+        }
+
+        return $user;
     }
 }
