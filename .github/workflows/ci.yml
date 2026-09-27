@@ -59,11 +59,28 @@ jobs:
           extensions: mbstring, pdo_mysql, bcmath, gd, intl, zip
           coverage: none
 
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
       - name: Validate composer.json / lock
         run: composer validate --strict
 
       - name: Install PHP dependencies
         run: composer install --no-interaction --prefer-dist --no-progress
+
+      # The feature tests render the real application shell, which calls @vite.
+      # In a fresh checkout public/build does not exist, so every view render
+      # raised ViteManifestNotFoundException. The assets are therefore built
+      # rather than stubbed: stubbing the Vite tag would let the suite pass
+      # against markup that never ships.
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Build frontend assets
+        run: npm run build
 
       # PHP runs DIRECTLY on the runner, not inside a container, so the MySQL
       # service is reachable only through its published port on localhost. The
