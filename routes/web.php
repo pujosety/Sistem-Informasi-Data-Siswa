@@ -40,6 +40,30 @@ Route::get('/health', HealthController::class)
     ->name('health')
     ->middleware('throttle:60,1');
 
+/*
+|--------------------------------------------------------------------------
+| Screenshot session helper (LOCAL ONLY)
+|--------------------------------------------------------------------------
+|
+| Headless browsers cannot complete an interactive login, so this issues the
+| same session a normal login would and returns the cookie for curl/Edge to
+| reuse. The controller itself refuses to run in production and 404s unless
+| LOCAL_DEBUG_HELPER=1, so these routes simply do not exist on a real deploy.
+|
+*/
+if (env('LOCAL_DEBUG_HELPER') && ! app()->environment('production')) {
+    // Exempt from CSRF because it is called by curl, which has no token to
+    // send. Acceptable only because the block is unreachable in production:
+    // the controller also aborts there, and the flag ships as 0 in .env.example.
+    $screenshot = Route::post('/__screenshot/login', [\App\Http\Controllers\ScreenshotSessionController::class, 'login'])
+        ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class])
+        ->name('screenshot.login');
+
+    Route::post('/__screenshot/logout', [\App\Http\Controllers\ScreenshotSessionController::class, 'logout'])
+        ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class])
+        ->name('screenshot.logout');
+}
+
 Route::redirect('/', '/dashboard')->name('home');
 
 /*

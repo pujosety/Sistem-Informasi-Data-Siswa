@@ -1,0 +1,41 @@
+%% Overall request flow: how a user reaches the surface built for their job.
+flowchart TD
+    START([Pembukaan aplikasi]) --> LOGIN["/login"]
+    LOGIN --> AUTH{"Kredensial<br/>valid?"}
+    AUTH -->|tidak| ERR403["403 Halaman Login"]
+    AUTH -->|ya| SESSION["Session disimpan<br/>driver: database"]
+
+    SESSION --> WS["WorkspaceService<br/>forUser"]
+
+    WS --> TIERTIER{"Tentukan<br/>workspace utama"}
+
+    TIERTIER -->|super_admin| W1["Super Admin<br/>/ruang-kerja/admin"]
+    TIERTIER -->|admin| W2["Admin<br/>/ruang-kerja/admin"]
+    TIERTIER -->|kesiswaan| W3["Kesiswaan<br/>/ruang-kerja/kesiswaan"]
+    TIERTIER -->|verifikator| W4["Verifikator<br/>/ruang-kerja/verifikator"]
+    TIERTIER -->|operator| W5["Operator<br/>/ruang-kerja/operator"]
+    TIERTIER -->|ada penugasan| W6["Kelas Saya<br/>/kelas-saya"]
+    TIERTIER -->|guardian link| W7["Orang Tua<br/>/orang-tua"]
+    TIERTIER -->|role siswa| W8["Siswa<br/>/siswa/dashboard"]
+
+    W1 --> NAV["NavigationService<br/>sidebar + dock + more"]
+    W2 --> NAV
+    W3 --> NAV
+    W4 --> NAV
+    W5 --> NAV
+    W6 --> NAV
+    W7 --> NAV
+    W8 --> NAV
+
+    NAV --> AUTHZ{"Otorisasi<br/>permission + scope + assignment"}
+
+    AUTHZ -->|izin cukup| ACTION["Aksi<br/>read / create / update"]
+    AUTHZ -->|kurang| DENIED["403 Akses ditolak"]
+
+    ACTION --> CONFIRM{"Berhasil?"}
+    CONFIRM -->|ya| FEEDBACK["Toast + audit log"]
+    CONFIRM -->|tidak| VALIDATE["Validasi di dekat field"]
+    VALIDATE --> ACTION
+
+    NAV -.->|"workspace lain"| SWITCH["Workspace switcher<br/>sidebar"]
+    SWITCH --> WS

@@ -1,0 +1,39 @@
+%% Student academic lifecycle — one identity, many enrollments.
+stateDiagram-v2
+    [*] --> Pendaftar: Pendaftaran
+    Pendaftar --> Diverifikasi: Dokumen diunggah
+    Diverifikasi --> Revisi: Perlu perbaikan
+    Revisi --> Diverifikasi: Siswa memperbaiki
+    Diverifikasi --> Accepted: Disetujui
+
+    Accepted --> Siswa: Wizardselesai
+    Siswa --> Enrollment: Penempatan kelas
+
+    state "Enrollment AKTIF" as E1
+    Enrollment --> E1
+    E1 --> Absensi: Absensi harian
+    E1 --> Akademik: Nilai
+    E1 --> E1: Tahun berikutnya
+
+    state "Enrollment PROMOTED" as E2
+    E1 --> E2: Kenaikan kelas
+    E2 --> Enrollment: Enrollment baru<br/>tahun ajaran baru
+
+    state "Enrollment RETAINED" as E3
+    E1 --> E3: Tinggal kelas
+    E3 --> Enrollment: Enrollment baru<br/>kelas sama
+
+    state "Enrollment TRANSFERRED" as E4
+    E1 --> E4: Pindah sekolah
+    E4 --> [*]
+
+    state "Enrollment GRADUATED" as E5
+    E1 --> E5: Lulus
+    E5 --> Alumni: Tercatat di alumni
+    Alumni --> [*]
+
+    note right of E1
+        Satu baris enrollment per
+        tahun ajaran. Riwayat lama
+        tidak pernah ditimpa.
+    end note

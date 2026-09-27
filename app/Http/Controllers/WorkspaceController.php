@@ -61,9 +61,15 @@ class WorkspaceController extends Controller
                 'revision' => Registration::where('status', Registration::STATUS_REVISION)->count(),
             ],
             'queue' => $queue,
-            'incomplete' => Student::whereHas('registration', fn ($q) => $q->where('completeness', '<', 100))
+            // Ordered by how incomplete they are, so the list answers "who do
+            // I chase first" rather than "who happens to sort alphabetically".
+            'incomplete' => Student::query()
+                ->whereNotNull('full_name')
+                ->whereHas('registration', fn ($q) => $q->where('completeness', '<', 100))
                 ->with('registration')
-                ->orderBy('full_name')
+                ->join('registrations', 'registrations.student_id', '=', 'students.id')
+                ->orderBy('registrations.completeness')
+                ->select('students.*')
                 ->limit(6)
                 ->get(),
             'activity' => \App\Models\ActivityLog::query()->latest()->limit(6)->get(),

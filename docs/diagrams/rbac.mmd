@@ -1,0 +1,27 @@
+%% Authorization model: three independent inputs, one decision.
+flowchart TD
+    U["User<br/>akun"] --> R["Role<br/>dari Spatie"]
+    U --> A["Assignment<br/>homeroom / guardian"]
+    U --> P["Permission<br/>dari katalog"]
+
+    R --> GATE{"Gate"}
+    P --> GATE
+    A --> SCOPE["Resource scope<br/>ClassScope"]
+
+    GATE --> DECIDE{"Keputusan"}
+    SCOPE --> DECIDE
+
+    DECIDE -->|"izin ada<br/>dan scope cocok"| ALLOW["Diizinkan"]
+    DECIDE -->|"izin ada<br/>scope tidak cocok"| DENY["Ditolak 403"]
+    DECIDE -->|"izin tidak ada"| DENY
+    DECIDE -->|"akun nonaktif"| DENY
+
+    NOTE["Mengganti id pada URL<br/>tidak mengubah scope.<br/>ClassScope diuji ulang<br/>pada setiap request."]
+
+    DENY -.-> NOTE
+    ALLOW -.-> NOTE
+
+    classDef deny fill:#fef2f2,stroke:#fecaca,color:#7f1d1d
+    classDef allow fill:#ecfdf5,stroke:#a7f3d0,color:#064e3b
+    class DENY deny
+    class ALLOW allow

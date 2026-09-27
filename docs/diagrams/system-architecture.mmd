@@ -1,0 +1,58 @@
+%% System architecture — mirrors the real request path of the application.
+%% Regenerate with docs/diagrams/render.sh after changing the stack.
+flowchart TB
+    subgraph CLIENT [Klien]
+        PWA["PWA<br/>service worker"]
+        BROWSER["Browser<br/>desktop / tablet / mobile"]
+    end
+
+    subgraph EDGE ["Wasmer Edge"]
+        TLS["TLS termination<br/>reverse proxy"]
+        START["Start command<br/>serve --host 0.0.0.0"]
+    end
+
+    subgraph APP ["Laravel 12"]
+        ROUTES["routes/web.php<br/>104 route"]
+        MW["Middleware<br/>auth · can: · proxy trust"]
+        CTRL["Controller<br/>HTTP boundary"]
+        SVC["Service<br/>EnrollmentService · ClassScope<br/>SettingsService · WorkspaceService"]
+        POL["Policy<br/>ClassroomPolicy · EnrollmentPolicy"]
+        MODEL["Model / Eloquent"]
+        VIEW["Blade view<br/>+ Alpine.js"]
+    end
+
+    subgraph DATA [Persistensi]
+        MYSQL[("MySQL 8.4<br/>95 tabel")]
+        STORAGE[("Storage<br/>dokumen siswa")]
+    end
+
+    subgraph OPS [Operasional]
+        GH["GitHub<br/>CI: test + build"]
+        HEALTH["GET /health<br/>boot + database"]
+    end
+
+    PWA --> BROWSER
+    BROWSER -->|"HTTPS"| TLS
+    TLS --> START
+    START --> ROUTES
+
+    ROUTES --> MW --> CTRL
+    CTRL --> SVC
+    CTRL --> POL
+    SVC --> MODEL
+    POL --> MODEL
+    CTRL --> VIEW
+    VIEW -->|"JSON"| BROWSER
+
+    MODEL --> MYSQL
+    SVC --> STORAGE
+
+    GH -.->|"deploy"| TLS
+    HEALTH -.-> MYSQL
+
+    classDef ext fill:#eef2ff,stroke:#c7d2fe,color:#1e1b4b
+    classDef core fill:#ecfdf5,stroke:#a7f3d0,color:#064e3b
+    classDef data fill:#fff7ed,stroke:#fed7aa,color:#7c2d12
+    class CLIENT,EDGE,OPS ext
+    class APP core
+    class DATA data

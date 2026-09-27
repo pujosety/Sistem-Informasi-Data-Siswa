@@ -61,3 +61,8 @@ yarn-error.log*
 # One-off local verification/scratch scripts (not part of the app)
 hermes-*
 sync-vendor.sh
+
+# --- Documentation tooling --------------------------------------------
+__pycache__/
+*.pyc
+docs/diagrams/*.tmp.pptx

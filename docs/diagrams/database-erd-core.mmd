@@ -1,0 +1,73 @@
+%% ERD — model inti (Identitas, Akademik, Kehadiran)
+%% GENERATED FROM THE LIVE SCHEMA by tools/erd-core.php
+flowchart LR
+  subgraph G0 ["Identitas"]
+    direction TB
+    t93["users<br/>id bigint unsigned<br/>name varchar(255)<br/>is_active tinyint(1)"]
+    t92["students<br/>id bigint unsigned<br/>user_id bigint unsigned<br/>academic_year_id bigint unsigned"]
+    t85["parents<br/>id bigint unsigned<br/>user_id bigint unsigned<br/>student_id bigint unsigned"]
+    t50["guardian_relationships<br/>id bigint unsigned<br/>student_id bigint unsigned<br/>guardian_user_id bigint unsigned<br/>parent_id bigint unsigned<br/>relationship varchar(20)<br/>is_primary tinyint(1)<br/>status varchar(20)"]
+  end
+  subgraph G1 ["Akademik"]
+    direction TB
+    t70["academic_years<br/>id bigint unsigned<br/>name varchar(20)<br/>status varchar(20)<br/>is_active tinyint(1)"]
+    t75["departments<br/>id bigint unsigned<br/>name varchar(100)<br/>code varchar(20)"]
+    t74["classes<br/>id bigint unsigned<br/>academic_year_id bigint unsigned<br/>department_id bigint unsigned<br/>name varchar(50)<br/>code varchar(30)<br/>level varchar(20)<br/>capacity smallint unsigned<br/>room varchar(50)<br/>status varchar(20)"]
+    t47["enrollments<br/>id bigint unsigned<br/>student_id bigint unsigned<br/>academic_year_id bigint unsigned<br/>classroom_id bigint unsigned<br/>department_id bigint unsigned<br/>status varchar(20)<br/>started_at date<br/>ended_at date"]
+    t51["homeroom_assignments<br/>id bigint unsigned<br/>user_id bigint unsigned<br/>classroom_id bigint unsigned<br/>academic_year_id bigint unsigned<br/>started_at date<br/>ended_at date<br/>status varchar(20)"]
+    t67["subjects<br/>id bigint unsigned<br/>name varchar(100)<br/>code varchar(30)"]
+    t49["grades<br/>id bigint unsigned<br/>enrollment_id bigint unsigned<br/>subject_id bigint unsigned<br/>term varchar(20)<br/>score decimal(5,2)<br/>status varchar(20)"]
+  end
+  subgraph G2 ["Kehadiran"]
+    direction TB
+    t39["attendance_sessions<br/>id bigint unsigned<br/>classroom_id bigint unsigned<br/>academic_year_id bigint unsigned<br/>date date"]
+    t38["attendance_records<br/>id bigint unsigned<br/>attendance_session_id bigint unsigned<br/>enrollment_id bigint unsigned<br/>status varchar(20)"]
+  end
+  t93 -->|"1:N user_id"| t71
+  t75 -->|"1:N department_id"| t37
+  t74 -->|"1:N last_classroom_id"| t37
+  t92 -->|"1:N student_id"| t37
+  t39 -->|"1:N attendance_session_id"| t38
+  t93 -->|"1:N corrected_by"| t38
+  t47 -->|"1:N enrollment_id"| t38
+  t70 -->|"1:N academic_year_id"| t39
+  t74 -->|"1:N classroom_id"| t39
+  t93 -->|"1:N recorded_by"| t39
+  t70 -->|"1:N academic_year_id"| t74
+  t75 -->|"1:N department_id"| t74
+  t70 -->|"1:N academic_year_id"| t43
+  t74 -->|"1:N classroom_id"| t43
+  t93 -->|"1:N created_by"| t43
+  t76 -->|"1:N document_type_id"| t77
+  t88 -->|"1:N registration_id"| t77
+  t93 -->|"1:N reviewed_by"| t77
+  t70 -->|"1:N academic_year_id"| t47
+  t74 -->|"1:N classroom_id"| t47
+  t93 -->|"1:N created_by"| t47
+  t75 -->|"1:N department_id"| t47
+  t92 -->|"1:N student_id"| t47
+  t47 -->|"1:N enrollment_id"| t49
+  t93 -->|"1:N published_by"| t49
+  t67 -->|"1:N subject_id"| t49
+  t93 -->|"1:N guardian_user_id"| t50
+  t85 -->|"1:N parent_id"| t50
+  t92 -->|"1:N student_id"| t50
+  t70 -->|"1:N academic_year_id"| t51
+  t74 -->|"1:N classroom_id"| t51
+  t93 -->|"1:N created_by"| t51
+  t87 -->|"1:N permission_id"| t82
+  t90 -->|"1:N role_id"| t83
+  t92 -->|"1:N student_id"| t85
+  t93 -->|"1:N user_id"| t85
+  t70 -->|"1:N academic_year_id"| t88
+  t92 -->|"1:N student_id"| t88
+  t93 -->|"1:N verified_by"| t88
+  t87 -->|"1:N permission_id"| t89
+  t90 -->|"1:N role_id"| t89
+  t70 -->|"1:N academic_year_id"| t92
+  t74 -->|"1:N class_id"| t92
+  t93 -->|"1:N user_id"| t92
+  t93 -->|"1:N created_by"| t93
+  t93 -->|"1:N admin_id"| t94
+  t77 -->|"1:N document_id"| t94
+  t88 -->|"1:N registration_id"| t94
