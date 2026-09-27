@@ -33,10 +33,33 @@ return Application::configure(basePath: dirname(__DIR__))
         //
         // '*' is safe here because the app is only ever exposed through that
         // proxy; set TRUSTED_PROXIES to a comma-separated list to narrow it.
-        $proxies = env('TRUSTED_PROXIES', '*');
+        /*
+         | An EMPTY or whitespace-only TRUSTED_PROXIES must still mean "trust the
+         | proxy", not "trust nobody".
+         |
+         | It used to be passed straight through, so an empty value became an
+         | empty array. Proven consequence on a platform that terminates TLS in
+         | front of PHP: Request::isSecure() returned false even though
+         | X-Forwarded-Proto said https. Secure session cookies were then
+         | dropped by the browser, every request looked logged out, and the
+         | guest->login redirect cycle rendered as a 500.
+         |
+         | The default stays '*', and now an explicitly empty value resolves to
+         | the same thing instead of silently disabling proxy trust.
+         */
+        $raw = trim((string) env('TRUSTED_PROXIES', '*'));
+        $proxies = ($raw === '' || $raw === '*')
+            ? '*'
+            : array_values(array_filter(array_map('trim', explode(',', $raw))));
+
         $middleware->trustProxies(
-            $proxies === '*' ? '*' : array_values(array_filter(array_map('trim', explode(',', (string) $proxies)))),
+            $proxies,
+            // X-Forwarded-Host was missing here, so the public hostname was
+            // dropped and url() used the backend's internal name. That also
+            // broke the host Laravel compares against, which is what surfaces
+            // as a redirect loop behind a proxy.
             Request::HEADER_X_FORWARDED_FOR
+                | Request::HEADER_X_FORWARDED_HOST
                 | Request::HEADER_X_FORWARDED_PORT
                 | Request::HEADER_X_FORWARDED_PROTO
                 | Request::HEADER_X_FORWARDED_AWS_ELB,
