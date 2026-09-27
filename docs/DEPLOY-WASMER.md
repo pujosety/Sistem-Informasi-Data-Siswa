@@ -53,7 +53,7 @@ Setel di **Environment Variables** pada dashboard Wasmer:
 | `APP_ENV` | `production` | ya |
 | `APP_DEBUG` | `false` | ya |
 | `APP_KEY` | hasil `php artisan key:generate` | ya |
-| `APP_URL` | URL publik Wasmer, tanpa trailing slash | ya |
+| `APP_URL` | URL publik Wasmer (`https://...`), tanpa trailing slash | **ya** |
 | `TRUSTED_PROXIES` | `*` (lihat §8) | sangat disarankan |
 
 ### Membuat `APP_KEY`
@@ -255,6 +255,40 @@ chmod -R 775 storage bootstrap/cache
 - [ ] `storage/` writable dan persisten
 - [ ] `.env` tidak masuk repository
 - [ ] Installer web `/install` dinonaktifkan setelah setup
+
+---
+
+## 13b. Pemecahan Masalah: Tombol Mengarah ke localhost
+
+**Gejala:** halaman tampil benar di domain produksi, tetapi sebagian tombol atau
+tautan mengarah ke `http://localhost`.
+
+**Penyebab yang pernah terjadi (sudah diperbaiki):** `AppServiceProvider`
+memanggil `URL::forceRootUrl(config('app.url'))`. Nilai itu **menimpa** host yang
+dideteksi Laravel dari request. Di belakang proxy Wasmer, deteksi request
+sudah benar; menimpanya dengan nilai `APP_URL` yang kosong atau masih
+`http://localhost` membuat `url()`, `route()`, dan `asset()` menghasilkan
+localhost — sementara halaman itu sendiri dilayani dari domain sebenarnya.
+
+**Perbaikan:** pemanggilan `forceRootUrl()` dihapus. URL dihitung dari host
+request; `APP_URL` hanya dipakai sebagai cadangan pada konteks console dan
+email.
+
+**Verifikasi:**
+
+```bash
+curl -s https://<domain-anda>/login | grep -oE 'https?://[^"]+' | grep -c localhost
+# harus 0
+```
+
+Bila masih muncul, periksa:
+
+1. `APP_URL` di Wasmer sudah `https://<domain-anda>` (tanpa trailing slash)
+2. `TRUSTED_PROXIES=*` sudah diset
+3. Cache konfigurasi sudah dibersihkan:
+   ```bash
+   php artisan optimize:clear && php artisan config:cache
+   ```
 
 ---
 

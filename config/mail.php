@@ -46,7 +46,16 @@ return [
             'username' => env('MAIL_USERNAME'),
             'password' => env('MAIL_PASSWORD'),
             'timeout' => null,
-            'local_domain' => env('MAIL_EHLO_DOMAIN', parse_url((string) env('APP_URL', 'http://localhost'), PHP_URL_HOST)),
+            /*
+             | EHLO domain for local mail. A missing APP_URL must not yield
+             | "localhost" as the announced domain, so it falls back to the
+             | MAIL_HOST value, which is what a real SMTP server expects.
+             */
+            'local_domain' => env(
+                'MAIL_EHLO_DOMAIN',
+                parse_url((string) env('APP_URL'), PHP_URL_HOST)
+                    ?: env('MAIL_HOST', '127.0.0.1'),
+            ),
         ],
 
         'ses' => [

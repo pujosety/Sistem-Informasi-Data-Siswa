@@ -7,7 +7,6 @@ use App\Models\User;
 use App\Services\NavigationService;
 use App\Services\SettingsService;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
@@ -193,9 +192,24 @@ class AppServiceProvider extends ServiceProvider
             ]);
         });
 
-        // Force generated URLs to match the configured APP_URL behind a proxy.
-        if ($url = config('app.url')) {
-            URL::forceRootUrl($url);
-        }
+        /*
+         | Deliberately NOT forcing a root URL.
+         |
+         | URL::forceRootUrl() overrides the host Laravel detected from the
+         | request. Behind a platform proxy that detection is CORRECT — it reads
+         | X-Forwarded-Host/Proto. Overriding it with config('app.url') meant a
+         | missing or default APP_URL (http://localhost) rewrote every generated
+         | link: url(), route(), asset() and the storage disk URL all pointed at
+         | localhost while the request itself was served from the real domain.
+         |
+         | That produced the reported symptom: a working page whose buttons
+         | navigated to http://localhost. Clearing the forced root restores
+         | host-relative generation, which is correct in every environment.
+         |
+         | APP_URL is still honoured, but only as the fallback Laravel itself
+         | uses when a request carries no host at all (console, queue workers).
+         | To pin the domain in production, set APP_URL in the environment.
+         */
+        // Intentionally left unset — see the note above.
     }
 }

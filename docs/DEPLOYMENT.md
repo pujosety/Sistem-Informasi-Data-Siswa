@@ -25,13 +25,27 @@ Detail lengkap: [DEPLOY-WASMER.md](DEPLOY-WASMER.md).
 APP_ENV=production
 APP_DEBUG=false
 APP_KEY=<hasil php artisan key:generate --show>
-APP_URL=https://<domain-anda>
-TRUSTED_PROXIES=*
+APP_URL=https://<domain-anda>          # WAJIB
+TRUSTED_PROXIES=*                      # WAJIB di belakang proxy
 DB_CONNECTION=mysql
 CACHE_STORE=database
 SESSION_DRIVER=database
 QUEUE_CONNECTION=sync
 ```
+
+### Mengapa APP_URL wajib diisi
+
+`APP_URL` dipakai untuk dua hal:
+
+1. Tautan absolut pada email — email dikirim tanpa konteks request HTTP, jadi
+   tidak ada host yang bisa diandalkan.
+2. Nilai cadangan pada konteks console dan queue worker, yang juga tidak punya
+   request.
+
+Aplikasi **tidak** memaksa nilai ini pada request HTTP. Link di halaman,
+asset, dan dokumen selalu dihitung dari host request yang sebenarnya, sehingga
+nilai `APP_URL` yang lupa diisi tidak akan membuat pengunjung melihat
+`http://localhost`.
 
 ### Variabel yang disuntikkan Wasmer
 

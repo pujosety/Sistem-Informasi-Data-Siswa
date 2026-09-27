@@ -52,6 +52,12 @@ return [
     |
     */
 
+    /*
+     | APP_URL must be set in production. The localhost default is deliberate
+     | for `php artisan serve`, and is harmless there because every generated
+     | URL is resolved from the live request host — nothing forces this value.
+     | Set APP_URL to the real https origin on the deployed host.
+     */
     'url' => env('APP_URL', 'http://localhost'),
 
     /*

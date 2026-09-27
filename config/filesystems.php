@@ -41,7 +41,19 @@ return [
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),
-            'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/storage',
+            /*
+             | Host-relative by default.
+             |
+             | This used to be built from APP_URL with a http://localhost
+             | fallback, so with APP_URL unset every document and branding URL
+             | resolved to localhost even on the real domain. A relative URL is
+             | resolved by the browser against the current host, which is right
+             | on every environment, and env('ASSET_URL') still allows an
+             | absolute CDN when one is configured.
+             */
+            'url' => env('ASSET_URL')
+                ? rtrim(env('ASSET_URL'), '/').'/storage'
+                : '/storage',
             'visibility' => 'public',
             'throw' => false,
             'report' => false,
