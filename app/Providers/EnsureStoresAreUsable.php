@@ -127,7 +127,20 @@ class EnsureStoresAreUsable extends ServiceProvider
      */
     private function useFileSession(): void
     {
-        config(['session.driver' => 'file']);
+        // The file driver still needs a writable directory. On a hosted
+        // container storage/ can be absent or read-only, in which case the
+        // fallback would fail exactly where the database driver did — silently,
+        // because the exception happens inside the session handler again.
+        // So verify the directory first and say which one was chosen.
+        // config('session.files') IS the directory (a string). Writing
+        // 'session.files.path' nested an array inside it, and FileSessionHandler
+        // then failed with "Array to string conversion" — a second failure
+        // hiding behind the first.
+        $path = $this->writablePath((string) config('session.files'));
+
+        config(['session.driver' => 'file', 'session.files' => $path]);
+
+        $this->record('session file path: '.$path);
 
         foreach (['session.store', 'session'] as $binding) {
             if ($this->app->bound($binding)) {
@@ -137,12 +150,44 @@ class EnsureStoresAreUsable extends ServiceProvider
     }
 
     /**
+     * A directory that can actually be written, or null when none can.
+     *
+     * sys_get_temp_dir() is the last resort: it is writable in a container by
+     * definition, and a session is only needed for the life of the request.
+     */
+    private function writablePath(string $preferred): ?string
+    {
+        $candidates = array_filter([
+            $preferred,
+            storage_path('framework/sessions'),
+            storage_path('framework'),
+            sys_get_temp_dir(),
+        ]);
+
+        foreach ($candidates as $dir) {
+            if (! is_dir($dir)) {
+                @mkdir($dir, 0o775, true);
+            }
+
+            if (is_dir($dir) && is_writable($dir)) {
+                return $dir;
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Switch the cache to the file driver, dropping any resolved repository so a
      * DatabaseStore is not handed back after the change.
      */
     private function useFileCache(): void
     {
-        config(['cache.default' => 'file']);
+        $path = $this->writablePath(storage_path('framework/cache/data'));
+
+        config(['cache.default' => 'file', 'cache.stores.file.path' => $path]);
+
+        $this->record('cache file path: '.($path ?? 'none writable'));
 
         if ($this->app->bound('cache')) {
             $this->app->forgetInstance('cache');
