@@ -35,11 +35,18 @@ scripts:
     npm run build
 
   start: |
-    php -S 0.0.0.0:8080 -t public
-
-  after_deploy: |
-    php artisan config:clear
-    php artisan migrate --force --no-interaction
-    php artisan db:seed --class=PermissionSeeder --force --no-interaction
-    php artisan config:cache
-    php artisan route:cache
+    # The migration runs HERE, not in after_deploy, because the dashboard's
+    # Build Settings replace after_deploy when they define install/build/start.
+    # A container has no TTY, so `php artisan migrate` without --force prompts,
+    # cannot be answered, defaults to [no], and is cancelled — which is how the
+    # sessions table came to be missing and every route returned 500.
+    #
+    # `&&` means a failed migration stops the container instead of serving an
+    # application whose tables do not exist. A loud failure is recoverable; a
+    # silently broken app is not.
+    php artisan config:clear \
+      && php artisan migrate --force --no-interaction \
+      && php artisan db:seed --class=PermissionSeeder --force --no-interaction \
+      && php artisan config:cache \
+      && php artisan route:cache \
+      && php -S 0.0.0.0:8080 -t public
