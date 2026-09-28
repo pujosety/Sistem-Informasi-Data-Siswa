@@ -16,13 +16,14 @@
 # --force is the flag Laravel intends for automation. `stty` is not installed
 # and `yes` is not piped into the prompt: the prompt is avoided, not answered.
 #
-# The `scripts` block below REPLACES Anybuild's defaults. A previous
-# `anybuild.yaml` was committed but never read — Wasmer reads `app.yaml`.
+# If the dashboard defines the install/build/start commands, those win and
+# this file is ignored. In that case set the same values there — they are
+# listed below so both paths stay in sync.
 kind: wasmer.io/App.v0
-name: sida-sistem-informasi-data-siswa
 
-auto_deploy: true
-branch: main
+# The project is created in the Wasmer dashboard; this must match its name or
+# the build is rejected.
+name: sistem-informasi-data-siswa
 
 scripts:
   install: |
@@ -42,16 +43,3 @@ scripts:
     php artisan db:seed --class=PermissionSeeder --force --no-interaction
     php artisan config:cache
     php artisan route:cache
-
-# /health reports whether the database is reachable, which is the difference
-# between "the container started" and "the application works".
-health_checks:
-  - http:
-      method: get
-      path: /health
-      interval: 30s
-      timeout: 10s
-      unhealthy_threshold: 3
-      healthy_threshold: 1
-      expected_status_codes:
-        - 200
