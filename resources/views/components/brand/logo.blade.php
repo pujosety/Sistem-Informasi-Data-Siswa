@@ -43,9 +43,13 @@
     src="{{ $src }}"
     alt="{{ $altText }}"
     @if ($isIcon)
-        width="32" height="32" loading="lazy" decoding="async"
+        {{-- No loading="lazy" on the emblem. It is a 32px image that sits in
+             the first frame of every authenticated page, and a lazy image
+             inside the scrollable sidebar is unreliable: the browser has no
+             reason to decode something it believes is off-screen. --}}
+        width="32" height="32" decoding="async"
     @else
-        width="998" height="568"
+        width="998" height="568" loading="lazy" decoding="async"
     @endif
     @if ($finalClass) class="{{ $finalClass }}" @endif
     {{ $attributes->except('class') }}
