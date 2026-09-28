@@ -22,6 +22,7 @@ use App\Http\Controllers\EnrollmentController;
 use App\Http\Controllers\HomeroomController;
 use App\Http\Controllers\WorkspaceController;
 use App\Http\Controllers\HealthController;
+use App\Http\Controllers\DiagnosticController;
 use App\Http\Controllers\ParentPortalController;
 use Illuminate\Support\Facades\Route;
 
@@ -63,6 +64,22 @@ if (env('LOCAL_DEBUG_HELPER') && ! app()->environment('production')) {
         ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class])
         ->name('screenshot.logout');
 }
+
+/*
+|--------------------------------------------------------------------------
+| TEMPORARY deployment diagnostic
+|--------------------------------------------------------------------------
+|
+| Answers one question with booleans only: is the database unreachable, or
+| reachable but unmigrated? Those need opposite fixes. It returns no host, no
+| database name, no credential, no environment value and no exception message.
+|
+| DELETE THIS ROUTE once the production cause is identified.
+|
+*/
+Route::get('/__diag', DiagnosticController::class)
+    ->name('diagnostic')
+    ->middleware('throttle:30,1');
 
 Route::redirect('/', '/dashboard')->name('home');
 
