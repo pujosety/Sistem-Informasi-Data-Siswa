@@ -230,7 +230,7 @@ Detail: [UI-UX-GUIDELINES.md](UI-UX-GUIDELINES.md).
 Semua modul di atas ditulis dan berjalan. Verifikasi otomatis:
 
 ```text
-php artisan test 67 passed (237 assertions)
+php artisan test 84 passed (423 assertions)
 HTTP smoke 16/16 PASS
 DOM verification 25/25 PASS
 ```

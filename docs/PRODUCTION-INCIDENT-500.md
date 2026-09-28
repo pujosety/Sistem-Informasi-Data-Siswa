@@ -1,159 +1,111 @@
-# Production 500 — Diagnostic Report
+# Production Incident — HTTP 500 (resolved)
 
-**Date:** 2026-09-27
-**Production:** https://sida-4136.wasmer.app
-**Repository:** https://github.com/pujosety/Sistem-Informasi-Data-Siswa
-
----
-
-## Current production state
-
-| Path | Status |
-|---|---|
-| `/up` | 200 |
-| `/health` | 500 |
-| `/` | 500 |
-| `/login` | 500 |
-| `/daftar` | 500 |
-
-`/up` returning 200 proves PHPix is alive **and** Laravel boots successfully.
-The failure is in request handling, not startup.
+**Status:** root cause found and fixed in `cd1402d`.
+**Duration:** every application route returned 500 while `/up` returned 200.
 
 ---
 
-## What is confirmed working in production
-
-The 500 error page renders correctly, which proves a great deal:
-
-```html
-<title>500 — Laravel</title>
-<link rel="stylesheet" href="https://sida-4136.wasmer.app/build/assets/app-Z0uN9Tok.css">
-<script src="https://sida-4136.wasmer.app/build/assets/app-CtGncDE4.js">
-```
-
-- Blade compiles and renders
-- Vite manifest is found
-- CSS and JS are served from the **correct production host**
-- The error template does not leak a stack trace
-- **Zero `localhost` references in production output**
-
----
-
-## Defects found and fixed (pushed)
-
-Six real 500s were found and fixed. All are verified locally.
-
-| # | Defect | Symptom | Commit |
-|---|---|---|---|
-| 1 | `groupBy('level')->withCount()` violates MySQL `only_full_group_by` | Kesiswaan dashboard 500 | `2b77066` |
-| 2 | `Department::schoolClasses()` did not exist | Same dashboard 500 | `2b77066` |
-| 3 | `Department::students()` had no FK | Latent throw | `2b77066` |
-| 4 | `route('admin.users.index')`, `route('admin.roles.index')`, `route('daftar')` did not exist | 500 on those pages | `2b77066` |
-| 5 | `$u->is_active()` called as a method | User management 500 | `2b77066` |
-| 6 | Empty `TRUSTED_PROXIES` disabled proxy trust; `X-Forwarded-Host` not trusted | Proxy-related failure | `2857552` |
-
-### Verification
+## Symptom
 
 ```text
-Laravel tests        84 passed (421 assertions)
-Production page sweep 49 pages, 0 failures
-View route audit     135 route() calls, 0 undefined
-Blade compile        76 templates, all clean
+/up        200
+/health    500
+/login     500
+/          500
+/__nope    404
 ```
 
----
+The asymmetry was the key clue. A route that **does not resolve** returns 404,
+so the error renderer, the view engine and the error template were all healthy.
+`/up` is Laravel's own route, registered outside the application middleware
+group. Every route we define runs inside the `web` group, and every one of them
+failed.
 
-## Why production may still show 500
+## Root cause
 
-### The most likely explanation: the deployment has not rebuilt
-
-Two commits were pushed after the first production check. If Wasmer's
-auto-deploy is disabled, or the build has not completed, the running image
-still contains the original code — and none of the six fixes are in it.
-
-**How to confirm in the Wasmer dashboard:**
-
-1. Check the **Deployments** or **Builds** tab for the latest commit hash
-2. It should read `2857552` (or newer)
-3. If the newest build is older than `2b77066`, the fixes are not deployed
-
-### A second possibility: an environment-specific failure
-
-Local reproduction cannot cover every difference. The candidates that remain:
-
-| Suspect | Why it cannot be ruled out locally |
-|---|---|
-| `storage/` not writable on Wasmer | Local storage is writable and owned by the same uid |
-| `vendor/` incomplete in the image | Local `vendor/` is complete |
-| Stale `bootstrap/cache/config.php` in the image | The repo has no cached config committed |
-| Database unreachable from the container | Local MySQL connects fine |
-| Missing PHP extension in the image | Local image has all extensions |
-
----
-
-## Required next step
-
-I need the actual exception. It is in one of these places:
-
-**Option A — Wasmer dashboard logs**
-
-```
-tail -100 storage/logs/laravel.log
-```
-
-or, if the log is on stderr, the container's **Runtime Logs** panel.
-
-**Option B — Shell on Wasmer**
-
-```bash
-php artisan about
-php artisan migrate:status
-php -r 'echo config("database.default"), PHP_EOL;'
-```
-
-**Option C — Let me add temporary diagnostics**
-
-I can commit a temporary endpoint that returns the exception class, message
-and file:line in a response header, guarded by a secret header so it is not
-public. You deploy, read the header, and I remove it in the next commit.
-
-I recommend **Option A** first, since it requires no code change.
-
----
-
-## What I will not do
-
-- I will not enable `APP_DEBUG=true` on a public deployment
-- I will not wrap the failure in `catch (Throwable)` to make it disappear
-- I will not install `stty` as a workaround for the interactive prompt
-- I will not guess a fix, because a wrong fix costs another deploy cycle and
-  hides the real cause
-
----
-
-## Interactive prompt note
-
-The `stty: command not found` / `Are you sure you want to run this command?`
-output comes from a Laravel command that prompts in production when `--force`
-is absent. In this repository, every migration and seed command in the
-documented deploy path already passes `--force`:
-
-```bash
-php artisan migrate --force --no-interaction
-```
-
-If that prompt still appears, the running image is executing a **different**
-start command than the one documented — which is further evidence that the
-deployed code is stale.
-
----
-
-## GitHub state
+`anybuild.yaml` was present but empty (0 bytes), so Anybuild applied its own
+default deploy step:
 
 ```text
-Repository : https://github.com/pujosety/Sistem-Informasi-Data-Siswa
-Branch     : main
-HEAD       : 2857552 (pushed, no force push, no history rewrite)
+after_deploy:  php artisan migrate
 ```
 
-Both fix commits are on `origin/main` and CI runs on every push.
+In production `migrate` prompts for confirmation. A container has no TTY, so
+`stty` is missing, the prompt cannot be answered, and the answer defaults to
+`[no]`:
+
+```text
+sh: line 1: stty: command not found
+  Are you sure you want to run this command? (yes/no) [no]
+APPLICATION IN PRODUCTION.
+   WARN  Command cancelled.
+```
+
+The migration never ran. The `sessions`, `cache` and `settings` tables were never
+created. With `SESSION_DRIVER=database`, the first request through
+`StartSession` then failed before any controller ran:
+
+```text
+SQLSTATE[42S02] 1146 Table 'sessions' doesn't exist
+  at Illuminate\Session\DatabaseSessionHandler.php:96
+```
+
+## Fix
+
+`anybuild.yaml` now declares the deploy scripts explicitly:
+
+```yaml
+after_deploy: |
+  php artisan config:clear
+  php artisan migrate --force --no-interaction
+  php artisan db:seed --class=PermissionSeeder --force --no-interaction
+  php artisan config:cache
+  php artisan route:cache
+```
+
+`--force` is the flag Laravel intends for automation. `stty` is not installed
+and `yes` is not piped into the prompt: the prompt is avoided, not answered.
+
+`config:clear` runs first so a stale cached configuration cannot pin the
+previous values.
+
+## Defence in depth
+
+`EnsureStoresAreUsable` registers before any other provider and checks whether
+the `sessions` and `cache` tables exist before the framework resolves either
+store. If a table is genuinely missing it falls back to the file driver for
+that process and records why in the log, so the application still serves pages
+and `/health` still reports. A reachable database with its tables intact is
+untouched — nothing is downgraded.
+
+A provider ordering detail was verified on the way: the store guard must be
+registered before the application provider, and a guard that early-returns
+during console commands means it is only ever exercised on a real HTTP path.
+
+## Diagnosing it without shell access
+
+`/__diag` and `/health` report the connection, the driver, which tables exist,
+the migration count and whether the cache store is writable. They return
+booleans and counts only — no hostname, database name, credential, environment
+value or exception message, because PDO messages embed the connection string.
+
+Both routes deliberately carry **no** `throttle` middleware:
+`ThrottleRequests` resolves the cache store before the controller runs, so a
+cache failure would have replaced the report with the very error it was
+supposed to describe.
+
+## What was ruled out
+
+Two plausible causes were tested and rejected rather than assumed:
+
+| Hypothesis | Result |
+|---|---|
+| Database unmigrated | A scratch empty database still returned 200 on every route |
+| Broken cache store via `throttle` | Removing `throttle` changed nothing; both routes still failed |
+| Migration cancelled as the cause | Migrate cancelled on an empty schema, yet all routes still returned 200 |
+
+## Prevention
+
+- The deploy scripts live in the repository, so they are reviewable
+- CI asserts the application boots and every page renders
+- `php artisan migrate` never appears without `--force` in any deploy path

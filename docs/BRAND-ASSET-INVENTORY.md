@@ -58,3 +58,32 @@ Always through the component so there is one source of truth:
 
 `public/icons/` — the previous generated icon set. It was unreferenced after
 the migration, and two competing icon sets is how stale branding survives.
+
+## Documentation
+
+- [BRAND-GUIDELINES.md](BRAND-GUIDELINES.md) — how to use these assets
+- [SCREENSHOTS.md](SCREENSHOTS.md) — every captured screen
+
+## Regeneration
+
+```bash
+python tools/extract-brand.py        # cut both variants from the supplied sheet
+python tools/build-brand-assets.py   # favicon, PWA, maskable derivatives
+python tools/verify-brand-assets.py  # alpha transparency, dimensions, size
+```
+
+## Verified properties
+
+| Property | Value |
+|---|---|
+| Lockup | 998 × 568, RGBA, 71.4% transparent |
+| Icon | 450 × 601, RGBA, 47.5% transparent |
+| Corner alpha | 0 on all four corners (no baked background) |
+| PWA 512 | 117 KB |
+| Maskable 512 | 87 KB, inset to the 76% safe zone |
+| Favicon 32 | 1 KB |
+
+The maskable icon was checked inside a circular Android launcher mask: the cap and
+both ribbons stay clear of the edge. The emblem's own navy measures 1.84:1 on the
+navy rail and 9.92:1 on a white plate, which is why dark surfaces place it on a
+plate.

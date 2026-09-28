@@ -30,16 +30,25 @@ DIAGRAMS = ROOT / "docs" / "diagrams"
 OUT = ROOT / "docs" / "presentation" / "Sistem-Informasi-Data-Siswa-Presentation.pptx"
 
 # ── palette: taken from the application's own design tokens ──────────────
-INK = RGBColor(0x0F, 0x17, 0x2A)
-SLATE = RGBColor(0x47, 0x55, 0x69)
-MUTED = RGBColor(0x8A, 0x94, 0xA6)
+# ── SIDA brand tokens ──────────────────────────────────────────────────
+# Taken from docs/BRAND-GUIDELINES.md. Semantic meaning is preserved: a green
+# element still means "done", not "brand", so success and brand never collapse
+# into the same colour.
+NAVY = RGBColor(0x0B, 0x33, 0x75)      # brand anchor
+BLUE = RGBColor(0x16, 0x68, 0xDC)      # interactive accent
+CYAN = RGBColor(0x35, 0xC6, 0xF3)      # secondary highlight
+TEAL = RGBColor(0x0F, 0x9B, 0x7A)      # progress
+
+INK = NAVY
+SLATE = RGBColor(0x3A, 0x4A, 0x66)
+MUTED = RGBColor(0x7A, 0x88, 0xA0)
 LINE = RGBColor(0xE2, 0xE8, 0xF0)
-PRIMARY = RGBColor(0x1D, 0x4E, 0xD8)
-PRIMARY_SOFT = RGBColor(0xEE, 0xF2, 0xFF)
-ACCENT = RGBColor(0x08, 0x91, 0xB2)
-SUCCESS = RGBColor(0x05, 0x7A, 0x55)
+PRIMARY = BLUE
+PRIMARY_SOFT = RGBColor(0xEE, 0xF4, 0xFD)
+ACCENT = CYAN
+SUCCESS = TEAL
 WARN = RGBColor(0xB4, 0x53, 0x09)
-SURFACE = RGBColor(0xF7, 0xF9, 0xFC)
+SURFACE = RGBColor(0xF5, 0xF7, 0xFB)
 WHITE = RGBColor(0xFF, 0xFF, 0xFF)
 
 FONT = "Inter"
@@ -210,21 +219,21 @@ def build() -> Path:
         return slide(prs, bg)
 
     # ── 01 cover ────────────────────────────────────────────────────────
-    s = nxt(INK)
+    s = nxt(NAVY)
     rect(s, Inches(0), Inches(0), Inches(0.16), H, PRIMARY)
     box(s, Inches(1.1), Inches(2.0), Inches(9.5), Inches(0.4),
-        "SISTEM INFORMASI DATA SISWA", size=13, color=ACCENT, bold=True)
+        "SISTEM INFORMASI DATA SISWA", size=13, color=CYAN, bold=True)
     box(s, Inches(1.1), Inches(2.5), Inches(10.6), Inches(1.6),
         "Administrasi Sekolah\ndalam Satu Platform", size=46, color=WHITE,
         bold=True, font=FONT_HEAD, spacing=1.05)
     box(s, Inches(1.1), Inches(4.4), Inches(9.2), Inches(0.9),
         "PPDB · Verifikasi · Kelas & Enrollment · Absensi · Nilai · Portal Orang Tua\n"
         "Laravel 12 · MySQL 8.4 · PWA · Wasmer",
-        size=15, color=RGBColor(0x94, 0xA3, 0xB8), spacing=1.4)
+        size=15, color=RGBColor(0xB8, 0xC6, 0xE0), spacing=1.4)
     shot(s, "desktop/01-login.png", Inches(8.9), Inches(1.7), Inches(3.6))
     box(s, Inches(1.1), H - Inches(0.9), Inches(8), Inches(0.3),
         "github.com/pujosety/Sistem-Informasi-Data-Siswa",
-        size=10, color=RGBColor(0x64, 0x74, 0x8B))
+        size=10, color=RGBColor(0x8E, 0xA3, 0xC4))
 
     # ── 02 background ───────────────────────────────────────────────────
     s = nxt()
@@ -1029,10 +1038,10 @@ def build() -> Path:
     footer(s, n)
 
     # ── 45 conclusion ────────────────────────────────────────────────────
-    s = nxt(INK)
+    s = nxt(NAVY)
     rect(s, Inches(0), Inches(0), Inches(0.16), H, PRIMARY)
     box(s, Inches(1.1), Inches(1.0), Inches(10), Inches(0.4), "KESIMPULAN",
-        size=12, color=ACCENT, bold=True)
+        size=12, color=CYAN, bold=True)
     box(s, Inches(1.1), Inches(1.5), Inches(10.6), Inches(1.0),
         "Empat hal yang berhasil diselesaikan", size=32, color=WHITE,
         bold=True, font=FONT_HEAD)
@@ -1049,10 +1058,10 @@ def build() -> Path:
         box(s, Inches(1.7), yy, Inches(9.5), Inches(0.35), t, size=17,
             color=WHITE, bold=True)
         box(s, Inches(1.7), Emu(int(yy + Inches(0.36))), Inches(9.5), Inches(0.35),
-            d, size=13, color=RGBColor(0x94, 0xA3, 0xB8))
+            d, size=13, color=RGBColor(0xB8, 0xC6, 0xE0))
     box(s, Inches(1.1), H - Inches(1.0), Inches(10), Inches(0.4),
         "github.com/pujosety/Sistem-Informasi-Data-Siswa",
-        size=12, color=RGBColor(0x64, 0x74, 0x8B))
+        size=12, color=RGBColor(0x8E, 0xA3, 0xC4))
 
     OUT.parent.mkdir(parents=True, exist_ok=True)
 

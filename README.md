@@ -1,48 +1,88 @@
-# Sistem Informasi Data Siswa
+<div align="center">
 
-Aplikasi manajemen data siswa untuk sekolah: pendaftaran (PPDB), verifikasi berkas,
-pengelolaan kelas & tahun ajaran, absensi, nilai, laporan, dan portal orang tua.
+<img src="docs/assets/brand/sida-logo-640.png" alt="SIDA — Sistem Informasi Data Siswa" width="420">
 
-Dibangun sebagai monolit Laravel dengan Blade, Tailwind CSS, dan Alpine.js —
-tanpa SPA terpisah, sehingga mudah di-host di platform container/edge.
+# SIDA — Sistem Informasi Data Siswa
 
-# Sistem Informasi Data Siswa
+**Administrasi sekolah berbasis web: PPDB, verifikasi, kelas & enrollment,
+absensi, nilai, laporan, dan portal orang tua dalam satu sistem.**
 
-![Dashboard Admin](docs/assets/screenshots/desktop/02-super-admin-dashboard.png)
+[![Laravel 12](https://img.shields.io/badge/Laravel-12-FF2D20?logo=laravel&logoColor=white)](https://laravel.com)
+[![PHP 8.3+](https://img.shields.io/badge/PHP-8.3%2B-777BB4?logo=php&logoColor=white)](https://php.net)
+[![MySQL 8.4](https://img.shields.io/badge/MySQL-8.4-00758F?logo=mysql&logoColor=white)](https://mysql.com)
+[![Tests](https://img.shields.io/badge/tests-84%20passed-0F9B7A?logo=phpunit&logoColor=white)](#pengujian)
 
-Aplikasi manajemen data siswa untuk sekolah: pendaftaran (PPDB), verifikasi berkas,
-pengelolaan kelas dan tahun ajaran, absensi, nilai, laporan, serta portal orang
-tua.
+[Produksi](https://sida-4136.wasmer.app/) · [Dokumentasi](docs/README.md) ·
+[Presentasi](docs/presentation/Sistem-Informasi-Data-Siswa-Presentation.pdf)
 
-Dibangun sebagai monolit Laravel dengan Blade, Tailwind CSS, dan Alpine.js —
-tanpa SPA terpisah, sehingga mudah di-host di platform container/edge.
+</div>
 
-**Tiga keputusan arsitektur yang membedakannya dari sistem sederhana:**
+---
 
-1. **Enrollment adalah sumber kebenaran.** Siswa punya satu identitas jangka
- panjang dan banyak baris enrollment — satu per tahun ajaran, satu per kelas.
- Naik kelas menutup enrollment lama dan membuat yang baru, tidak menimpa.
-2. **Wali Kelas adalah penugasan, bukan role.** Guru adalah Kesiswaan
- sekaligus wali kelas X RPL 1, dengan satu akun dan satu workspace switcher.
-3. **Otorisasi berlapis.** Izin + cakupan sumber daya + penugasan. Menyembunyikan
- tombol bukan keamanan, dan mengubah angka pada URL tidak membuka apa pun.
+## Masalah
 
-## Pengguna
+Data siswa biasanya tersebar di buku pendaftaran, folder berkas, dan spreadsheet
+yang disusun ulang setiap tahun. Akibatnya, tiga pertanyaan yang paling sering
+ditanya sulit dijawab: siapa yang sudah terverifikasi, kelas mana yang belum
+lengkap, dan bagaimana seorang siswa berkembang dari kelas X sampai lulus.
 
-Delapan tingkat, masing-masing dengan pekerjaan yang berbeda:
+## Tiga keputusan arsitektur
+
+**1 · Enrollment adalah sumber kebenaran.**
+Satu siswa memiliki **satu identitas** jangka panjang, tetapi **banyak baris
+enrollment** — satu per tahun ajaran, satu per kelas. Naik kelas menutup
+enrollment lama dan membuat yang baru; tidak ada yang ditimpa. Kolom
+`class_id` yang lama dipertahankan sebagai cermin kompatibilitas.
+
+**2 · Wali Kelas adalah penugasan, bukan peran.**
+Guru adalah Kesiswaan *sekaligus* wali kelas X RPL 1, dengan satu akun. Aksesnya
+ke kelas lain tetap tertutup, dan penugasan dapat dicatat, diganti, serta
+diaudit.
+
+**3 · Otorisasi berlapis.**
+Menyembunyikan tombol bukan keamanan. Setiap akses diuji terhadap **izin**,
+**cakupan sumber daya**, dan **penugasan**. Mengubah angka pada URL tidak membuka
+apa pun.
+
+---
+
+## Tangkapan layar
+
+| Login | Verifikasi |
+|---|---|
+| ![Login](docs/assets/screenshots/desktop/01-login.png) | ![Antrean verifikasi](docs/assets/screenshots/desktop/11-verification-queue.png) |
+
+| Dashboard Admin | Kelas Saya |
+|---|---|
+| ![Dashboard admin](docs/assets/screenshots/desktop/02-super-admin-dashboard.png) | ![Kelas Saya](docs/assets/screenshots/desktop/12-kelas-saya.png) |
+
+| Absensi | Portal Orang Tua |
+|---|---|
+| ![Absensi](docs/assets/screenshots/desktop/14-attendance.png) | ![Orang tua](docs/assets/screenshots/desktop/20-parent-dashboard.png) |
+
+Seluruh tangkapan layar berasal dari aplikasi yang berjalan, dengan data
+demonstrasi yang sepenuhnya fiktif. Indeks lengkap: [docs/SCREENSHOTS.md](docs/SCREENSHOTS.md).
+
+---
+
+## Peran Pengguna
+
+Delapan tingkat, masing-masing dengan pekerjaan yang berbeda nyata:
 
 | Tingkat | Asal | Cakupan data |
 |---|---|---|
-| Super Admin | Role | Seluruh sekolah |
-| Admin | Role | Seluruh sekolah |
-| Kesiswaan | Role | Seluruh sekolah |
-| Operator | Role | Data pendaftaran |
-| Verifikator | Role | Verifikasi |
-| Wali Kelas | **Penugasan** | **Hanya kelas yang ditugaskan** |
-| Siswa | Role | Miliknya sendiri |
-| Orang Tua / Wali | **Relasi** | **Hanya anak yang tertaut** |
+| Super Admin | Peran | Seluruh sekolah |
+| Admin | Peran | Seluruh sekolah |
+| Kesiswaan | Peran | Seluruh sekolah |
+| Operator | Peran | Data pendaftaran |
+| Verifikator | Peran | Verifikasi |
+| **Wali Kelas** | **Penugasan** | **Hanya kelas yang ditugaskan** |
+| Siswa | Peran | Miliknya sendiri |
+| **Orang Tua/Wali** | **Relasi** | **Hanya anak yang tertaut** |
 
 Rincian: [docs/USER-TIERS.md](docs/USER-TIERS.md)
+
+---
 
 ## Fitur
 
@@ -55,27 +95,31 @@ kelulusan, alumni.
 **Administrasi** — 85 permission dalam 7 role, manajemen pengguna, matriks
 permission, log aktivitas.
 
-**Portal** — siswa, orang tua, dan wali kelas, masing-masing dengan navigasi
-mobile yang disesuaikan.
+**Portal** — siswa, orang tua, dan wali kelas, dengan navigasi mobile yang
+disesuaikan per peran.
 
-Rincian lengkap beserta status: [docs/FEATURES.md](docs/FEATURES.md)
+**Pelaporan** — report builder, ekspor Excel / CSV / PDF.
 
-## Screenshot
+Inventaris lengkap beserta status tiap fitur: [docs/FEATURES.md](docs/FEATURES.md)
 
-| | |
+---
+
+## Teknologi
+
+| Lapisan | Teknologi |
 |---|---|
-| ![Login](docs/assets/screenshots/desktop/01-login.png) | ![Verifikasi](docs/assets/screenshots/desktop/11-verification-queue.png) |
-| ![Kelas Saya](docs/assets/screenshots/desktop/12-kelas-saya.png) | ![Absensi](docs/assets/screenshots/desktop/14-attendance.png) |
-| ![Siswa](docs/assets/screenshots/desktop/16-student-dashboard.png) | ![Orang Tua](docs/assets/screenshots/desktop/20-parent-dashboard.png) |
+| Framework | Laravel 12 (PHP 8.3+) |
+| Tampilan | Blade, Tailwind CSS 4, Alpine.js |
+| Aset | Vite |
+| Database | MySQL 8.4 — 95 tabel |
+| Auth & RBAC | Laravel Sanctum, Spatie Laravel Permission |
+| Laporan | Laravel Excel, DomPDF |
+| PWA | Manifest + service worker |
+| Pengembangan | Docker Compose |
+| Produksi | Wasmer + Anybuild |
+| CI | GitHub Actions |
 
-Seluruh screenshot adalah render nyata dari aplikasi yang berjalan, diambil
-melalui sesi terautentikasi. Data demonstrasi sepenuhnya fiktif.
-
-Responsif — tiga permukaan dari satu sumber navigasi:
-
-| Desktop | Tablet | Mobile |
-|---|---|---|
-| ![Desktop](docs/assets/screenshots/desktop/06-kesiswaan-dashboard.png) | ![Tablet](docs/assets/screenshots/tablet/tb-kesiswaan-dashboard.png) | ![Mobile](docs/assets/screenshots/mobile/rp-kesiswaan-dashboard.png) |
+---
 
 ## Arsitektur
 
@@ -85,28 +129,11 @@ Browser / PWA → Laravel 12 → Middleware → Controller → Service → Polic
 
 ![Arsitektur](docs/diagrams/system-architecture.png)
 
-Diagram lengkap: [docs/README.md](docs/README.md)
+Diagram lengkap: [docs/README.md](docs/README.md#diagram)
 
-## Dokumentasi
+---
 
-Paket dokumentasi lengkap ada di **[docs/README.md](docs/README.md)**.
-
-Mulai dari:
-
-- [Ringkasan Eksekutif](docs/EXECUTIVE-SUMMARY.md)
-- [Riset & Analisis Sistem](docs/RESEARCH.md)
-- [Dokumentasi Fitur](docs/FEATURES.md)
-- [Manual Pengguna](docs/USER-MANUAL.md) · [Manual Administrator](docs/ADMIN-MANUAL.md)
-- [Dokumentasi Teknis](docs/TECHNICAL-DOCUMENTATION.md) · [Basis Data](docs/DATABASE.md)
-- [Keamanan](docs/SECURITY.md) · [Deployment](docs/DEPLOYMENT.md)
-
-Presentasi siap pakai:
-
-- [PPTX](docs/presentation/Sistem-Informasi-Data-Siswa-Presentation.pptx)
-- [PDF](docs/presentation/Sistem-Informasi-Data-Siswa-Presentation.pdf)
-- [Dokumentasi PDF](docs/presentation/Sistem-Informasi-Data-Siswa-Dokumentasi.pdf)
-
-## Quick Start
+## Instalasi
 
 ```bash
 git clone https://github.com/pujosety/Sistem-Informasi-Data-Siswa.git
@@ -123,7 +150,7 @@ docker compose exec app npm run build
 
 Buka `http://localhost:8000`.
 
-Data demonstrasi lengkap untuk semua tingkat pengguna:
+Data demonstrasi untuk seluruh tingkat pengguna:
 
 ```bash
 docker compose exec app php artisan showcase:seed
@@ -131,327 +158,64 @@ docker compose exec app php artisan showcase:seed
 
 Panduan lengkap: [docs/INSTALLATION.md](docs/INSTALLATION.md)
 
+---
+
 ## Pengujian
 
 ```bash
 docker compose exec app php artisan test
 ```
 
-**67 test · 237 assertion**
+**84 test · 423 assertion** — alur PPDB, batas akses enam peran, cakupan kelas,
+cakupan orang tua, integritas enrollment, isolasi workspace, URL produksi.
 
 ---
 
+## Deployment
 
+Wasmer + Anybuild. Langkah deploy ada di `anybuild.yaml`, jadi reviewable di
+repository:
 
-| Lapisan | Teknologi |
-|---|---|
-| Framework | Laravel 12 (PHP 8.4) |
-| View | Blade + Tailwind CSS 4 + Alpine.js |
-| Asset build | Vite |
-| Database | MySQL 8.4 |
-| Auth & RBAC | Laravel Sanctum + Spatie Laravel Permission |
-| Laporan | Laravel Excel, DomPDF |
-| PWA | Manifest + service worker |
-| Local dev | Docker Compose (PHP 8.4 + MySQL 8.4) |
-| Deployment | GitHub → Wasmer Edge (container) |
-
----
-
-## Main Features
-
-**Pendaftaran & Verifikasi**
-- PPDB wizard bertahap: biodata → orang tua/wali → pendidikan → dokumen → review → submit
-- Kelengkapan data dihitung otomatis; submit ditolak bila belum lengkap
-- Ruang verifikasi admin: setujui / minta perbaikan, dengan alasan tercatat
-- Student timeline: setiap perubahan status meninggalkan jejak
-
-**Akademik**
-- Tahun ajaran dengan status `upcoming` / `active` / `archived` (hanya satu aktif)
-- Kelas (rombel) terikat pada tahun ajaran, dengan kode, tingkat, jurusan, kapasitas, ruang
-- **Enrollment sebagai sumber kebenaran** keanggotaan kelas — bukan `students.class_id`
- (kolom lama dipertahankan sebagai cermin kompatibilitas)
-- Penempatan, pemindahan, dan kenaikan kelas: enrollment lama ditutup, yang baru dibuat
-- Validasi konflik: satu siswa satu enrollment aktif per tahun ajaran
-
-**Absensi**
-- Sesi absensi per kelas per tanggal, record menunjuk ke enrollment
-- Status: Hadir / Terlambat / Sakit / Izin / Alpa
-- Koreksi absensi menyimpan status lama, alasan, pelaku, dan waktu
-- Tidak ada siswa yang otomatis berstatus "hadir"
-
-**Wali Kelas**
-- Penugasan wali kelas per kelas per tahun ajaran (bukan role permanen)
-- "Kelas Saya" menampilkan ringkasan kehadiran, data belum lengkap, pengumuman aktif
-- Cakupan akses: permission **dan** penugasan kelas. Mengubah URL tidak membuka kelas lain
-
-**Orang Tua / Wali**
-- `GuardianRelationship` menautkan akun orang tua ke siswa (ayah/ibu/wali)
-- Terpisah dari Wai Kelas; satu orang tua dapat punya beberapa anak
-- Tidak ada tautan instan berbasis NISN
-
-**Administrasi**
-- RBAC 85 permission, 7 role, catalog terpusat di `PermissionCatalog`
-- Manajemen pengguna, role, permission matrix
-- Activity log untuk setiap perubahan penting
-- Pengaturan sekolah, branding, appearance, dan form builder
-
-**Pelaporan**
-- Report builder, rekapitulasi, statistik
-- Ekspor Excel / CSV / PDF
-- Global search yang menghormati classroom scope
-
-**Lain-lain**
-- Notifikasi in-app (Laravel Notifications)
-- PWA installable dengan offline fallback
-- Web installer
-- REST API
-
----
-
-## Requirements
-
-- PHP **8.4** dengan ekstensi: `pdo_mysql`, `mbstring`, `openssl`, `tokenizer`, `xml`, `ctype`, `json`, `bcmath`, `fileinfo`, `gd`
-- Composer 2
-- Node.js 20+ dan npm
-- MySQL 8.4 (atau MariaDB 10.6+)
-- extremity: untuk produksi,container/host yang mendukung PHP 8.4
-
----
-
-## Local Installation
-
-### Cara A — Docker Compose (disarankan)
-
-```bash
-git clone https://github.com/pujosety/Sistem-Informasi-Data-Siswa.git
-cd Sistem-Informasi-Data-Siswa
-cp .env.example .env
-
-docker compose up -d
-docker compose exec app php artisan key:generate
-docker compose exec app php artisan migrate --force
-docker compose exec app php artisan db:seed --force
-docker compose exec app npm install
-docker compose exec app npm run build
+```yaml
+after_deploy: |
+  php artisan config:clear
+  php artisan migrate --force --no-interaction
+  php artisan db:seed --class=PermissionSeeder --force --no-interaction
+  php artisan config:cache
+  php artisan route:cache
 ```
 
-Buka `http://localhost:8000`.
-
-### Cara B — Native
-
-```bash
-git clone https://github.com/pujosety/Sistem-Informasi-Data-Siswa.git
-cd Sistem-Informasi-Data-Siswa
-
-composer install
-npm install
-
-cp .env.example .env
-php artisan key:generate
-```
-
-Buat database MySQL, lalu sesuaikan `DB_*` di `.env`:
-
-```bash
-php artisan migrate --force
-php artisan db:seed --force
-npm run build
-php artisan serve
-```
+`--force` wajib. Tanpa itu `migrate` menampilkan prompt di production, container
+tidak punya TTY, dan jawabannya default `[no]` — migrasi dibatalkan dan
+aplikasi gagal melayani. Post-mortem: [docs/PRODUCTION-INCIDENT-500.md](docs/PRODUCTION-INCIDENT-500.md)
 
 ---
 
-## Environment Setup
+## Dokumentasi
 
-`.env.example` adalah template tanpa kredensial. Salin ke `.env` lalu isi.
+Paket lengkap di **[docs/README.md](docs/README.md)**.
 
-Variabel penting:
-
-| Variabel | Keterangan |
-|---|---|
-| `APP_KEY` | Wajib. `php artisan key:generate` |
-| `APP_ENV` | `local` saat pengembangan, `production` saat deploy |
-| `APP_DEBUG` | `true` lokal, **`false` produksi** |
-| `APP_URL` | URL publik, tanpa trailing slash |
-| `TRUSTED_PROXIES` | Wajib bila di belakang reverse proxy/edge (lihat docs Wasmer) |
-| `DB_DATABASE` | Standar Laravel |
-| `DB_NAME` | Alternate yang dipakai Wasmer; `config/database.php` mem-fallback ke ini |
-
-`APP_DEBUG=false` dan `APP_ENV=production` **tidak** di-hardcode di source — keduanya
-berasal dari environment.
+Ringkasan: [Eksekutif](docs/EXECUTIVE-SUMMARY.md) ·
+[Produk](docs/PRODUCT-DOCUMENTATION.md) ·
+[Fitur](docs/FEATURES.md) ·
+[Tingkat Pengguna](docs/USER-TIERS.md) ·
+[UI/UX](docs/UI-UX-GUIDELINES.md) ·
+[Brand](docs/BRAND-GUIDELINES.md) ·
+[Teknis](docs/TECHNICAL-DOCUMENTATION.md) ·
+[Basis Data](docs/DATABASE.md) ·
+[Keamanan](docs/SECURITY.md) ·
+[Instalasi](docs/INSTALLATION.md) ·
+[Deployment](docs/DEPLOYMENT.md)
 
 ---
 
-## Database Setup
+## Brand
 
-```bash
-php artisan migrate --force # schema
-php artisan db:seed --force # permission, role, master data, demo siswa
-```
-
-Seeder yang tersedia:
-
-| Seeder | Isi |
-|---|---|
-| `PermissionSeeder` | 85 permission + 7 role beserta grantnya |
-| `StudentSeeder` | Siswa demo (data fiktif) |
-| academic demo | `php artisan academic:demo` — wali kelas + tahun ajaran + siswa |
-| backfill | `php artisan academic:backfill-enrollments` — idempotent |
-
-> **Jangan pernah** memakai `migrate:fresh` atau `db:wipe` pada database yang berisi data.
-> Migrasi bersifat aditif dan mempertahankan data yang sudah ada.
+Identitas visual, palet, dan aturan penggunaan logo ada di
+[docs/BRAND-GUIDELINES.md](docs/BRAND-GUIDELINES.md).
 
 ---
 
-## Frontend Build
+## Lisensi
 
-```bash
-npm install
-npm run dev # watch mode
-npm run build # produksi → public/build
-```
-
----
-
-## Running Locally
-
-```bash
-php artisan serve # http://localhost:127.0.0.1:8000
-# atau
-docker compose up -d
-```
-
-Akun demo (setelah seeding):
-
-| Peran | Email |
-|---|---|
-| Super Admin | `admin@siswa.test` |
-| Admin | `admin@siswa.test` (lihat seeder) |
-| Siswa | `siswa@siswa.test` |
-| Wali Kelas | `wali.kelas@demo.test` (dari `academic:demo`) |
-
----
-
-## Testing
-
-```bash
-php artisan test
-```
-
-Suite mencakup:
-
-- `AcceptanceJourneyTest` — alur PPDB end-to-end
-- `RoleAccessTest` — batas akses per role
-- `ClassScopeAuthorizationTest` — cakupan kelas wali kelas (A/B/C/F/G/H)
-- `EnrollmentIntegrityTest` — integritas enrollment & degradasi aman
-- `StudentProfileAuthorizationTest` — isolasi data antar siswa
-
-> `.env.testing` menunjuk database **khusus test** (`siswa_data_testing`).
-> Jangan arahkan ke database pengembangan — `RefreshDatabase` akan menghapusnya.
-
----
-
-## Web Installer
-
-Aplikasi menyediakan installer web untuk bootstrap awal (membuat admin pertama,
-menjalankan migrasi, dan menulis konfigurasi dasar). Akses `/install`.
-_nonaktifkan installer setelah instalasi selesai._
-
----
-
-## Roles & Permissions
-
-| Role | Fungsi |
-|---|---|
-| `super_admin` | Akses penuh, satu-satunya yang boleh menetapkan `super_admin` |
-| `admin` | Administrasi sekolah: master data, verifikasi, pengaturan |
-| `kesiswaan` | Baca data, cari, statistik, laporan, ekspor |
-| `operator` | Entri data administratif |
-| `verifikator` | Verifikasi pendaftaran & dokumen |
-| `wali_kelas` | Kelas yang ditugaskan: absensi, pengumuman, direktori orang tua |
-| `siswa` | Portal siswa |
-
-Catalog permission terpusat di `app/Services/PermissionCatalog.php`, sehingga nama
-permission tidak mungkin berbeda di dua tempat.
-
-**Cakupan kelas.** `classroom.view` hanya untuk melihat daftar kelas. Akses ke
-seluruh sekolah memerlukan `classroom.view.all`. `wali_kelas` sengaja **tidak**
-memilikinya, sehingga cakupan aksesnya hanya kelas yang ditugaskan.
-
----
-
-## PWA
-
-Manifest dan service worker dihasilkan oleh Vite (`public/build`).
-Service worker **tidak** menyimpan HTML terautentikasi atau data siswa — hanya
-aset aplikasi dan fallback offline.
-
----
-
-## Production Deployment
-
-```bash
-composer install --no-dev --optimize-autoloader
-npm ci && npm run build
-php artisan migrate --force
-php artisan config:cache
-php artisan route:cache
-```
-
-Pastikan:
-
-- `APP_ENV=production`
-- `APP_DEBUG=false`
-- `APP_KEY` valid (dari environment, jangan di-commit)
-- `storage/` dan `bootstrap/cache/` writable
-- `TRUSTED_PROXIES` diset agar URL & cookie HTTPS benar
-
----
-
-## Wasmer Deployment
-
-Lihat **[docs/DEPLOY-WASMER.md](docs/DEPLOY-WASMER.md)** untuk detail variabel,
-perintah build, dan catatan storage.
-
----
-
-## Security Notes
-
-- `.env` tidak pernah di-commit; hanya `.env.example` dan `.env.testing`
-- Data siswa, berkas unggahan, dan dump database diabaikan oleh `.gitignore`
-- Otorisasi ditegakkan server-side lewat policy, bukan hanya menyembunyikan UI
-- ID pada URL tidak dipercaya: setiap akses kelas/siswa dicek terhadap cakupan
-- Nilai yang belum `published` tidak pernah tampil ke siswa atau orang tua
-- Seluruh error produksi ditampilkan lewat template polos, tanpa stack trace
-
-Melaporkan kerentanan: buka issue publik tanpa menyertakan data pribadi.
-
----
-
-## Project Structure
-
-```
-app/
- Console/Commands/ artisan commands (backfill, demo seed)
- Http/Controllers/ controllers per domain
- Http/Middleware/ EnsurePermission, EnsureRole
- Models/ AcademicYear, SchoolClass, Enrollment, Student, ...
- Policies/ ClassroomPolicy, EnrollmentPolicy
- Services/ EnrollmentService, ClassScope, RoleSeeder, ...
-database/
- migrations/ additive migrations
- seeders/ PermissionSeeder, StudentSeeder
- factories/
-resources/
- views/ Blade (admin, siswa, kesiswaan, academic, settings)
- css/ js/ Tailwind + Alpine
-routes/web.php
-tests/Feature/
-docs/DEPLOY-WASMER.md
-```
-
----
-
-## License
-
-Lihat [LICENSE](LICENSE).
+[LICENSE](LICENSE)

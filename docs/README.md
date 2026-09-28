@@ -1,72 +1,95 @@
 # Dokumentasi
 
-Paket dokumentasi **Sistem Informasi Data Siswa**. Seluruh isi diturunkan dari
-aplikasi yang benar-benar berjalan; tidak ada fitur yang digambarkan tanpa
-bukti.
+Paket dokumentasi **SIDA — Sistem Informasi Data Siswa**.
+
+Seluruh isi diturunkan dari aplikasi yang benar-benar berjalan. Fitur yang belum
+selesai ditandai **PARTIAL** atau **PLANNED** — tidak pernah diklaim selesai.
+
+Produksi: **https://sida-4136.wasmer.app/**
+Repositori: **https://github.com/pujosety/Sistem-Informasi-Data-Siswa**
+
+![Logo SIDA](assets/brand/sida-logo-640.png)
 
 ---
 
 ## Ringkasan
 
-Dokumen ini menjelaskan sebuah sistem administrasi sekolah berbasis web:
-PPDB, verifikasi, kelas dan enrollment, absensi, nilai, portal orang tua,
-laporan, serta hak akses per peran.
-
-Tiga keputusan arsitektur yang membedakannya:
-
-1. **Enrollment adalah sumber kebenaran.** Siswa punya satu identitas jangka
-   panjang dan banyak baris enrollment — satu per tahun ajaran.
-2. **Wali Kelas adalah penugasan**, bukan role. Guru adalah Kesiswaan
-   sekaligus wali kelas dengan satu akun.
-3. **Otorisasi berlapis.** Izin, cakupan sumber daya, dan penugasan
-   diuji bersama-sama.
+| | |
+|---|---|
+| Fitur terimplementasi | 58 |
+| Sebagian | 7 |
+| Direncanakan | 2 |
+| Tabel database | 95 |
+| Permission | 85 dalam 7 role |
+| Pengujian | 84 test, 423 assertion |
+| Workspace pengguna | 8 |
 
 ---
 
 ## Ikhtisar
 
-Dokumen ini, شرح eksekutif, riset dan analisis sistem, dokumentasi produk,
-dan dokumentasi fitur lengkap beserta status tiap fitur.
-
-- [Ringkasan Eksekutif](EXECUTIVE-SUMMARY.md)
-- [Riset & Analisis Sistem](RESEARCH.md)
-- [Dokumentasi Produk](PRODUCT-DOCUMENTATION.md)
-- [Fitur](FEATURES.md)
+| Dokumen | Isi |
+|---|---|
+| [Ringkasan Eksekutif](EXECUTIVE-SUMMARY.md) | Latar belakang, masalah, solusi, manfaat |
+| [Riset & Analisis Sistem](RESEARCH.md) | Rumusan masalah, kebutuhan, metodologi |
+| [Dokumentasi Produk](PRODUCT-DOCUMENTATION.md) | Visi, konsep inti, alur utama |
+| [Fitur](FEATURES.md) | Inventaris lengkap dengan status tiap fitur |
 
 ## Pengguna
 
-Delapan tingkat pengguna, matriks hak akses, serta panduan penggunaan untuk
-setiap peran.
-
-- [Tingkat Pengguna](USER-TIERS.md)
-- [Matriks Hak Akses](ROLE-CAPABILITY-MATRIX.md)
-- [Cakupan Fitur per Peran](ROLE-FEATURE-COVERAGE.md)
-- [Manual Pengguna](USER-MANUAL.md)
-- [Manual Administrator](ADMIN-MANUAL.md)
+| Dokumen | Isi |
+|---|---|
+| [Tingkat Pengguna](USER-TIERS.md) | Delapan tingkat, cakupan, navigasi |
+| [Matriks Hak Akses](ROLE-CAPABILITY-MATRIX.md) | Fitur per peran |
+| [Cakupan Fitur](ROLE-FEATURE-COVERAGE.md) | Ringkasan Manage/View/Own/Assigned |
+| [Manual Pengguna](USER-MANUAL.md) | Siswa, orang tua, wali kelas |
+| [Manual Administrator](ADMIN-MANUAL.md) | Super admin sampai operator |
 
 ## Desain
 
-Token, tipografi, komponen, navigasi desktop/tablet/mobile, dan arsitektur
-setiap dashboard.
-
-- [Panduan UI/UX](UI-UX-GUIDELINES.md)
-- [Arsitektur Dashboard](DASHBOARD-ARCHITECTURE.md)
-- [Arsitektur Navigasi](NAVIGATION-ARCHITECTURE.md)
-- [Indeks Screenshot](SCREENSHOTS.md)
+| Dokumen | Isi |
+|---|---|
+| [Panduan UI/UX](UI-UX-GUIDELINES.md) | Token, tipografi, spacing, komponen |
+| [Arsitektur Dashboard](DASHBOARD-ARCHITECTURE.md) | Peran, metrik, tata letak tiap dashboard |
+| [Arsitektur Navigasi](NAVIGATION-ARCHITECTURE.md) | Sidebar, drawer, bottom nav, switcher |
+| [Screenshot](SCREENSHOTS.md) | Indeks lengkap 39 tangkapan layar |
+| [Brand Guidelines](BRAND-GUIDELINES.md) | Identitas visual, palet, aturan logo |
 
 ## Arsitektur
 
-Dokumen teknis, basis data, ERD, alur sistem, model otorisasi, serta siklus
-hidup siswa.
+| Dokumen | Isi |
+|---|---|
+| [Dokumentasi Teknis](TECHNICAL-DOCUMENTATION.md) | Stack, struktur, lapisan |
+| [Basis Data](DATABASE.md) | Tabel inti, relasi, migrasi |
+| [Diagram](#diagram) | ERD, arsitektur, alur |
+| [Keamanan](SECURITY.md) | Otorisasi, cakupan, Paparan data |
 
-- [Dokumentasi Teknis](TECHNICAL-DOCUMENTATION.md)
-- [Basis Data](DATABASE.md)
-- [Diagram](#diagram)
-- [ERD](diagrams/database-erd.png)
-- [Siklus Hidup Siswa](diagrams/student-lifecycle.png)
-- [Alur RBAC](diagrams/rbac.png)
+## Pengembangan
 
-### Diagram
+| Dokumen | Isi |
+|---|---|
+| [Instalasi](INSTALLATION.md) | Persyaratan, langkah, pemecahan masalah |
+
+## Deployment
+
+| Dokumen | Isi |
+|---|---|
+| [Deployment](DEPLOYMENT.md) | Alur Anybuild, variabel, health check |
+| [Deployment Wasmer](DEPLOY-WASMER.md) | Rincian platform |
+| [Insiden 500](PRODUCTION-INCIDENT-500.md) | Post-mortem yang sudah selesai |
+
+## Presentasi
+
+| Berkas | Isi |
+|---|---|
+| [PPTX](presentation/Sistem-Informasi-Data-Siswa-Presentation.pptx) | 45 slide 16:9 |
+| [PDF](presentation/Sistem-Informasi-Data-Siswa-Presentation.pdf) | 45 halaman |
+| [Dokumentasi PDF](presentation/Sistem-Informasi-Data-Siswa-Dokumentasi.pdf) | 29 halaman A4 |
+| [Fact Sheet](presentation/PROJECT-FACT-SHEET.pdf) | 2 halaman |
+
+---
+
+## Diagram
 
 | Diagram | Berkas |
 |---|---|
@@ -77,67 +100,44 @@ hidup siswa.
 | Model RBAC | `diagrams/rbac.png` |
 | Siklus hidup siswa | `diagrams/student-lifecycle.png` |
 
-Seluruh diagram dihasilkan dari skema nyata (`tools/erd.php`) atau ditulis
-sebagai sumber Mermaid di `diagrams/*.mmd`.
+Sumber Mermaid berada di `diagrams/*.mmd` dan dapat digenerate ulang:
 
-## Pengembangan
+```bash
+docker compose exec app php tools/erd.php   # ERD dari skema nyata
+bash hermes-brand-diagrams.sh              # tema + render
+```
 
-Panduan menjalankan proyek secara lokal, termasuk lingkungan demonstrasi yang
-aman.
+---
 
-- [Instalasi](INSTALLATION.md)
+## Aset Brand
 
-## Keamanan
-
-Otorisasi, cakupan sumber daya, keamanan berkas, dan insiden yang pernah
-ditemukan serta diperbaiki.
-
-- [Keamanan](SECURITY.md)
-
-## Deployment
-
-Menyiapkan aplikasi untuk produksi, termasuk kompatibilitas Wasmer.
-
-- [Deployment](DEPLOYMENT.md)
-- [Deployment Wasmer](DEPLOY-WASMER.md)
-
-## Presentasi
-
-Berkas presentasi siap pakai, seluruhnya memakai tangkapan layar dari aplikasi
-yang berjalan.
-
-- [Presentasi PPTX](presentation/Sistem-Informasi-Data-Siswa-Presentation.pptx)
-- [Presentasi PDF](presentation/Sistem-Informasi-Data-Siswa-Presentation.pdf)
-- [Dokumentasi PDF](presentation/Sistem-Informasi-Data-Siswa-Dokumentasi.pdf)
-- [Fact Sheet PDF](presentation/PROJECT-FACT-SHEET.pdf)
+| Berkas | Gunanya |
+|---|---|
+| [Brand Guidelines](BRAND-GUIDELINES.md) | Aturan pemakaian |
+| [Brand Asset Inventory](BRAND-ASSET-INVENTORY.md) | Daftar aset dan dimensi |
 
 ---
 
 ## Data Demonstrasi
 
 ```bash
-php artisan showcase:seed
+php artisan showcase:seed          # 6 kelas, 36 siswa, kehadiran, nilai
+php artisan academic:demo-parent   # akun orang tua dengan anak
 ```
 
-Membuat SMK Demo Nusantara: 6 kelas, 36 siswa, kehadiran, nilai,
-pengumuman, dan akun untuk delapan tingkat pengguna.
-
-**Seluruh identitasnya fiktif.** Tidak ada data siswa, NIK, atau nomor telepon
-nyata di dalam repositori maupun screenshot.
+Seluruh identitas demonstrasi **fiktif** (SMK Demo Nusantara). Tidak ada data
+siswa, NIK, atau nomor telepon nyata di dalam repository maupun screenshot.
 
 ---
 
-## Regenerasi Berkas
+## Regenerasi
 
 ```bash
-php artisan showcase:seed          # dataset
-python tools/shot.py               # alat screenshot (CDP)
-python tools/shot-batch.py         # seluruh screenshot
-php tools/erd.php                  # ERD dari skema nyata
-bash hermes-render-diagrams.sh     # render seluruh diagram
-python tools/build-deck.py         # presentasi PPTX
+npm run build                      # aset frontend
+docker compose exec app php tools/lint-views.php
+docker compose exec app php artisan test
+python tools/shot-batch.py          # seluruh screenshot
+python tools/build-deck.py          # presentasi PPTX
 python tools/build-pdfs.py         # seluruh PDF
+python tools/verify-brand-assets.py # transparency & dimensi
 ```
-
-Alat screenshot memakai Microsoft Edge headless melalui Chrome DevTools
-Protocol, karena Edge sudah tersedia dan Chrome tidak.

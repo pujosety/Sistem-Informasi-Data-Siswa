@@ -8,9 +8,11 @@ Ringkasan:
 
 | Status | Jumlah |
 |---|---|
-| IMPLEMENTED | 22 |
-| PARTIAL | 4 |
+| IMPLEMENTED | 58 |
+| PARTIAL | 7 |
 | PLANNED | 2 |
+
+Angka di atas dihitung dari entri di dokumen ini, bukan diperkirakan.
 
 ---
 

@@ -249,7 +249,7 @@ php artisan test
 | `NotificationTest` | Notifikasi |
 | `ExampleTest` | Smoke test |
 
-**67 test, 237 assertion.**
+**84 tests, 423 assertions.**
 
 Verifikasi lain di luar PHPUnit:
 

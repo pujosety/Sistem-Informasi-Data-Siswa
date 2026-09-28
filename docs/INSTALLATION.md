@@ -143,7 +143,7 @@ Sebagai gantinya, gunakan perintah di atas.
 php artisan test
 ```
 
-Hasil saat ini: **67 test, 237 assertion**.
+Hasil saat ini: **84 tests, 423 assertions**.
 
 ## Pemecahan masalah
 

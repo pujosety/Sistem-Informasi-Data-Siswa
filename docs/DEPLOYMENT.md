@@ -1,121 +1,115 @@
 # Deployment
 
-## Ringkasan
+Aplikasi di-deploy ke **Wasmer** melalui **Anybuild**, yang membaca
+`anybuild.yaml` di root repository. File itu adalah satu-satunya sumber
+kebenaran untuk langkah deploy — jangan mengandalkan default platform.
 
 | Lingkungan | Provider | Status |
 |---|---|---|
 | Pengembangan | Docker Compose | Aktif |
-| Produksi | Wasmer Edge | Aktif |
-| CI | GitHub Actions | Aktif |
+| Produksi | Wasmer + Anybuild | Aktif |
+| CI | GitHub Actions | Aktif, hijau |
 
-## Repositori
+---
 
-`https://github.com/pujosety/Sistem-Informasi-Data-Siswa`
+## 1. Yang deploying
 
-Setiap push ke `main` memicu build Wasmer (bila auto-deploy aktif) dan
-menjalankan GitHub Actions.
+```text
+GitHub (main)
+ → Anybuild build image (composer install · npm run build)
+ → PHPix 0.3.0-rc.5, PHP 8.3, document root /app/public
+ → MySQL terkelola (variabel diinjeksi platform)
+```
 
-## Wasmer
+---
 
-Detail lengkap: [DEPLOY-WASMER.md](DEPLOY-WASMER.md).
+## 2. Deploy scripts
 
-### Variabel yang diset manual
+`anybuild.yaml`:
+
+```yaml
+scripts:
+ install: |
+ composer install --optimize-autoloader --ignore-platform-reqs --no-scripts --no-interaction
+ npm install
+ build: |
+ composer run-script post-update-cmd
+ npm run build
+ start: |
+ php -S 0.0.0.0:8080 -t public
+ after_deploy: |
+ php artisan config:clear
+ php artisan migrate --force --no-interaction
+ php artisan db:seed --class=PermissionSeeder --force --no-interaction
+ php artisan config:cache
+ php artisan route:cache
+```
+
+### `--force` bukan opsional
+
+Tanpa `--force`, `php artisan migrate` di production **menampilkan prompt**:
+
+```text
+Are you sure you want to run this command? (yes/no)
+```
+
+Container tidak punya TTY, sehingga `stty` tidak ditemukan, prompt tidak bisa
+dijawab, dan jawabannya default `[no]`. Migrasi dibatalkan, tabel tidak pernah
+dibuat, lalu setiap request gagal di `StartSession` dengan HTTP 500.
+
+`--force` adalah flag yang memang dimaksud Laravel untuk otomatisasi. **Jangan**
+memasang `stty` dan **jangan** meng-pipe `yes` — promptnya dihindari, bukan
+dijawab.
+
+Riwayat lengkap: [PRODUCTION-INCIDENT-500.md](PRODUCTION-INCIDENT-500.md).
+
+---
+
+## 3. Urutan langkah
+
+`config:clear` **harus lebih dulu** — kalau konfigurasi lama ter-cache,
+`config:cache` akan membekukan nilai yang salah. `config:cache` dan
+`route:cache` dibangun **setelah** environment production ter-load.
+
+---
+
+## 4. Variabel yang diset manual
 
 ```bash
 APP_ENV=production
 APP_DEBUG=false
-APP_KEY=<hasil php artisan key:generate --show>
-APP_URL=https://<domain-anda>          # WAJIB
-TRUSTED_PROXIES=*                      # WAJIB di belakang proxy
+APP_KEY=<hasil: php artisan key:generate --show>
+APP_URL=https://<domain-anda>
+TRUSTED_PROXIES=*
 DB_CONNECTION=mysql
 CACHE_STORE=database
 SESSION_DRIVER=database
 QUEUE_CONNECTION=sync
 ```
 
-### Mengapa APP_URL wajib diisi
+`APP_URL` wajib diisi. Aplikasi **tidak** memaksa nilai ini pada request HTTP,
+sehingga link di halaman, asset, dan dokumen selalu dihitung dari host request
+yang sebenarnya. `APP_URL` dipakai untuk tautan absolut pada email dan sebagai
+cadangan pada konteks console dan queue.
 
-`APP_URL` dipakai untuk dua hal:
+## 5. Variabel yang diinjeksi Wasmer
 
-1. Tautan absolut pada email — email dikirim tanpa konteks request HTTP, jadi
-   tidak ada host yang bisa diandalkan.
-2. Nilai cadangan pada konteks console dan queue worker, yang juga tidak punya
-   request.
-
-Aplikasi **tidak** memaksa nilai ini pada request HTTP. Link di halaman,
-asset, dan dokumen selalu dihitung dari host request yang sebenarnya, sehingga
-nilai `APP_URL` yang lupa diisi tidak akan membuat pengunjung melihat
-`http://localhost`.
-
-### Variabel yang disuntikkan Wasmer
-
-Tidak perlu disalin manual:
+Jangan disalin manual:
 
 ```bash
-DB_HOST
-DB_PORT
-DB_NAME
-DB_USERNAME
-DB_PASSWORD
+DB_HOST DB_PORT DB_NAME DB_USERNAME DB_PASSWORD
 ```
 
-### Perintah
+Wasmer menyediakan `DB_NAME`, sedangkan Laravel membaca `DB_DATABASE`.
+`config/database.php` menjembataninya:
 
-```bash
-# Build
-composer install --no-dev --optimize-autoloader --no-interaction \
-  && npm ci && npm run build
-
-# Start — urutannya penting
-php artisan config:clear \
-  && php artisan migrate --force --no-interaction \
-  && php artisan config:cache \
-  && php artisan route:cache \
-  && php artisan serve --host=0.0.0.0 --port=${PORT:-8000}
+```php
+'database' => env('DB_DATABASE') ?: env('DB_NAME') ?: 'laravel',
 ```
 
-### Mengapa `config:clear` wajib lebih dulu
+---
 
-`config:cache` menulis konfigurasi ke `bootstrap/cache/config.php`. Bila berkas
-itu dibangun dari environment lokal, nilainya **membeku** dan mengabaikan
-variabel Wasmer. Gejalanya adalah fallback ke SQLite meskipun MySQL tersedia.
-
-## Migrasi
-
-```bash
-php artisan migrate --force
-```
-
-Sekali setelah deploy pertama. Seluruh migrasi aditif dan mempertahankan data.
-
-**Jangan pernah** memakai `migrate:fresh` atau `db:wipe` di produksi.
-
-## APP_KEY
-
-Disimpan sebagai secret di Wasmer. **Jangan** digenerate ulang pada setiap
-deploy — mengganti `APP_KEY` membatalkan seluruh sesi, nilai terenkripsi, dan
-cookie.
-
-```bash
-php artisan key:generate --show
-```
-
-## Storage
-
-> Persistensi filesystem Wasmer bergantung pada konfigurasi akun. Verifikasi di
-> dashboard sebelum mengandalkan hal ini.
-
-Jika filesystem bersifat ephemeral, **dokumen siswa akan hilang saat
-redeploy**. Untuk produksi yang serius, pindahkan ke object storage eksternal.
-
-## Redeployment
-
-- Setiap push ke `main` memicu build ulang
-- Data database **tidak** terhapus
-- Aset dalam container yang berubah akan hilang kecuali berada di storage
-  persisten
-
-## Health check
+## 6. Health check
 
 ```bash
 curl -s https://<domain-anda>/health
@@ -123,12 +117,12 @@ curl -s https://<domain-anda>/health
 
 ```json
 {
-  "status": "ok",
-  "app": "Sistem Informasi Data Siswa",
-  "environment": "production",
-  "installed": true,
-  "database": { "state": "ok", "tables": true },
-  "time": "..."
+ "status": "ok",
+ "app": "Sistem Informasi Data Siswa",
+ "environment": "production",
+ "installed": true,
+ "database": { "state": "ok", "tables": true },
+ "time": "..."
 }
 ```
 
@@ -140,53 +134,67 @@ curl -s https://<domain-anda>/health
 | `booting` | Database menjawab, tabel belum ada |
 | `unavailable` | Database tidak dapat dijangkau |
 
-## CI
+`/__diag` memberi detail lebih lengkap (driver, tabel per nama, jumlah
+migrasi, apakah store bisa ditulis) dan **akan dihapus** setelah insiden ditutup.
 
-`.github/workflows/ci.yml` menjalankan:
+---
 
-- PHP 8.4 + MySQL 8.4 → `php artisan test`
-- Node 20 → `npm run build`
-- Kompilasi seluruh template Blade
+## 7. Redeploy
 
-Rahasia tidak disimpan di berkas workflow.
+Setiap push ke `main` memicu build. Setelah `anybuild.yaml` berubah, redeploy
+mungkin perlu dipicu manual.
 
-## Pemecahan masalah
+Verifikasi versi yang benar-benar berjalan:
 
-### SQLiteDatabaseDoesNotExistException
+```bash
+curl -s https://<domain-anda>/health
+```
 
-`DB_CONNECTION` tidak sampai ke aplikasi. Periksa:
+---
 
-1. Apakah `DB_CONNECTION=mysql` diset di Wasmer?
-2. Apakah `config:clear` berjalan sebelum `config:cache`?
-3. Apakah ada `bootstrap/cache/config.php` di dalam image?
+## 8. Pemecahan masalah
 
-### Halaman error karena database mati
+### Semua route 500, tapi `/up` 200
 
-Aplikasi kini dapat merender halaman error meski database tidak terjangkau.
-Pesan yang tampil menyatakan layanan sedang bermasalah — periksa `/health`
-untuk memastikan.
+`StartSession` gagal sebelum controller jalan. Periksa:
 
-### Login selalu gagal
+1. Apakah `anybuild.yaml` berisi `migrate --force`?
+2. Apakah tabel `sessions` ada? — `curl -s https://<domain>/__diag`
+3. `CACHE_STORE` dan `SESSION_DRIVER` — bila database belum siap, keduanya
+ otomatis mundur ke driver `file` dan alasannya dicatat di log
 
-- `APP_KEY` berubah sejak session dibuat
-- `SESSION_DRIVER=database` tetapi tabel `sessions` belum ada → jalankan
-  `php artisan migrate --force`
-- `TRUSTED_PROXIES` belum diset sehingga cookie `secure` tidak pernah terkirim
+### Tautan mengarah ke localhost
+
+`APP_URL` belum diisi. Aplikasi memakai host request, jadi halaman tetap benar;
+yang memerlukan `APP_URL` adalah email dan konteks non-HTTP.
+
+### `stty: command not found`
+
+`php artisan migrate` dijalankan tanpa `--force`. Perbaiki di `anybuild.yaml`.
 
 ### Loop redirect
 
-Umumnya disebabkan `APP_URL` yang tidak cocok dengan domain sebenarnya.
+`APP_URL` tidak cocok dengan domain, atau `TRUSTED_PROXIES` belum diset sehingga
+Laravel mengira situs ini `http://`.
 
-## Checklist sebelum deploy
+---
+
+## 9. Checklist sebelum deploy
 
 - [ ] `APP_ENV=production`
 - [ ] `APP_DEBUG=false`
-- [ ] `APP_KEY` valid dan stabil
+- [ ] `APP_KEY` stabil (menggantinya membatalkan semua session)
 - [ ] `APP_URL` sesuai domain
 - [ ] `TRUSTED_PROXIES=*`
 - [ ] `DB_CONNECTION=mysql`
-- [ ] Start command menjalankan `config:clear` lebih dulu
-- [ ] `php artisan migrate --force` dijalankan
-- [ ] `storage/` writable dan persisten
-- [ ] `.env` tidak masuk repository
+- [ ] `anybuild.yaml` memakai `migrate --force`
 - [ ] `/health` mengembalikan `database.state = ok`
+- [ ] `.env` tidak masuk repository
+
+---
+
+## 10. Rahasia
+
+Tidak ada kredensial dalam repository. Yang ada hanya nilai test-only di
+`.env.testing` dan di blok `env:` workflow CI, keduanya expressly hanya untuk
+pengujian.
