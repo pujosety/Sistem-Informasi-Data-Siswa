@@ -1,0 +1,34 @@
+# Anybuild / Wasmer deployment configuration.
+#
+# WITHOUT this file Anybuild uses its own default after_deploy step:
+#
+#   php artisan migrate
+#
+# In production that command PROMPTS for confirmation. A container has no TTY,
+# so `stty` is missing, the prompt cannot be answered, and the answer defaults to
+# [no] — the migration is cancelled, the `sessions`, `cache` and `settings` tables
+# are never created, and every request fails inside StartSession before any
+# controller runs. That was the HTTP 500 on every route while /up answered 200.
+#
+# --force is the flag Laravel intends for automation. Nothing is piped into the
+# prompt, and `yes` is not installed to work around it: the prompt is avoided,
+# not answered.
+
+scripts:
+  install: |
+    composer install --optimize-autoloader --ignore-platform-reqs --no-scripts --no-interaction
+    npm install
+
+  build: |
+    composer run-script post-update-cmd
+    npm run build
+
+  start: |
+    php -S 0.0.0.0:8080 -t public
+
+  after_deploy: |
+    php artisan config:clear
+    php artisan migrate --force --no-interaction
+    php artisan db:seed --class=PermissionSeeder --force --no-interaction
+    php artisan config:cache
+    php artisan route:cache
