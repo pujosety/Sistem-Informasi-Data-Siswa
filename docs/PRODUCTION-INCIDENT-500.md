@@ -23,8 +23,7 @@ failed.
 
 ## Root cause
 
-`anybuild.yaml` was present but empty (0 bytes), so Anybuild applied its own
-default deploy step:
+No `app.yaml` existed, so Anybuild applied its own default deploy step:
 
 ```text
 after_deploy:  php artisan migrate
@@ -52,7 +51,7 @@ SQLSTATE[42S02] 1146 Table 'sessions' doesn't exist
 
 ## Fix
 
-`anybuild.yaml` now declares the deploy scripts explicitly:
+`app.yaml` now declares the deploy scripts explicitly:
 
 ```yaml
 after_deploy: |

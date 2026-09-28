@@ -1,7 +1,7 @@
 # Deployment
 
 Aplikasi di-deploy ke **Wasmer** melalui **Anybuild**, yang membaca
-`anybuild.yaml` di root repository. File itu adalah satu-satunya sumber
+`app.yaml` di root repository. File itu adalah satu-satunya sumber
 kebenaran untuk langkah deploy — jangan mengandalkan default platform.
 
 | Lingkungan | Provider | Status |
@@ -25,7 +25,7 @@ GitHub (main)
 
 ## 2. Deploy scripts
 
-`anybuild.yaml`:
+`app.yaml`:
 
 ```yaml
 scripts:
@@ -141,7 +141,7 @@ migrasi, apakah store bisa ditulis) dan **akan dihapus** setelah insiden ditutup
 
 ## 7. Redeploy
 
-Setiap push ke `main` memicu build. Setelah `anybuild.yaml` berubah, redeploy
+Setiap push ke `main` memicu build. Setelah `app.yaml` berubah, redeploy
 mungkin perlu dipicu manual.
 
 Verifikasi versi yang benar-benar berjalan:
@@ -158,7 +158,7 @@ curl -s https://<domain-anda>/health
 
 `StartSession` gagal sebelum controller jalan. Periksa:
 
-1. Apakah `anybuild.yaml` berisi `migrate --force`?
+1. Apakah `app.yaml` berisi `migrate --force`?
 2. Apakah tabel `sessions` ada? — `curl -s https://<domain>/__diag`
 3. `CACHE_STORE` dan `SESSION_DRIVER` — bila database belum siap, keduanya
  otomatis mundur ke driver `file` dan alasannya dicatat di log
@@ -170,7 +170,7 @@ yang memerlukan `APP_URL` adalah email dan konteks non-HTTP.
 
 ### `stty: command not found`
 
-`php artisan migrate` dijalankan tanpa `--force`. Perbaiki di `anybuild.yaml`.
+`php artisan migrate` dijalankan tanpa `--force`. Perbaiki di `app.yaml`.
 
 ### Loop redirect
 
@@ -187,7 +187,7 @@ Laravel mengira situs ini `http://`.
 - [ ] `APP_URL` sesuai domain
 - [ ] `TRUSTED_PROXIES=*`
 - [ ] `DB_CONNECTION=mysql`
-- [ ] `anybuild.yaml` memakai `migrate --force`
+- [ ] `app.yaml` memakai `migrate --force`
 - [ ] `/health` mengembalikan `database.state = ok`
 - [ ] `.env` tidak masuk repository
 

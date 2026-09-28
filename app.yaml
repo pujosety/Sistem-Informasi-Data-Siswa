@@ -1,0 +1,57 @@
+# Wasmer Edge application configuration.
+#
+# WHY THIS FILE EXISTS
+#
+# The deployment ran `php artisan migrate` WITHOUT `--force`. In production that
+# command prompts for confirmation:
+#
+#     Are you sure you want to run this command? (yes/no)
+#
+# A container has no TTY, so `stty` is missing, the prompt cannot be answered,
+# and the answer defaults to [no]. The migration is cancelled, the `sessions`,
+# `cache` and `settings` tables are never created, and every request fails inside
+# StartSession before a controller runs. That was the HTTP 500 on every route
+# while /up answered 200.
+#
+# --force is the flag Laravel intends for automation. `stty` is not installed
+# and `yes` is not piped into the prompt: the prompt is avoided, not answered.
+#
+# The `scripts` block below REPLACES Anybuild's defaults. A previous
+# `anybuild.yaml` was committed but never read — Wasmer reads `app.yaml`.
+kind: wasmer.io/App.v0
+name: sida-sistem-informasi-data-siswa
+
+auto_deploy: true
+branch: main
+
+scripts:
+  install: |
+    composer install --optimize-autoloader --ignore-platform-reqs --no-scripts --no-interaction
+    npm install
+
+  build: |
+    composer run-script post-update-cmd
+    npm run build
+
+  start: |
+    php -S 0.0.0.0:8080 -t public
+
+  after_deploy: |
+    php artisan config:clear
+    php artisan migrate --force --no-interaction
+    php artisan db:seed --class=PermissionSeeder --force --no-interaction
+    php artisan config:cache
+    php artisan route:cache
+
+# /health reports whether the database is reachable, which is the difference
+# between "the container started" and "the application works".
+health_checks:
+  - http:
+      method: get
+      path: /health
+      interval: 30s
+      timeout: 10s
+      unhealthy_threshold: 3
+      healthy_threshold: 1
+      expected_status_codes:
+        - 200

@@ -47,9 +47,15 @@ class EnsureStoresAreUsable extends ServiceProvider
             return;
         }
 
-        if ($this->runningInConsole() && ! $this->isMigrating()) {
-            // A console command has no session, and probing the database during
-            // migrate would mean running queries against a half-built schema.
+        // Only a command that is deliberately building the schema is exempt.
+        //
+        // The previous guard skipped EVERY console invocation on the assumption
+        // that a console process has no session. That assumption is wrong for
+        // how this application is actually served: `php -S` and PHPix both run
+        // under the cli SAPI, so every real HTTP request was treated as
+        // "console" and the guard never acted — the deployment kept returning
+        // 500 with the guard loaded but inert.
+        if ($this->isBuildingSchema()) {
             return;
         }
 
@@ -57,12 +63,7 @@ class EnsureStoresAreUsable extends ServiceProvider
         $this->fallbackCacheStore();
     }
 
-    private function runningInConsole(): bool
-    {
-        return $this->app->runningInConsole();
-    }
-
-    private function isMigrating(): bool
+    private function isBuildingSchema(): bool
     {
         $command = $_SERVER['argv'][1] ?? '';
 
@@ -86,7 +87,7 @@ class EnsureStoresAreUsable extends ServiceProvider
             return;
         }
 
-        config(['session.driver' => 'file']);
+        $this->useFileSession();
 
         $this->record('The sessions table does not exist, so SESSION_DRIVER was '
             .'temporarily set to file. Run "php artisan migrate --force" to use '
@@ -108,11 +109,44 @@ class EnsureStoresAreUsable extends ServiceProvider
             return;
         }
 
-        config(['cache.default' => 'file']);
+        $this->useFileCache();
 
         $this->record('The cache table does not exist, so CACHE_STORE was '
             .'temporarily set to file. Run "php artisan migrate --force" to use '
             .'the database store again.');
+    }
+
+    /**
+     * Switch the session to the file driver AND drop the already-resolved store.
+     *
+     * Setting config() alone is not enough. The session store is a container
+     * binding built from the driver, so if anything has already resolved
+     * 'session.store' the instance keeps using the database. Forgetting the
+     * binding forces the next resolution to build a FileSessionHandler, which
+     * is what actually stops the request from querying a missing table.
+     */
+    private function useFileSession(): void
+    {
+        config(['session.driver' => 'file']);
+
+        foreach (['session.store', 'session'] as $binding) {
+            if ($this->app->bound($binding)) {
+                $this->app->forgetInstance($binding);
+            }
+        }
+    }
+
+    /**
+     * Switch the cache to the file driver, dropping any resolved repository so a
+     * DatabaseStore is not handed back after the change.
+     */
+    private function useFileCache(): void
+    {
+        config(['cache.default' => 'file']);
+
+        if ($this->app->bound('cache')) {
+            $this->app->forgetInstance('cache');
+        }
     }
 
     /**
