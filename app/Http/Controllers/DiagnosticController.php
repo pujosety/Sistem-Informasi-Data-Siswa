@@ -22,7 +22,11 @@ class DiagnosticController extends Controller
 {
     public function __invoke(): JsonResponse
     {
+        // If this never runs, the failure is in middleware or a provider, not
+        // in application code. The response is a plain array so the body
+        // itself reports whether the controller was reached.
         $report = [
+            'reached' => true,
             'app' => 'SIDA',
             'env' => app()->environment(),
             'debug' => (bool) config('app.debug'),
@@ -62,10 +66,44 @@ class DiagnosticController extends Controller
             $report['migrations_recorded'] = null;
         }
 
-        // 5. Does the configured session driver work? This is the step the
-        //    failing routes share.
+        // 5. The drivers that decide the fix. Reported as names only.
         $report['session_driver'] = config('session.driver');
         $report['cache_store'] = config('cache.default');
+
+        // 6. Can each store actually be written? This is the step that fails
+        //    BEFORE any controller when throttle() resolves the cache, which is
+        //    why the error page showed no application output at all.
+        // The configured cache store, written and read back. This is exactly
+        // what throttle() does first, so a failure here is the cause.
+        try {
+            \Illuminate\Support\Facades\Cache::put('sida.diag.probe', 1, 5);
+            \Illuminate\Support\Facades\Cache::forget('sida.diag.probe');
+            $report['stores']['cache'] = 'writable';
+        } catch (Throwable $e) {
+            // TEMPORARY: the message is scrubbed of anything host- or
+            // credential-shaped before it is returned, so it identifies the
+            // failure without disclosing the connection. Remove with the route.
+            $message = $e->getMessage();
+            $message = preg_replace('/[a-z0-9-]+\.[a-z]{2,}(?::\d+)?/i', '<host>', $message);
+            $message = preg_replace('/\b(?:root|user|password)\b[^\s]*/i', '<redacted>', $message);
+            $message = preg_replace('/\b[\w.-]+@[\w.-]+\b/', '<redacted>', $message);
+            $message = mb_substr($message, 0, 200);
+
+            $report['stores']['cache'] = 'FAILED:' . class_basename($e);
+            $report['stores']['cache_message'] = $message;
+        }
+
+        // The session handler, resolved the way the framework resolves it.
+        try {
+            $handler = config('session.driver') === 'database'
+                ? \Illuminate\Support\Facades\DB::table(config('session.table', 'sessions'))
+                : null;
+            $report['stores']['session'] = $handler === null
+                ? 'n/a ('.config('session.driver').')'
+                : 'queryable';
+        } catch (\Throwable $e) {
+            $report['stores']['session'] = 'FAILED:' . class_basename($e);
+        }
 
         return response()->json($report);
     }

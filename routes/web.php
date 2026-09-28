@@ -37,9 +37,9 @@ use Illuminate\Support\Facades\Route;
 | group and free of any session or settings dependency.
 |
 */
-Route::get('/health', HealthController::class)
-    ->name('health')
-    ->middleware('throttle:60,1');
+// Same reason as /__diag: an operational probe must not be masked by a
+// cache-store failure.
+Route::get('/health', HealthController::class)->name('health');
 
 /*
 |--------------------------------------------------------------------------
@@ -77,9 +77,10 @@ if (env('LOCAL_DEBUG_HELPER') && ! app()->environment('production')) {
 | DELETE THIS ROUTE once the production cause is identified.
 |
 */
-Route::get('/__diag', DiagnosticController::class)
-    ->name('diagnostic')
-    ->middleware('throttle:30,1');
+// No throttle: ThrottleRequests resolves the cache store before the controller
+// runs, so a broken cache store made this route 500 and the diagnostic could
+// never report the condition it exists to measure.
+Route::get('/__diag', DiagnosticController::class)->name('diagnostic');
 
 Route::redirect('/', '/dashboard')->name('home');
 
