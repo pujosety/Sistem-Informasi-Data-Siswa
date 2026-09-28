@@ -57,11 +57,39 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <title>{{ $status }} — {{ config('app.name') }}</title>
-    <link rel="icon" href="/favicon.ico" sizes="any">
+    <title>{{ $status }} · SIDA</title>
+    {{-- SIDA branding, hardcoded rather than read from the settings service.
+         This page renders when things are broken — including when the database
+         is unreachable — so it must not depend on anything that could fail
+         while failing. --}}
+    <link rel="icon" href="{{ asset('branding/favicon.ico') }}" sizes="any">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('branding/favicon-32x32.png') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('branding/apple-touch-icon.png') }}">
+    <meta name="theme-color" content="#0b3375">
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700|manrope:600,700,800&display=swap" rel="stylesheet">
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    {{-- @vite throws ViteManifestNotFoundException when public/build is absent,
+         which replaced every error page with a second error. On the error path
+         the stylesheet is inlined only if it can be read; otherwise the page
+         falls back to an inline critical style set and stays readable. --}}
+    @php
+        $viteCss = public_path('build/manifest.json');
+        $hasBuild = is_file($viteCss);
+    @endphp
+    @if ($hasBuild)
+        @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @else
+        <style>
+            :root { color-scheme: light; }
+            body { margin:0; font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+                   background:#f5f7fb; color:#0f172a; }
+            .err { max-width:34rem; margin:0 auto; padding:4rem 1.5rem; text-align:center; }
+            .err h1 { font-size:2.5rem; margin:0 0 .5rem; letter-spacing:-.02em; }
+            .err p { color:#475569; margin:0 0 1.5rem; }
+            .err a { display:inline-block; padding:.625rem 1rem; border-radius:.5rem;
+                     background:#0b3375; color:#fff; text-decoration:none; font-weight:600; }
+        </style>
+    @endif
 </head>
 <body class="h-full bg-[var(--app-bg)]">
 <div class="min-h-full flex flex-col items-center justify-center px-5 py-14 text-center">

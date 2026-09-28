@@ -16,13 +16,17 @@ const pwaOptions = {
         scope: '/',
         display: 'standalone',
         orientation: 'portrait-primary',
-        background_color: '#f8fafc',
-        theme_color: '#1e3a8a',
+        // Brand palette, taken from the SIDA identity: deep navy anchor,
+        // royal blue interactive accent, teal for progress. background_color is
+        // the splash screen behind the window, so it stays a light neutral.
+        background_color: '#f5f7fb',
+        theme_color: '#0b3375',
         categories: ['education', 'productivity'],
         icons: [
-            { src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
-            { src: '/icons/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
-            { src: '/icons/icon-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+            { src: '/branding/pwa-192x192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+            { src: '/branding/pwa-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+            { src: '/branding/maskable-192x192.png', sizes: '192x192', type: 'image/png', purpose: 'maskable' },
+            { src: '/branding/maskable-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
         ],
         shortcuts: [
             { name: 'Dashboard', short_name: 'Beranda', url: '/dashboard' },

@@ -14,9 +14,18 @@
 <div class="flex flex-col h-full">
 
     {{-- Brand + workspace ---------------------------------------------------- --}}
+    {{-- Official SIDA emblem, not an icon-font stand-in: the mark combines a
+         graduation cap with a flowing S-ribbon and has no Lucide equivalent.
+         The wordmark beside it is real text, so it collapses with the rail and
+         the emblem never moves. --}}
     <div class="flex items-center gap-2.5 h-16 px-4 shrink-0 border-b border-white/8">
-        <span class="grid place-items-center w-8 h-8 rounded-[var(--radius-md)] bg-white/10 shrink-0">
-            <x-icon :name="$workspaceIcon" class="w-[18px] h-[18px] text-white" />
+        {{-- The emblem carries its own deep navy, which measures 1.8:1 against
+             this rail and disappears. A quiet light plate gives it the
+             contrast a graphical object needs without recolouring the official
+             artwork or applying a filter to it. --}}
+        <span class="nav-brand-icon grid place-items-center w-9 h-9 shrink-0
+                     rounded-[var(--radius-md)] bg-white">
+            <x-brand.logo variant="icon" height="h-8" alt="SIDA" />
         </span>
 
         <div class="min-w-0 nav-label">

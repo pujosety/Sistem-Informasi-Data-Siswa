@@ -80,7 +80,29 @@
 | Runtime semantic tokens (available to both CSS and Tailwind utilities)
 |--------------------------------------------------------------------------
 */
+/*
+|--------------------------------------------------------------------------
+| Design tokens
+|--------------------------------------------------------------------------
+| Palette derived from the SIDA identity:
+|
+|   deep navy   #0b3375   brand anchor: sidebar rail, headings, wordmark
+|   royal blue  #1668dc   interactive accent: primary actions, focus, active nav
+|   cyan        #35c6f3   secondary highlight, informational accents
+|   teal        #0f9b7a   progress and completion accents
+|
+| Brand informs the system without painting it: success, warning, danger and
+| info keep their own meanings, so a green element still means "verified"
+| rather than "brand". --app-primary-soft is deliberately the only place a
+| light primary tint appears, which is what keeps a dashboard calm.
+ */
 :root {
+    /* Brand family */
+    --brand-navy: #0b3375;
+    --brand-blue: #1668dc;
+    --brand-cyan: #35c6f3;
+    --brand-teal: #0f9b7a;
+
     --app-bg: var(--color-ink-50);
     --app-surface: #ffffff;
     --app-surface-muted: var(--color-ink-100);
@@ -91,10 +113,16 @@
     --app-text-muted: var(--color-ink-500);
     --app-text-subtle: var(--color-ink-400);
 
-    --app-primary: var(--color-brand-600);
-    --app-primary-hover: var(--color-brand-700);
-    --app-primary-soft: var(--color-brand-50);
+    --app-primary: var(--brand-blue);
+    --app-primary-hover: #1257bd;
+    --app-primary-soft: #eef4fd;
     --app-on-primary: #ffffff;
+
+    /* Progress / completion accent, drawn from the brand's teal so success
+       feels connected to the identity without being literally brand blue. */
+    --app-progress: var(--brand-teal);
+    --app-progress-soft: #e6f7f2;
+    --app-highlight: var(--brand-cyan);
 
     --app-success: oklch(0.55 0.13 155);
     --app-success-soft: oklch(0.96 0.03 155);
@@ -105,8 +133,10 @@
     --app-info: oklch(0.55 0.12 230);
     --app-info-soft: oklch(0.96 0.03 230);
 
-    --app-sidebar-bg: var(--color-ink-900);
-    --app-sidebar-text: var(--color-ink-400);
+    /* The rail carries the deep-navy anchor. A near-black rail fought with the
+       navy in the emblem; navy is the brand's own darkest value. */
+    --app-sidebar-bg: var(--brand-navy);
+    --app-sidebar-text: #b8c6e0;
     --app-sidebar-text-active: #ffffff;
     --app-sidebar-active-bg: rgb(255 255 255 / 0.08);
 
@@ -406,6 +436,31 @@
     /* Prevent horizontal page scroll on small screens (tables scroll locally). */
     .overflow-x-safe { overflow-x: hidden; max-width: 100vw; }
 }
+
+/* ------------------------------------------------------------------
+   | Sidebar collapse
+   | ----------------------------------------------------------------
+   | app-shell sets data-collapsed on the <aside> and narrows it to 72px.
+   | These rules hide the text that no longer fits, so the rail collapses
+   | cleanly instead of clipping the labels. Width animates on the aside
+   | itself; only opacity and width are animated here, both cheap.
+   */
+    [data-collapsed='true'] .nav-label {
+        opacity: 0;
+        width: 0;
+        overflow: hidden;
+        pointer-events: none;
+        transition: opacity 160ms ease, width 200ms ease;
+    }
+
+    .nav-label {
+        transition: opacity 200ms ease 40ms, width 200ms ease;
+    }
+
+    /* The emblem always occupies its box, so nothing shifts when collapsing. */
+    [data-collapsed='true'] .nav-brand-icon {
+        margin-right: 0;
+    }
 
 @layer utilities {
     .stack > * + * { margin-top: var(--stack-gap, 1rem); }

@@ -1,0 +1,52 @@
+@props([
+    // 'lockup' = icon + wordmark, 'icon' = emblem only.
+    'variant' => 'lockup',
+    // Sizing. Accepts a Tailwind height utility ('h-8', 'h-10') and derives a
+    // matching width for the square icon. A raw CSS length is deliberately not
+    // accepted: '40px' is not a Tailwind class, so it emitted an invalid class
+    // that then collided with the real one.
+    'height' => null,
+    'alt' => null,
+    // Inline SVG would be crisper, but the official asset is a PNG and the
+    // mark must not be redrawn, so the source is used as authored.
+])
+
+@php
+    $isIcon = $variant === 'icon';
+
+    // The lockup already contains the product name, so it is described once
+    // rather than announced twice.
+    $altText = $alt ?? ($isIcon
+        ? 'SIDA'
+        : 'SIDA — Sistem Informasi Data Siswa');
+
+    $heightClass = $height ?? ($isIcon ? 'h-8 w-8' : 'h-9 w-auto');
+
+    $src = $isIcon
+        ? asset('branding/sida-logo-icon.png')
+        : asset('branding/sida-logo.png');
+
+    // attributes already carries any class passed by the caller, so it is
+    // appended once — merge() would add the default a second time and produce
+    // duplicates like "w-8 h-8 w-8 h-8".
+    $callerClass = trim($attributes->get('class', ''));
+    $finalClass = trim($callerClass !== '' ? $callerClass.' '.$heightClass : $heightClass);
+@endphp
+
+{{--
+    The official artwork, referenced by one path per variant. The artwork is
+    never redrawn in CSS and never approximated with an icon font: the emblem
+    combines a graduation cap with a flowing S-ribbon, which has no icon-font
+    equivalent.
+--}}
+<img
+    src="{{ $src }}"
+    alt="{{ $altText }}"
+    @if ($isIcon)
+        width="32" height="32" loading="lazy" decoding="async"
+    @else
+        width="998" height="568"
+    @endif
+    @if ($finalClass) class="{{ $finalClass }}" @endif
+    {{ $attributes->except('class') }}
+>

@@ -8,14 +8,22 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <meta name="theme-color" content="#1e2f6b">
+    {{-- SIDA brand palette: deep navy anchor, royal blue interactive accent. --}}
+    <meta name="theme-color" content="#0b3375">
     <meta name="description" content="Pengelolaan data siswa, dokumen, dan verifikasi pendaftaran.">
 
-    <title>@yield('title', config('app.name')) · {{ config('app.name') }}</title>
+    {{-- One naming rule everywhere: "<halaman> · SIDA". The full product name
+         appears in the manifest and the login page instead. --}}
+    <title>@yield('title', 'Dashboard') · SIDA</title>
 
     <link rel="manifest" href="/manifest.webmanifest">
-    <link rel="icon" href="/favicon.ico" sizes="any">
-    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+
+    {{-- SIDA favicons. The multi-resolution .ico covers older browsers; the
+         explicit PNGs keep the emblem sharp on modern ones. --}}
+    <link rel="icon" href="{{ asset('branding/favicon.ico') }}" sizes="any">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('branding/favicon-32x32.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('branding/favicon-16x16.png') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('branding/apple-touch-icon.png') }}">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-title" content="SIDA">
 

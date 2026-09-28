@@ -3,10 +3,11 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <title>Masuk — {{ config('app.name') }}</title>
-    <link rel="icon" href="/favicon.ico" sizes="any">
-    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
-    <meta name="theme-color" content="#1e2f6b">
+    <title>Masuk · SIDA</title>
+    <link rel="icon" href="{{ asset('branding/favicon.ico') }}" sizes="any">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('branding/favicon-32x32.png') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('branding/apple-touch-icon.png') }}">
+    <meta name="theme-color" content="#0b3375">
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700|manrope:600,700,800&display=swap" rel="stylesheet">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -19,9 +20,14 @@
         <div class="absolute inset-0 opacity-[0.07] pointer-events-none"
              style="background-image:radial-gradient(circle at 22% 18%, white 0, transparent 42%),radial-gradient(circle at 78% 82%, white 0, transparent 46%)"></div>
 
-        <div class="relative flex items-center gap-2.5">
-            <span class="grid place-items-center w-9 h-9 rounded-[var(--radius-md)] bg-white/12">
-                <x-icon name="graduation-cap" class="w-5 h-5 text-white" />
+        {{-- The official SIDA emblem. It carries its own colour, so it sits on the
+             dark panel directly rather than inside a tinted chip, which would
+             double the contrast and muddy the mark. --}}
+        <div class="relative flex items-center gap-3">
+            {{-- Same contrast reasoning as the sidebar: the emblem's navy needs a
+                 light plate to read against the navy panel. --}}
+            <span class="grid place-items-center w-12 h-12 shrink-0 rounded-[var(--radius-lg)] bg-white">
+                <x-brand.logo variant="icon" height="h-10" alt="SIDA" />
             </span>
             <div>
                 <p class="text-body font-bold text-white leading-tight">SIDA</p>
