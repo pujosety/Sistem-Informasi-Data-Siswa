@@ -5,13 +5,24 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 use Spatie\Permission\Exceptions\UnauthorizedException;
+
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         web: __DIR__.'/../routes/web.php',
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
+        then: function () {
+            /* TEMPORARY deployment diagnostic. Registered directly rather than
+               in routes/web.php, because everything there is wrapped in the
+               `web` group — StartSession included — so a session failure killed
+               the diagnostic before its controller could report the failure.
+               DELETE once the production cause is resolved. */
+            Route::get('/__diag', \App\Http\Controllers\DiagnosticController::class)
+                ->withoutMiddleware(\Illuminate\Foundation\Http\Middleware\PreventRequestsDuringMaintenance::class);
+        },
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
