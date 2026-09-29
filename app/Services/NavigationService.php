@@ -44,11 +44,23 @@ class NavigationService
     {
         $out = [];
 
+        $modules = app(ModuleService::class);
+
         foreach ($items as $item) {
+            // A disabled module hides the item outright. Checked before
+            // permission so an operator switching a module off gets it gone
+            // regardless of who is looking.
+            if (! $modules->allows($item['module'] ?? null)) {
+                continue;
+            }
+
             if (! empty($item['children'])) {
                 $children = array_values(array_filter(
                     $item['children'],
-                    fn ($c) => empty($c['permission']) || $user->can($c['permission']),
+                    // Two independent gates: the module must be on, and this
+                    // user must hold the permission. Either can remove a leaf.
+                    fn ($c) => $modules->allows($c['module'] ?? null)
+                        && (empty($c['permission']) || $user->can($c['permission'])),
                 ));
 
                 // A group with nothing openable inside it is noise.
@@ -108,19 +120,19 @@ class NavigationService
         return [
             ['route' => 'workspace.admin', 'active' => 'workspace.admin', 'icon' => 'layout-dashboard', 'label' => 'Dashboard', 'permission' => 'dashboard.admin.view'],
 
-            ['label' => 'PPDB', 'icon' => 'clipboard-check', 'children' => [
-                ['route' => 'admin.registrations', 'active' => 'admin.registrations', 'label' => 'Verifikasi', 'permission' => 'verification.view', 'badge' => $pending],
+            ['label' => 'PPDB', 'module' => 'ppdb', 'icon' => 'clipboard-check', 'children' => [
+                ['route' => 'admin.registrations', 'active' => 'admin.registrations', 'label' => 'Verifikasi', 'permission' => 'verification.view', 'badge' => $pending, 'module' => 'ppdb'],
                 ['route' => 'admin.master', 'active' => 'admin.master*', 'label' => 'Master Data', 'permission' => 'master.view'],
             ]],
 
-            ['label' => 'Akademik', 'icon' => 'graduation-cap', 'children' => [
-                ['route' => 'academic.years.index', 'active' => 'academic.years.*', 'label' => 'Tahun Ajaran', 'permission' => 'academic_year.view'],
-                ['route' => 'academic.classes.index', 'active' => 'academic.classes*', 'label' => 'Kelas', 'permission' => 'classroom.view'],
-                ['route' => 'academic.enrollments.create', 'active' => 'academic.enrollments*', 'label' => 'Penempatan Siswa', 'permission' => 'enrollment.view'],
+            ['label' => 'Akademik', 'module' => 'academic', 'icon' => 'graduation-cap', 'children' => [
+                ['route' => 'academic.years.index', 'active' => 'academic.years.*', 'label' => 'Tahun Ajaran', 'permission' => 'academic_year.view', 'module' => 'academic'],
+                ['route' => 'academic.classes.index', 'active' => 'academic.classes*', 'label' => 'Kelas', 'permission' => 'classroom.view', 'module' => 'academic'],
+                ['route' => 'academic.enrollments.create', 'active' => 'academic.enrollments*', 'label' => 'Penempatan Siswa', 'permission' => 'enrollment.view', 'module' => 'academic'],
             ]],
 
             ['label' => 'Data', 'icon' => 'database', 'children' => [
-                ['route' => 'kesiswaan.students', 'active' => 'kesiswaan.students', 'label' => 'Data Siswa', 'permission' => 'student.view'],
+                ['route' => 'kesiswaan.students', 'active' => 'kesiswaan.students', 'label' => 'Data Siswa', 'permission' => 'student.view', 'module' => 'students'],
                 ['route' => 'admin.users', 'active' => 'admin.users*', 'label' => 'Pengguna', 'permission' => 'user.view'],
                 ['route' => 'admin.roles', 'active' => 'admin.roles*', 'label' => 'Role & Hak Akses', 'permission' => 'role.view'],
             ]],
@@ -189,8 +201,8 @@ class NavigationService
         if ($user->can('verification.approve')) {
             return [
                 ['route' => 'workspace.verifikator', 'active' => 'workspace.verifikator', 'icon' => 'clipboard-check', 'label' => 'Antrean', 'short' => 'Antrean', 'permission' => 'verification.approve', 'badge' => $pending],
-                ['route' => 'kesiswaan.students', 'active' => 'kesiswaan.students', 'icon' => 'users', 'label' => 'Siswa', 'short' => 'Siswa', 'permission' => 'student.view'],
-                ['route' => 'academic.classes.index', 'active' => 'academic.classes*', 'icon' => 'users-round', 'label' => 'Kelas', 'short' => 'Kelas', 'permission' => 'classroom.view'],
+                ['route' => 'kesiswaan.students', 'active' => 'kesiswaan.students', 'icon' => 'users', 'label' => 'Siswa', 'short' => 'Siswa', 'permission' => 'student.view', 'module' => 'students'],
+                ['route' => 'academic.classes.index', 'active' => 'academic.classes*', 'icon' => 'users-round', 'label' => 'Kelas', 'short' => 'Kelas', 'permission' => 'classroom.view', 'module' => 'academic'],
                 ['route' => 'laporan.index', 'active' => 'laporan.*', 'icon' => 'chart-bar', 'label' => 'Laporan', 'short' => 'Laporan', 'permission' => 'report.view'],
                 ['route' => 'profile.edit', 'active' => 'profile.*', 'icon' => 'user', 'label' => 'Profil', 'short' => 'Profil'],
             ];
@@ -198,9 +210,9 @@ class NavigationService
 
         return [
             ['route' => 'workspace.admin', 'active' => 'workspace.admin', 'icon' => 'layout-dashboard', 'label' => 'Beranda', 'short' => 'Beranda', 'permission' => 'dashboard.admin.view'],
-            ['route' => 'admin.registrations', 'active' => 'admin.registrations', 'icon' => 'clipboard-check', 'label' => 'Verifikasi', 'short' => 'Verifikasi', 'permission' => 'verification.view', 'badge' => $pending],
-            ['route' => 'kesiswaan.students', 'active' => 'kesiswaan.students', 'icon' => 'users', 'label' => 'Siswa', 'short' => 'Siswa', 'permission' => 'student.view'],
-            ['route' => 'academic.classes.index', 'active' => 'academic.classes*', 'icon' => 'users-round', 'label' => 'Kelas', 'short' => 'Kelas', 'permission' => 'classroom.view'],
+            ['route' => 'admin.registrations', 'active' => 'admin.registrations', 'icon' => 'clipboard-check', 'label' => 'Verifikasi', 'short' => 'Verifikasi', 'permission' => 'verification.view', 'badge' => $pending, 'module' => 'ppdb'],
+            ['route' => 'kesiswaan.students', 'active' => 'kesiswaan.students', 'icon' => 'users', 'label' => 'Siswa', 'short' => 'Siswa', 'permission' => 'student.view', 'module' => 'students'],
+            ['route' => 'academic.classes.index', 'active' => 'academic.classes*', 'icon' => 'users-round', 'label' => 'Kelas', 'short' => 'Kelas', 'permission' => 'classroom.view', 'module' => 'academic'],
             ['route' => 'profile.edit', 'active' => 'profile.*', 'icon' => 'user', 'label' => 'Profil', 'short' => 'Profil'],
         ];
     }
