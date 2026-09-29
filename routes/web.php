@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthenticatedSessionController;
+use App\Http\Controllers\BrandAssetController;
 use App\Http\Controllers\DocumentFileController;
 use App\Http\Controllers\KesiswaanController;
 use App\Http\Controllers\MasterDataController;
@@ -39,6 +40,28 @@ use Illuminate\Support\Facades\Route;
 // Same reason as /__diag: an operational probe must not be masked by a
 // cache-store failure.
 Route::get('/health', HealthController::class)->name('health');
+
+/*
+|--------------------------------------------------------------------------
+| Brand assets
+|--------------------------------------------------------------------------
+|
+| The two brand images are public, so this sits OUTSIDE the auth group — the
+| logo has to render on the login screen, before anyone is authenticated.
+|
+| It is still not a direct /storage/... URL. The disk holding these images is
+| shared with student documents, so on any host where it is a bucket it must
+| stay private; this route is what makes the logo reachable without opening
+| every student's birth certificate to the internet.
+|
+| It sits next to /health rather than with the other public pages because it
+| must survive the same failures: a settings-cache miss or an unreachable
+| database must not stop the login page rendering its logo.
+|
+*/
+Route::get('/branding/{key}', [BrandAssetController::class, 'show'])
+    ->where('key', 'branding\.(?:logo|icon)')
+    ->name('brand.asset');
 
 /*
 |--------------------------------------------------------------------------

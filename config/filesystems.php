@@ -4,6 +4,37 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Should the "public" disk be backed by S3?
+    |--------------------------------------------------------------------------
+    |
+    | Every environment that supplies an S3 bucket gets object storage for
+    | the `public` disk automatically. The switch is the presence of a bucket
+    | name rather than a separate on/off flag, so a host cannot end up with
+    | half the configuration applied.
+    |
+    | WHY THIS IS A SINGLE DISK RATHER THAN A SEPARATE "s3" DISK
+    |
+    | The application stores files through `Storage::disk('public')` in four
+    | places: uploaded student documents, the two branding assets, and their
+    | deletions. Those call sites are correct for any driver and are exactly
+    | what should not have to know which host the app is on. Introducing a
+    | separate disk name would mean every one of them has to branch, and the
+    | branch would be wrong the moment a new call site was added.
+    |
+    | WHY S3 IS REQUIRED ON SERVERLESS HOSTS
+    |
+    | A Vercel function filesystem is read-only outside /tmp and is discarded
+    | with the container. A document uploaded there would vanish on the next
+    | cold start, taking the student's KK with it. `storage:link` also cannot
+    | help: the symlink resolves inside a container that no longer exists, so
+    | the file 404s even before it is recycled.
+    |
+    */
+
+    'public_disk_is_s3' => (bool) env('AWS_BUCKET'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Default Filesystem Disk
     |--------------------------------------------------------------------------
     |
@@ -39,8 +70,8 @@ return [
         ],
 
         'public' => [
-            'driver' => 'local',
-            'root' => storage_path('app/public'),
+            'driver' => env('AWS_BUCKET') ? 's3' : 'local',
+            'root' => env('AWS_BUCKET') ? '' : storage_path('app/public'),
             /*
              | Host-relative by default.
              |
@@ -63,7 +94,7 @@ return [
             'driver' => 's3',
             'key' => env('AWS_ACCESS_KEY_ID'),
             'secret' => env('AWS_SECRET_ACCESS_KEY'),
-            'region' => env('AWS_DEFAULT_REGION'),
+            'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
             'bucket' => env('AWS_BUCKET'),
             'url' => env('AWS_URL'),
             'endpoint' => env('AWS_ENDPOINT'),

@@ -1,0 +1,46 @@
+# Files that must not be uploaded to Vercel.
+#
+# The vercel-php runtime runs its own `composer install` against composer.json
+# during the build, so shipping a vendor/ directory would only upload ~65 MB
+# that then gets overwritten. The build would also be slower and the function
+# bundle would carry two copies of the same packages.
+
+/vendor
+/node_modules
+
+# The Wasmer deployment path. Vercel ignores app.yaml; keeping it out of the
+# upload makes it obvious which host a given deployment is configured for.
+/app.yaml
+/docker
+/docker-compose.yml
+
+# Local environment files. Vercel injects its own at runtime; a committed .env
+# would silently win over the project's own variables.
+/.env
+/.env.*
+!/.env.example
+/.env.testing
+
+# Local verification scripts. These are one-off harnesses for the Docker
+# environment and are not part of the application.
+/hermes-*
+
+# Runtime artefacts. public/build is deliberately NOT ignored: the function's
+# document root is public/, so the compiled assets must be in the upload.
+/storage/logs/*
+/storage/framework/cache/data/*
+/storage/framework/sessions/*
+/storage/framework/views/*
+/public/storage
+/public/hot
+
+# VCS and CI metadata
+/.git
+/.github
+/docs
+
+# Tests and static analysis. The function never runs them, and they roughly
+# double the upload.
+/tests
+/phpunit.xml
+/.phpunit.result.cache

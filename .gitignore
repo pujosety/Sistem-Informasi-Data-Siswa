@@ -66,3 +66,12 @@ sync-vendor.sh
 __pycache__/
 *.pyc
 docs/diagrams/*.tmp.pptx
+
+# --- Vercel ----------------------------------------------------------------
+.vercel
+.env*
+
+# `dist/` is produced by the Vercel build command (a copy of public/build) and
+# is regenerated on every deploy. Committing it would only bloat the
+# repository; public/build is the real source and it is already ignored.
+dist/

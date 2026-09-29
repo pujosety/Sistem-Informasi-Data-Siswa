@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Models\Setting;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Schema;
 
 /**
@@ -246,11 +245,27 @@ class SettingsService
         return (bool) $this->get('registration.open', true);
     }
 
-    /** Absolute URL for a stored brand asset, or null. */
+    /**
+     * URL for a stored brand asset, or null.
+     *
+     * This returns an application route, not a direct storage path.
+     *
+     * A /storage/... URL is only correct while the disk is local and publicly
+     * readable through `php artisan storage:link`. Both assumptions break on a
+     * serverless host: the symlink target lives in a container that is
+     * discarded, and the disk is an S3 bucket that has to stay private because
+     * student documents share it. BrandAssetController streams the two public
+     * images from that private bucket, which is the only reason the logo still
+     * renders on the login screen while the documents stay behind an
+     * ownership check.
+     *
+     * @see BrandAssetController for why the bucket cannot simply be public
+     * @see DocumentFileController for the private counterpart
+     */
     public function asset(string $key): ?string
     {
         $path = $this->get($key);
 
-        return filled($path) ? Storage::disk('public')->url($path) : null;
+        return filled($path) ? route('brand.asset', ['key' => $key]) : null;
     }
 }
