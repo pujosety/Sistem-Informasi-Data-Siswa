@@ -43,6 +43,7 @@
 
 $frontController = __DIR__.'/../public/index.php';
 
+
 if (! is_file($frontController)) {
     http_response_code(500);
     header('Content-Type: text/plain; charset=utf-8');

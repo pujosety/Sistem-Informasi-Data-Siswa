@@ -35,6 +35,23 @@ return Application::configure(basePath: dirname(__DIR__))
         // Runs for every request so validation errors can always redirect.
         $middleware->append(\App\Http\Middleware\EnsureRedirectFallback::class);
 
+        /*
+         | Forbids shared caching of any response that carries per-visitor state.
+         |
+         | On a host that destroys the container between requests, a cached
+         | login page and a live session can never agree: the page is replayed
+         | from one application instance while the browser holds a session
+         | cookie minted by another, so the CSRF token in the form does not
+         | match and every submission is rejected with 419. The mismatch is
+         | structural, not a race, so no amount of session tuning fixes it —
+         | the page simply must not be stored.
+         |
+         | Appended rather than prepended so it wraps everything that might set
+         | a cookie, including the session middleware. See
+         | @see \App\Http\Middleware\PreventSharedCaching for the full reasoning.
+         */
+        $middleware->append(\App\Http\Middleware\PreventSharedCaching::class);
+
         $middleware->redirectGuestsTo(fn () => route('login'));
 
         // Managed hosts (Wasmer included) terminate TLS in front of PHP, so the
@@ -114,6 +131,7 @@ return Application::configure(basePath: dirname(__DIR__))
             if ($e instanceof \Illuminate\Database\Eloquent\ModelNotFoundException) {
                 $status = 404;
             }
+
 
             return response()->view('errors.minimal', [
                 'exception' => $e,
