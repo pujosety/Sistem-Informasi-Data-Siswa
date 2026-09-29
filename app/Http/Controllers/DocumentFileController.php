@@ -94,6 +94,13 @@ class DocumentFileController extends BaseController
 
     /**
      * Owner, or staff who legitimately need to review the file.
+     *
+     * Delegated to DocumentPolicy rather than re-stating the rule here. The
+     * check is unchanged — the same permissions, the same ownership question —
+     * but a second surface that reads a student document now inherits it. When
+     * it lived in this controller, only this controller was protected, and a
+     * signed link or a console command added later would have quietly served
+     * every birth certificate in the school.
      */
     private function authorizeDocument(Request $request, Document $document): void
     {
@@ -101,14 +108,6 @@ class DocumentFileController extends BaseController
 
         abort_if(! $user, 403);
 
-        if ($user->hasAnyRole(['admin', 'kesiswaan'])) {
-            return;
-        }
-
-        $ownsDocument = Student::where('user_id', $user->id)
-            ->whereHas('registration', fn ($q) => $q->where('registrations.id', $document->registration_id))
-            ->exists();
-
-        abort_if(! $ownsDocument, 403, 'Berkas ini bukan milik Anda.');
+        $this->authorize('view', $document);
     }
 }
