@@ -23,7 +23,12 @@ kind: wasmer.io/App.v0
 
 # The project is created in the Wasmer dashboard; this must match its name or
 # the build is rejected.
-name: sistem-informasi-data-siswa
+#
+# Wasmer matches this field against the APP name, and `wasmer app create` takes
+# the name from here when --use-local-manifest is passed. It is therefore the
+# single place the name is declared: changing it here changes the target, and a
+# mismatch with an existing app is rejected at build time rather than ignored.
+name: SIDA
 
 scripts:
   install: |
