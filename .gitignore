@@ -65,7 +65,20 @@ sync-vendor.sh
 # --- Documentation tooling --------------------------------------------
 __pycache__/
 *.pyc
+
+# --- Generated documentation binaries ----------------------------------
+# The diagrams, screenshots and presentation decks are build OUTPUT, not source:
+# the .mmd files regenerate them and the .md files reference them by path. They
+# were tracked here and totalled 20 MB, which shipped inside the container image
+# on every deploy. They now live outside the repository entirely — see
+# docs/README.md for where.
+docs/presentation/
+docs/diagrams/*.png
 docs/diagrams/*.tmp.pptx
+docs/assets/screenshots/
+docs/assets/brand/
+docs/**/*.pdf
+docs/**/*.pptx
 
 # --- Vercel ----------------------------------------------------------------
 .vercel

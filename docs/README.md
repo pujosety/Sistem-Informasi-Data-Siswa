@@ -8,7 +8,26 @@ selesai ditandai **PARTIAL** atau **PLANNED** — tidak pernah diklaim selesai.
 Produksi: **https://sida-4136.wasmer.app/**
 Repositori: **https://github.com/pujosety/Sistem-Informasi-Data-Siswa**
 
-![Logo SIDA](assets/brand/sida-logo-640.png)
+> **Gambar dan slide tidak lagi ada di repository ini.**
+>
+> Diagram, tangkapan layar, aset brand, dan deck presentasi — total 20,7 MB —
+> sekarang disimpan di luar repo, di:
+>
+> ```
+> C:\Users\pujoh\Projects\siswa-data-docs\
+>   assets\        screenshot dan logo
+>   diagrams\      PNG hasil render dari .mmd
+>   presentation\  PDF dan PPTX
+> ```
+>
+> Alasannya teknis, bukan estetika. Build Wasmer menyalin **seluruh working
+> tree** ke dalam image container — `COPY --exclude=.git --exclude=node_modules
+> --exclude=vendor . .` — jadi apa pun yang ada di disk ikut ter-deploy. File 20
+> MB itu membuat build selesai pada langkah `npm run build` lalu **mati di
+> `exporting to client directory`** saat masih meng-copy 241 MB.
+>
+> Berkas `.mmd` (sumber diagramnya) tetap di `docs/diagrams/`, jadi gambar bisa
+> dibuat ulang kapan saja. Jalankan mermaid CLI untuk itu.
 
 ---
 
