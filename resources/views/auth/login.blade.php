@@ -131,37 +131,6 @@
                 <a href="{{ route('register') }}" class="font-semibold text-[var(--app-primary)] hover:underline">Daftar sekarang</a>
             </p>
 
-            <details class="mt-8 group">
-                <summary class="cursor-pointer list-none flex items-center gap-2 text-caption font-semibold text-[var(--app-text-muted)] hover:text-[var(--app-text)] transition-colors">
-                    <x-icon name="info" class="w-4 h-4" />
-                    Akun demo untuk penilaian
-                    <x-icon name="chevron-down" class="w-3.5 h-3.5 transition-transform group-open:rotate-180" />
-                </summary>
-                <div class="mt-3 surface overflow-hidden">
-                    <table class="w-full text-caption">
-                        <thead class="bg-[var(--app-surface-muted)] text-[var(--app-text-muted)]">
-                            <tr>
-                                <th class="text-left px-3 py-2 font-semibold">Peran</th>
-                                <th class="text-left px-3 py-2 font-semibold">Email</th>
-                                <th class="text-left px-3 py-2 font-semibold">Password</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach ([
-                                ['Administrator', 'admin@siswa.test'],
-                                ['Kesiswaan', 'kesiswaan@siswa.test'],
-                                ['Siswa', 'siswa@siswa.test'],
-                            ] as [$role, $mail])
-                                <tr class="border-t border-[var(--app-border)]">
-                                    <td class="px-3 py-2">{{ $role }}</td>
-                                    <td class="px-3 py-2 font-mono text-[11px]">{{ $mail }}</td>
-                                    <td class="px-3 py-2 font-mono text-[11px]">password123</td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            </details>
         </div>
     </div>
 </div>
