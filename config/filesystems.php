@@ -63,7 +63,24 @@ return [
 
         'local' => [
             'driver' => 'local',
-            'root' => storage_path('app/private'),
+            /*
+             | The root moves to a writable path on a host that has no
+             | writable storage/ — serverless in particular.
+             |
+             | storage/app/private is inside the read-only application bundle
+             | there, so the first thing Flysystem does is mkdir it, and that
+             | throws UnableToCreateDirectory. Because Filesystem is resolved
+             | by the FIRST middleware, before any controller and before the
+             | session store, the failure looks identical on every route: a
+             | plain 500 with no application output. Nothing about the request
+             | distinguishes a missing writable disk from a broken database.
+             |
+             | STORAGE_PRIVATE_PATH is set by the deploy config. It is read from
+             | the environment rather than hard-coded so the same config works
+             | on a normal host, where storage/ is writable and the local path
+             | is the right answer.
+             */
+            'root' => env('STORAGE_PRIVATE_PATH', storage_path('app/private')),
             'serve' => true,
             'throw' => false,
             'report' => false,
@@ -71,7 +88,7 @@ return [
 
         'public' => [
             'driver' => env('AWS_BUCKET') ? 's3' : 'local',
-            'root' => env('AWS_BUCKET') ? '' : storage_path('app/public'),
+            'root' => env('AWS_BUCKET') ? '' : env('STORAGE_PUBLIC_PATH', storage_path('app/public')),
             /*
              | Host-relative by default.
              |

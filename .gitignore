@@ -75,3 +75,11 @@ docs/diagrams/*.tmp.pptx
 # is regenerated on every deploy. Committing it would only bloat the
 # repository; public/build is the real source and it is already ignored.
 dist/
+
+# A stray `curl ... > -w` (dash-w instead of -w with an argument) lands an HTML
+# error page in the repository root under the name `-w`, and git happily stages
+# it because the name is not obviously junk. Two of these were created and
+# removed during the Vercel work; ignore the pattern so the third cannot happen.
+/-w
+/-o
+/-s

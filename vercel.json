@@ -1,33 +1,25 @@
 {
     "$schema": "https://openapi.vercel.sh/vercel.json",
-
     "framework": null,
-
-    "installCommand": "composer install --optimize-autoloader --no-interaction --no-progress --ignore-platform-reqs --no-scripts --no-dev && npm install",
-
+    "installCommand": "npm install",
     "buildCommand": "npm run build && cp -r public/build dist",
-
     "outputDirectory": "dist",
-
     "functions": {
         "api/index.php": {
             "runtime": "vercel-php@0.7.4",
-            "memory": 3008,
-            "maxDuration": 60,
-            "excludeFiles": "{.git/**,.env*,tests/**,hermes-*,docs/**,app.yaml,docker/**,node_modules/**,database/*.sql}"
+            "memory": 1024,
+            "maxDuration": 300,
+            "excludeFiles": "{storage/framework/cache/**,storage/framework/views/**,storage/app/**,storage/logs/**,docs/**,tests/**,.git/**,.hermes/**,node_modules/**,hermes-*,docker/**,app.yaml}"
         }
     },
-
     "env": {
         "VERCEL_PHP_DOCROOT": "public",
-
         "APP_ENV": "production",
         "APP_DEBUG": "false",
         "APP_LOCALE": "id",
         "APP_FALLBACK_LOCALE": "en",
         "APP_FAKER_LOCALE": "id_ID",
         "APP_TIMEZONE": "Asia/Jakarta",
-
         "APP_CONFIG_CACHE": "/tmp/config.php",
         "APP_EVENTS_CACHE": "/tmp/events.php",
         "APP_PACKAGES_CACHE": "/tmp/packages.php",
@@ -35,20 +27,21 @@
         "APP_SERVICES_CACHE": "/tmp/services.php",
         "APP_LOCALE_CACHE": "/tmp/locale.php",
         "VIEW_COMPILED_PATH": "/tmp/views",
-
         "LOG_CHANNEL": "stderr",
         "LOG_LEVEL": "info",
-
         "SESSION_DRIVER": "database",
         "CACHE_STORE": "database",
         "CACHE_PREFIX": "sida-cache",
         "QUEUE_CONNECTION": "sync",
-
         "MAIL_MAILER": "log",
         "TRUSTED_PROXIES": "*",
-        "FILESYSTEM_DISK": "public"
+        "FILESYSTEM_DISK": "local",
+        "APP_MAINTENANCE_DRIVER": "file",
+        "APP_MAINTENANCE_STORE": "file",
+        "STORAGE_PRIVATE_PATH": "/tmp/sida-storage/private",
+        "STORAGE_PUBLIC_PATH": "/tmp/sida-storage/public",
+        "LOG_PATH": "/tmp/sida-storage/logs/laravel.log"
     },
-
     "routes": [
         {
             "handle": "filesystem"
@@ -58,10 +51,15 @@
             "dest": "/api/index.php"
         }
     ],
-
     "build": {
         "env": {
-            "COMPOSER_ALLOW_SUPERUSER": "1"
+            "COMPOSER_ALLOW_SUPERUSER": "1",
+            "APP_ENV": "production",
+            "APP_DEBUG": "false",
+            "CACHE_STORE": "array",
+            "SESSION_DRIVER": "array",
+            "QUEUE_CONNECTION": "sync",
+            "LOG_CHANNEL": "stderr"
         }
     }
 }

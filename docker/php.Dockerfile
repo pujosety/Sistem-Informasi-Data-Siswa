@@ -7,10 +7,17 @@
 FROM php:8.4-cli
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-        git unzip libzip-dev libicu-dev libpng-dev libonig-dev \
+        git unzip libzip-dev libicu-dev libpng-dev libonig-dev libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
-RUN docker-php-ext-install -j"$(nproc)" pdo_mysql zip intl gd bcmath
+# pdo_pgsql is here for the Neon production database.
+#
+# The production target is PostgreSQL, not MySQL (see hermes-neon-migrate.sh
+# for why the driver swap is safe). A missing driver is not a connection error
+# Laravel can report usefully — it surfaces as a bare "could not find driver"
+# from the PDO layer, which names neither the missing extension nor the
+# database, so it reads like a wrong-host problem when it is a build problem.
+RUN docker-php-ext-install -j"$(nproc)" pdo_mysql pdo_pgsql zip intl gd bcmath
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
