@@ -88,6 +88,10 @@
                        @class(['font-semibold text-[var(--app-primary)]' => $current === 'tentang', 'text-[var(--app-text-muted)] hover:text-[var(--app-text)]' => $current !== 'tentang'])>
                         Profil
                     </a>
+                    <a href="{{ route('public.news') }}"
+                       @class(['font-semibold text-[var(--app-primary)]' => str_starts_with($current, 'berita'), 'text-[var(--app-text-muted)] hover:text-[var(--app-text)]' => ! str_starts_with($current, 'berita')])>
+                        Berita
+                    </a>
                     <a href="{{ route('public.programs') }}"
                        @class(['font-semibold text-[var(--app-primary)]' => $current === 'program', 'text-[var(--app-text-muted)] hover:text-[var(--app-text)]' => $current !== 'program'])>
                         Program

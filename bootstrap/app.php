@@ -52,6 +52,15 @@ return Application::configure(basePath: dirname(__DIR__))
             Route::get('/kontak', [\App\Http\Controllers\PublicHomeController::class, 'contact'])
                 ->name('public.contact');
 
+            // News, read from the CMS. Both routes go through
+            // publishedAndPublic(), so a draft, an unpublished post, a future
+            // post and a post outside its window are all excluded by the query
+            // rather than by a check a caller has to remember.
+            Route::get('/berita', [\App\Http\Controllers\PublicCmsController::class, 'news'])
+                ->name('public.news');
+            Route::get('/berita/{slug}', [\App\Http\Controllers\PublicCmsController::class, 'post'])
+                ->name('public.news.show');
+
             /* TEMPORARY deployment diagnostic. Registered directly rather than
                in routes/web.php, because everything there is wrapped in the
                `web` group — StartSession included — so a session failure killed
