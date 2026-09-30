@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 {{--
     The public school website.
 
@@ -11,51 +10,14 @@
     blocks; the figures below are the hard-coded fallback a school sees before
     anyone has written a page for it.
 --}}
-<html lang="id" class="h-full">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <title>{{ $school['name'] ?: 'SIDA' }}</title>
-    <meta name="description" content="Portal informasi dan administrasi {{ $school['name'] ?: 'sekolah' }}. Pendaftaran siswa, akademik, dan documentasi dalam satu sistem.">
-    <link rel="icon" href="{{ asset('branding/favicon.ico') }}" sizes="any">
-    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('branding/favicon-32x32.png') }}">
-    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('branding/apple-touch-icon.png') }}">
-    <meta name="theme-color" content="#0b3375">
-    <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700|manrope:600,700,800&display=swap" rel="stylesheet">
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-</head>
-<body class="h-full bg-[var(--app-bg)]">
-<div class="min-h-full flex flex-col">
+@extends('public.layout')
 
-    {{-- Header: the school name is the identity, the portal link is the only action --}}
-    <header class="bg-[var(--app-sidebar-bg)] text-white">
-        <div class="mx-auto max-w-6xl px-5 sm:px-8">
-            <div class="flex items-center justify-between gap-4 py-4">
-                <div class="flex items-center gap-3 min-w-0">
-                    <span class="grid place-items-center w-10 h-10 shrink-0 rounded-[var(--radius-lg)] bg-white">
-                        <x-brand.logo variant="icon" height="h-8" alt="SIDA" />
-                    </span>
-                    <div class="min-w-0">
-                        <p class="text-body font-bold leading-tight truncate">
-                            {{ $school['name'] ?: 'SIDA' }}
-                        </p>
-                        <p class="text-[11px] text-white/55 leading-tight">Sistem Informasi Data Siswa</p>
-                    </div>
-                </div>
+@php $title = ($school['name'] ?: 'SIDA') . ' — Sistem Informasi Data Siswa'; @endphp
+@section('title', $title)
+@php $description = 'Portal informasi dan administrasi ' . ($school['name'] ?: 'sekolah') . '. Pendaftaran siswa, akademik, dan dokumentasi dalam satu sistem.'; @endphp
+@section('description', $description)
 
-                <a href="{{ $portalUrl }}"
-                   class="shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-[var(--radius-md)]
-                          bg-white text-[var(--app-primary)] text-body font-semibold
-                          hover:bg-white/90 transition-colors focus-visible:outline-2
-                          focus-visible:outline-offset-2 focus-visible:outline-white">
-                    <x-icon name="log-in" class="w-4 h-4" />
-                    Portal SIDA
-                </a>
-            </div>
-        </div>
-    </header>
-
+@section('body')
     {{-- Hero: what the school is, and the two doors in --}}
     <section class="relative overflow-hidden bg-[var(--app-sidebar-bg)] text-white">
         <div class="absolute inset-0 opacity-[0.07] pointer-events-none"
@@ -181,4 +143,4 @@
     </footer>
 </div>
 </body>
-</html>
+@endsection

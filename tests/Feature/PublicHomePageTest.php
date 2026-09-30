@@ -188,4 +188,106 @@ class PublicHomePageTest extends TestCase
         // the change added a page, it did not move anything.
         $this->get('/login')->assertOk();
     }
+
+    /**
+     * @test
+     */
+    public function test_every_public_page_loads_without_a_session(): void
+    {
+        foreach (['/', '/tentang', '/program', '/ppdb', '/kontak'] as $uri) {
+            $response = $this->get($uri);
+
+            $response->assertOk("Public page [{$uri}] must not require authentication.");
+        }
+    }
+
+    /**
+     * @test
+     */
+    public function test_no_public_page_renders_a_student_record(): void
+    {
+        $user = User::factory()->create(['name' => 'Siti Nurhaliza']);
+        $student = Student::factory()->create([
+            'user_id' => $user->id,
+            'full_name' => 'Siti Nurhaliza',
+            'nisn' => '0098765432',
+            'nik' => '3276543210987654',
+            'phone' => '081234567899',
+        ]);
+
+        // Every public page, one loop, because §10 applies to the whole site
+        // rather than to the page that happens to be checked.
+        foreach (['/', '/tentang', '/program', '/ppdb', '/kontak'] as $uri) {
+            $body = $this->get($uri)->getContent();
+
+            foreach ([
+                'Siti Nurhaliza'      => 'student name',
+                '0098765432'          => 'NISN',
+                '3276543210987654'    => 'NIK',
+                '081234567899'        => 'phone',
+            ] as $value => $label) {
+                $this->assertStringNotContainsString(
+                    $value,
+                    $body,
+                    "Public page [{$uri}] rendered a {$label}."
+                );
+            }
+        }
+    }
+
+    /**
+     * @test
+     *
+     * Note what this does NOT assert: subjects are not partitioned by
+     * department in the schema — there is no department_id on subjects — so the
+     * page shows the curriculum-wide subject list under each department. That
+     * is a limitation of the data, recorded here so a future change to the
+     * schema updates the page rather than silently diverging from the test.
+     */
+    public function test_the_program_page_lists_subjects_but_not_classes(): void
+    {
+        $year = AcademicYear::create([
+            'name' => '2026/2027', 'start_date' => '2026-07-01',
+            'end_date' => '2027-06-30', 'is_active' => true, 'status' => AcademicYear::ACTIVE,
+        ]);
+        $department = Department::create(['name' => 'Ilmu Pengetahuan Alam', 'code' => 'IPA']);
+        SchoolClass::create([
+            'academic_year_id' => $year->id, 'department_id' => $department->id,
+            'name' => 'X IPA 1', 'code' => 'X-IPA-1', 'level' => 'X',
+            'capacity' => 36, 'status' => SchoolClass::ACTIVE,
+        ]);
+        Subject::create(['name' => 'Matematika', 'code' => 'MTK', 'grade_level' => 'X']);
+
+        $body = $this->get('/program')->getContent();
+
+        $this->assertStringContainsString('Ilmu Pengetahuan Alam', $body);
+        $this->assertStringContainsString('Matematika', $body);
+
+        // A count is publishable; the class itself is one step from a roster,
+        // since class membership is derived from enrolment and identifies
+        // students.
+        $this->assertStringContainsString('1 kelas aktif', $body);
+        $this->assertStringNotContainsString('X IPA 1', $body);
+    }
+
+    /**
+     * @test
+     */
+    public function test_the_profile_says_so_when_nothing_is_published(): void
+    {
+        // No school.* values beyond the default, so the page must not render a
+        // grid of empty labels.
+        app(SettingsService::class)->setMany([
+            'school.name' => 'SMA Negeri 1 Bogor',
+            'school.npsn' => '',
+            'school.address' => '',
+            'school.city' => '',
+            'school.email' => '',
+            'school.phone' => '',
+        ]);
+
+        $body = $this->get('/tentang')->getContent();
+
+        $this->assertStringContainsString('Detail profil belum dilengkapi', $body);
+    }
 }

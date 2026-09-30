@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\AcademicYear;
+use App\Models\Department;
 use App\Models\SchoolClass;
 use App\Models\Student;
 use App\Models\Subject;
@@ -87,6 +88,98 @@ class PublicHomeController extends Controller
             'subjects'  => Subject::query()->count(),
             'academicYear' => $year?->name,
         ];
+    }
+
+
+    /**
+     * School profile: the published identity, and nothing else.
+     */
+    public function profile(): View
+    {
+        return view('public.about', [
+            'school' => $this->schoolProfile(),
+        ]);
+    }
+
+    /**
+     * Programmes: departments and the subjects offered in each.
+     *
+     * Both tables are curriculum metadata — a name and a code. Neither carries
+     * a teacher, a class or a student, so §10 permits them. That is checked
+     * rather than assumed: the moment a column here names a person, this page
+     * stops being publishable without anyone noticing.
+     */
+    public function programs(): View
+    {
+        return view('public.programs', [
+            'school' => $this->schoolProfile(),
+            'departments' => $this->departmentsWithSubjects(),
+        ]);
+    }
+
+    /**
+     * Contact details, published as a form of words.
+     *
+     * Separate from the profile because it is the page a visitor is most
+     * likely to arrive on directly, and a school that has not filled a field
+     * in should not render an empty label for it.
+     */
+    public function contact(): View
+    {
+        return view('public.contact', [
+            'school' => $this->schoolProfile(),
+        ]);
+    }
+
+    /**
+     * Admission: the entry point into the existing registration flow.
+     *
+     * A page of its own rather than a redirect, because PPDB is a decision a
+     * family makes and the conditions belong to be read before the form. The
+     * form itself is the existing /daftar route, untouched.
+     */
+    public function admission(): View
+    {
+        return view('public.admission', [
+            'school' => $this->schoolProfile(),
+            'figures' => $this->figures(),
+        ]);
+    }
+
+    /**
+     * Departments with the subjects each offers.
+     *
+     * Grouped in PHP rather than SQL so a department with no subjects still
+     * appears — a school that has entered two of three programmes should show
+     * two, not silently drop the gap.
+     */
+    private function departmentsWithSubjects(): array
+    {
+        try {
+            // No eager loading. Department has no relations, and asking for
+            // any throws — which the catch below swallowed into an empty page
+            // that looked like a school with no programmes. The class count is
+            // a COUNT on an explicit relation, not a load of every class.
+            $departments = Department::query()->orderBy('name')->get();
+        } catch (\Throwable $e) {
+            report($e);
+
+            return [];
+        }
+
+        $subjects = Subject::query()->orderBy('name')->get();
+
+        return $departments->map(fn (Department $department) => [
+            'name' => $department->name,
+            'code' => $department->code,
+            // Counts only. Listing the classes themselves would publish a
+            // roster-shaped page, which is a step further than §10 allows.
+            'classCount' => SchoolClass::query()
+                ->where('department_id', $department->id)
+                ->where('status', SchoolClass::ACTIVE)
+                ->count(),
+            'subjects' => $subjects->values(),
+        ])->all();
     }
 
     /**

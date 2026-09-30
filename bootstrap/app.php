@@ -34,6 +34,24 @@ return Application::configure(basePath: dirname(__DIR__))
             Route::get('/', [\App\Http\Controllers\PublicHomeController::class, '__invoke'])
                 ->name('home');
 
+            // The rest of the public school website. Indonesian paths, matching
+            // the rest of the application; no auth, and none of them load a
+            // student record.
+            //
+            // `/tentang`, not `/profil`. `/profil` is already the STUDENT's
+            // profile — profile.edit, profile.update and profile.password — and
+            // registering a second route on that path shadowed all three,
+            // which took out the topbar and nav on every authenticated page.
+            // The public page needed a name that was actually free.
+            Route::get('/tentang', [\App\Http\Controllers\PublicHomeController::class, 'profile'])
+                ->name('public.about');
+            Route::get('/program', [\App\Http\Controllers\PublicHomeController::class, 'programs'])
+                ->name('public.programs');
+            Route::get('/ppdb', [\App\Http\Controllers\PublicHomeController::class, 'admission'])
+                ->name('public.admission');
+            Route::get('/kontak', [\App\Http\Controllers\PublicHomeController::class, 'contact'])
+                ->name('public.contact');
+
             /* TEMPORARY deployment diagnostic. Registered directly rather than
                in routes/web.php, because everything there is wrapped in the
                `web` group — StartSession included — so a session failure killed
