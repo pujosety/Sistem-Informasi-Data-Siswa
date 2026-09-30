@@ -104,7 +104,7 @@ class SeedShowcaseHrisAndContentCommand extends Command
             Employee::create([
                 'user_id' => $user->id,
                 'employee_number' => 'PG-'.(2026).'-'.str_pad((string) ++$number, 3, '0', STR_PAD_LEFT),
-                'department_id' => \App\Models\Department::firstOrCreate(['name' => $department])->id,
+                'department_id' => $this->department($department)->id,
                 'position' => $position,
                 'employment_status' => Employee::ACTIVE,
                 'employment_type' => $type,
@@ -112,6 +112,21 @@ class SeedShowcaseHrisAndContentCommand extends Command
                 'created_by' => $user->id,
             ]);
         }
+    }
+
+    /**
+     * A department, created if absent.
+     *
+     * `code` is NOT NULL with no default, so a firstOrCreate keyed on the name
+     * alone fails the insert with a raw 1364 — the same trap the gradebook
+     * fixture fell into.
+     */
+    private function department(string $name): \App\Models\Department
+    {
+        return \App\Models\Department::firstOrCreate(
+            ['name' => $name],
+            ['code' => strtoupper(substr(preg_replace('/[^A-Za-z]/', '', $name), 0, 5))]
+        );
     }
 
     /**
