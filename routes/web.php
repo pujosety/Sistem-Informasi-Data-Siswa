@@ -77,6 +77,20 @@ require __DIR__.'/fitur-cms-media.php';
 /* Feature: module toggle screen */
 require __DIR__.'/fitur-module.php';
 
+/* Batch 2 — seams cut in advance so the next wave starts without contention */
+
+/* Feature: analytics */
+require __DIR__.'/fitur-analytics.php';
+
+/* Feature: employee self-service */
+require __DIR__.'/fitur-employee-self.php';
+
+/* Feature: outbound notification channels */
+require __DIR__.'/fitur-notifikasi-luar.php';
+
+/* Feature: PPDB verification through the workflow engine */
+require __DIR__.'/fitur-workflow-ppdb.php';
+
 /*
 |--------------------------------------------------------------------------
 | Public school website

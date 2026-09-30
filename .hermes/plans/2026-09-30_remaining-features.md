@@ -39,7 +39,7 @@ subagent sekaligus akan memicu deadlock di database testing.
   salah, tulis alasannya supaya orang berikutnya tidak "memperbaiki" ke arah
   keliru.
 - Tidak ada stub. Permission tanpa route lebih buruk dari permission tidak ada.
-- Kalau sebuah keputusan sengaja tidak diambil (mis. `user.*`不给 role mana pun),
+- Kalau sebuah keputusan sengaja tidak diambil (mis. `user.*` tidak diberikan ke role mana pun),
   tulis di docblock dan jangan diubah diam-diam.
 - Jangan `git commit`, jangan `git push`. Integration yang melakukan itu.
 - Kalau menemukan test lama jadi basi karena fiturmu, perbaiki dan jelaskan
@@ -91,11 +91,11 @@ File: `2026_10_02_*_cms_media`, `app/Models/CmsMedia.php`,
 `resources/views/admin/cms/media/*`, `routes/fitur-cms-media.php`,
 `tests/Feature/CmsMediaTest.php`
 
-WAJIB: docente punya `DocumentService` + `DocumentPolicy` yang sudah
+WAJIB: Sudah ada `DocumentService` + `DocumentPolicy` yang sudah
 menyelesaikan streaming privat dengan benar. **Jangan tulis akses file dari
 nol.** Baca keduanya dan ikuti polanya — termasuk `PreventSharedCaching` dan
 pertanyaan apakah media CMS benar-benar perlu privat (jawaban: tidak, media
-publik. Jangan pregnant jadi privat karena tidak bisa diprahkan).
+publik. Jangan berubah jadi privat karena tidak bisa diarahkan).
 
 ### E. Layar toggle modul
 Registry + `ModuleService` + test sudah ada, tapi operator harus pakai CLI
@@ -118,8 +118,8 @@ lihat admin.
 
 ### G. Analitik
 `StatsService` mengisi angka di dasbor. Itu bukan analitik. Yang hilang:
-k Kohort, sebaran nilai per mapel, retensi siswa antar tahun, tren kehadiran.
-Terima filter tanggal dan clases.
+kohort, sebaran nilai per mapel, retensi siswa antar tahun, tren kehadiran.
+Terima filter tanggal dan kelas.
 
 ### H. Notifikasi ke luar
 In-app saja. Tidak ada email/WhatsApp ke orang tua. WA masuk akal di Indonesia —
@@ -143,10 +143,10 @@ penilaian.
 Tiga hal ini sengaja tidak diselesaikan dan tidak boleh diubah diam-diam:
 
 1. **`user.*` / `role.*` diberikan ke tidak ada role** → manajemen pengguna
-   hanya super-admin. Memperlebar ini memberi谁能 membuat admin baru.
+   hanya super-admin. Memperlebar ini memberi siapa pun cara membuat admin baru.
 2. **`registrations` UNIQUE(student_id)** → satu siswa daftar sekali selamanya.
-   PPDB tahunan akan bentrok. Butuh keputusan: unik per tahun, atau perZY.
+   PPDB tahunan akan bentrok. Butuh keputusan: unik per tahun, atau per tahun.
 3. **Kesiswaan membaca semua dokumen siswa tanpa memegang permission dokumen**
-   (role bypass yang dipin test). Maybe benar, mungkin tidak.
+   (role bypass yang didipin test). Mungkin benar, mungkin tidak.
 
 Juga belum: rotasi Railway MySQL + revoke Vercel token (butuh login).
