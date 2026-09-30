@@ -145,7 +145,16 @@
 
 {{-- Create / edit dialog --}}
 <dialog id="formTahun" class="w-[min(32rem,92vw)] rounded-xl p-0 backdrop:bg-slate-900/40">
-    <form id="tahunForm" method="POST" class="rounded-xl bg-white">
+    {{--
+    The action defaults to the CREATE route. It was absent, so submitting
+    "Tambah Tahun Ajaran" POSTed to whatever URL the operator happened to be on
+    — which is /akademik/tahun-ajaran (the index), where the only POST routes
+    are activate and arsipkan. A 405 from a form that looks completely correct.
+
+    The JS rewrites the action for the edit case; leaving a correct one as the
+    default means the common path does not depend on that script having run.
+--}}
+<form id="tahunForm" method="POST" action="{{ route('academic.years.store') }}" class="rounded-xl bg-white">
         @csrf
         <input type="hidden" name="_method" id="tahunMethod" value="POST">
         <input type="hidden" name="id" id="tahunId">
@@ -217,7 +226,11 @@
 
     document.querySelectorAll('.edit-year').forEach(function (btn) {
         btn.addEventListener('click', function () {
-            form.action = '/akademik/tahun-ajaran/' + btn.dataset.id;
+            // The named route with a sentinel, substituted at click time.
+            // The previous line built the URL by string-concatenating a literal
+            // '/akademik/tahun-ajaran/', which is a 404 waiting for the day the
+            // route moves, and nothing in a Blade file would show it.
+            form.action = '{{ url('/akademik/tahun-ajaran') }}/' + btn.dataset.id;
             method.value = 'PUT';
             id.value = btn.dataset.id;
             title.textContent = 'Ubah Tahun Ajaran';

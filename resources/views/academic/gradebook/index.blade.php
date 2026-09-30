@@ -104,7 +104,7 @@
         </div>
 
         {{-- Per-subject save bar: pick the subject, save that subject only. --}}
-        <form method="POST" action="{{ route('grades.store', $classroom) }}"
+        <form method="POST" action="{{ route('academic.grades.store', $classroom) }}"
               class="mt-4 flex flex-wrap items-end gap-2 border-t border-[var(--app-border)] pt-4">
             @csrf
             <input type="hidden" name="semester_id" value="{{ $semester->id }}">
@@ -135,7 +135,7 @@
     @can('publish', [\App\Models\Grade::class, $classroom])
         <x-card title="Terbitkan Nilai" icon="send" class="mt-4"
                 description="Menerbitkan membuat nilai terlihat oleh siswa dan orang tua.">
-            <form method="POST" action="{{ route('grades.publish', $classroom) }}"
+            <form method="POST" action="{{ route('academic.grades.publish', $classroom) }}"
                   class="flex flex-wrap items-end gap-2">
                 @csrf
                 <input type="hidden" name="semester_id" value="{{ $semester->id }}">
