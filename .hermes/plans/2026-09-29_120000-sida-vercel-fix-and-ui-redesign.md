@@ -472,7 +472,8 @@ exposed in two places.
 
 **Step 3: Revoke the Vercel token**
 
-The token `vcp_6V14…` was shared in conversation. Revoke at
+The token was shared in conversation and its value deliberately does not
+appear here. Revoke at
 https://vercel.com/account/tokens and issue a fresh one, then re-run
 `vercel link` locally.
 
