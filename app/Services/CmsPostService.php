@@ -30,6 +30,9 @@ use Illuminate\Validation\ValidationException;
  */
 class CmsPostService
 {
+    public function __construct(private readonly CmsContentSanitizer $sanitizer) {}
+
+
     /**
      * Create a post. Always a draft.
      *
@@ -43,8 +46,11 @@ class CmsPostService
         $post->kind = $attributes['kind'] ?? Post::KIND_POST;
         $post->title = $attributes['title'] ?? 'Tanpa judul';
         $post->slug = $this->uniqueSlug($attributes['title'] ?? 'tanpa-judul');
-        $post->body = $attributes['body'] ?? null;
-        $post->excerpt = $attributes['excerpt'] ?? null;
+        // Cleaned on the way in, so the database never holds a payload that
+        // some future renderer might not escape.
+        $post->body = $this->sanitizer->clean($attributes['body'] ?? null);
+        $post->excerpt = $attributes['excerpt']
+            ?? $this->sanitizer->excerpt($attributes['body'] ?? null);
         $post->author_id = $author->id;
         $post->status = Post::DRAFT;
         $post->is_public = false;
@@ -77,9 +83,19 @@ class CmsPostService
             foreach (['body', 'excerpt', 'status', 'category_id', 'parent_id',
                 'meta_title', 'meta_description', 'meta_image',
                 'public_from', 'public_until', 'blocks'] as $field) {
-                if (array_key_exists($field, $attributes)) {
-                    $post->{$field} = $attributes[$field];
+                if (! array_key_exists($field, $attributes)) {
+                    continue;
                 }
+
+                $post->{$field} = $field === 'body'
+                    ? $this->sanitizer->clean($attributes[$field])
+                    : $attributes[$field];
+            }
+
+            // An excerpt is derived when the author did not write one, so the
+            // listing never shows raw tags.
+            if (! filled($post->excerpt) && filled($post->body)) {
+                $post->excerpt = $this->sanitizer->excerpt($post->body);
             }
 
             // A status change is not a publication. is_public is only ever set
@@ -161,11 +177,18 @@ class CmsPostService
     {
         $payload = $revision->payload;
 
-        foreach (['title', 'slug', 'body', 'excerpt', 'meta_title',
+        foreach (['title', 'slug', 'excerpt', 'meta_title',
             'meta_description', 'meta_image', 'category_id'] as $field) {
             if (array_key_exists($field, $payload)) {
                 $post->{$field} = $payload[$field];
             }
+        }
+
+        // Cleaned again on the way back, because a restore must not become a
+        // way to reintroduce markup that the write path would have removed —
+        // an old revision, or a payload edited by hand.
+        if (array_key_exists('body', $payload)) {
+            $post->body = $this->sanitizer->clean($payload['body']);
         }
 
         // Never carried back: publication, authorship, and the window.

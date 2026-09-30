@@ -116,19 +116,51 @@ class PublicNewsTest extends TestCase
     /**
      * @test
      */
-    public function test_the_body_is_escaped_not_rendered_as_html(): void
+    public function test_a_script_tag_never_reaches_the_rendered_page(): void
     {
-        $this->makePost([
-            'slug' => 'xss',
-            'body' => '<script>alert(1)</script>',
+        // This used to assert that the body is ESCAPED at render time, which is
+        // what the view did before CMS sanitisation existed. It now renders
+        // with {!! !!} — only safe because the stored value is already
+        // cleaned — so the guarantee is that nothing executable appears, not
+        // that the text is entity-encoded.
+        //
+        // The two are different promises. Escaping at render time means an
+        // editor cannot use a heading or a link. Sanitising on write means the
+        // article is readable AND safe. What must never happen is the payload
+        // running.
+        //
+        // Written through the service and then published, because that is the
+        // only path an editor has: a draft is correctly invisible, and a test
+        // against a draft would be asserting on a 404.
+        $admin = User::factory()->create();
+        $admin->assignRole('admin');
+        $admin = $admin->refresh();
+
+        $cms = app(\App\Services\CmsPostService::class);
+        $post = $cms->create($admin, [
+            'title' => 'XSS',
+            'body' => '<p>Galat.</p><script>alert(1)</script>',
         ]);
+        $post = $cms->publish($post, $admin);
 
-        $body = $this->get('/berita/xss')->getContent();
+        $body = (string) $this->get('/berita/'.$post->slug)->getContent();
 
-        // Rendered raw, a school editor is one keystroke away from stored XSS on
-        // a page every parent and student loads.
-        $this->assertStringNotContainsString('<script>alert(1)</script>', $body);
-        $this->assertStringContainsString('&lt;script&gt;', $body);
+        // Asserted on the PAYLOAD, not on "<script": every page in this
+        // application includes the Vite bundle, so the literal string "<script"
+        // is present in a correctly sanitised response. That assertion could
+        // never pass, and the version of this test that used it was green only
+        // because the body rendered as a 404 error page with no scripts.
+        $this->assertStringNotContainsString('alert(1)', $body);
+
+        // The surrounding article is still rendered, and readable — which is
+        // the point of sanitising on write instead of escaping on render.
+        $this->assertStringContainsString('Galat.', $body);
+
+        // The meta description comes from the same text and is published to
+        // search engines, so a payload reaching it would outlive the page. This
+        // is where it leaked the first time: strip_tags removed the <script>
+        // tag but kept its text.
+        $this->assertStringNotContainsString('alert(1)', $body);
     }
 
     /**

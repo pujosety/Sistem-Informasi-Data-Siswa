@@ -39,20 +39,19 @@
 
     <div class="mx-auto max-w-3xl px-5 sm:px-8 py-12">
         {{--
-            Escaped, deliberately.
+            Rendered, because the stored value is already sanitised.
 
-            The body is written by a school administrator, and a CMS that
-            renders it raw is one stored-XSS sink away: anyone who can reach
-            the editor can put a script tag in a page every visitor loads, and
-            that session belongs to a parent or a student.
+            CmsPostService cleans the body on the way IN — create, update and
+            restore all pass through HTMLPurifier — so this is not a raw
+            author string reaching an unescaped sink. It is the only way an
+            editor can use a heading or a link.
 
-            §58 requires CMS HTML to be sanitized. That needs a sanitiser at
-            write time, not at render time, so this change renders escaped and
-            the content-management side is where HTML gets cleaned. Until that
-            exists, an author who needs formatting is better served by plain
-            paragraphs than by an XSS hole.
+            The {!! !!} here is safe BECAUSE of that, and the dependency is
+            recorded in CmsContentSanitizer. If the sanitiser is ever removed
+            from the write path, this line becomes the XSS it was written to
+            avoid; CmsSanitisationTest fails in that case and says so.
         --}}
-        <div class="prose-sida max-w-none whitespace-pre-line">{{ $post->body }}</div>
+        <div class="prose-sida max-w-none">{!! $post->body !!}</div>
 
         @if ($post->tags->isNotEmpty())
             <ul class="mt-10 flex flex-wrap gap-2">
