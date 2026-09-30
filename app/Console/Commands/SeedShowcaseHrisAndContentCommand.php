@@ -178,18 +178,23 @@ class SeedShowcaseHrisAndContentCommand extends Command
         ];
 
         foreach ($articles as $article) {
-            if (Post::where('slug', \Illuminate\Support\Str::slug($article['title']))->exists()) {
-                continue;
+            $post = Post::where('slug', \Illuminate\Support\Str::slug($article['title']))->first();
+
+            if (! $post) {
+                $post = $posts->create($author, [
+                    'kind' => Post::KIND_POST,
+                    'title' => $article['title'],
+                    'body' => $article['body'],
+                    'category_id' => $category->id,
+                ]);
             }
 
-            $post = $posts->create($author, [
-                'kind' => Post::KIND_POST,
-                'title' => $article['title'],
-                'body' => $article['body'],
-                'category_id' => $category->id,
-            ]);
-
-            if ($article['publish']) {
+            // Publication is decided on EVERY run, not only when the post is
+            // first created. An earlier version skipped the whole entry when
+            // the post already existed, so a run that created it and then
+            // failed to publish it left a draft behind FOREVER — the seeder
+            // reported success and the article stayed invisible.
+            if ($article['publish'] && ! $post->is_public) {
                 $posts->publish($post, $publisher);
             }
         }
