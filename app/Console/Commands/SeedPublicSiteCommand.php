@@ -131,6 +131,20 @@ class SeedPublicSiteCommand extends Command
 
         if ($toWrite !== [] && ! $dry) {
             $settings->setMany($toWrite);
+
+            /*
+             * setMany() -> set() -> flush() -> Cache::forget(), which forgets
+             * nothing when this process was started with a different cache
+             * store than the web container uses — and the deployment script
+             * deliberately runs artisan with CACHE_STORE=array.
+             *
+             * So the web container kept serving a forever-cache entry built
+             * before this seeder ran, and /tentang rendered the school NAME
+             * (which has a DEFAULTS fallback) with NPSN, address and headmaster
+             * blank. The row is deleted in SQL so the invalidation does not
+             * depend on which store is configured here.
+             */
+            $this->purgeDatabaseCache();
         }
 
         $this->line(sprintf(
@@ -138,6 +152,29 @@ class SeedPublicSiteCommand extends Command
             count($toWrite),
             $dry ? 'would be written' : 'written'
         ));
+    }
+
+    /**
+     * Delete the application's cache rows directly, whatever store this
+     * process is configured with.
+     *
+     * Names only; the values are serialised payloads.
+     */
+    private function purgeDatabaseCache(): int
+    {
+        try {
+            if (! \Illuminate\Support\Facades\Schema::hasTable('cache')) {
+                return 0;
+            }
+
+            return \Illuminate\Support\Facades\DB::table('cache')
+                ->where('key', 'like', 'laravel-cache-%')
+                ->delete();
+        } catch (\Throwable $e) {
+            $this->warn('  could not purge the cache: '.$e->getMessage());
+
+            return 0;
+        }
     }
 
     /**
