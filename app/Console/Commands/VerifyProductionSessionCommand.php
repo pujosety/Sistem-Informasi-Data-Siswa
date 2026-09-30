@@ -142,16 +142,26 @@ class VerifyProductionSessionCommand extends Command
             ? $client->asForm()->post($url, $data)
             : $client->get($url);
 
+        /*
+         * Guzzle collapses several Set-Cookie headers into ONE string joined
+         * with ", ", so splitting on ";" — the obvious move — cuts the header
+         * in half and can hand back half of the XSRF cookie's attributes
+         * instead of the session id. Split on the cookie boundary first, then
+         * on ";" within each cookie, and keep only the one we want.
+         */
         $setCookie = $response->header('Set-Cookie');
+        $setCookie = is_array($setCookie) ? $setCookie : explode(', ', (string) $setCookie);
 
-        if (is_array($setCookie)) {
-            foreach ($setCookie as $line) {
-                if (str_contains($line, 'laravel-session=')) {
-                    $this->cookie = explode(';', $line)[0];
-                }
+        foreach ($setCookie as $line) {
+            if (! str_contains($line, 'laravel-session=')) {
+                continue;
             }
-        } elseif (is_string($setCookie) && str_contains($setCookie, 'laravel-session=')) {
-            $this->cookie = explode(';', $setCookie)[0];
+
+            $pair = trim(explode(';', trim($line))[0]);
+
+            if (str_starts_with($pair, 'laravel-session=')) {
+                $this->cookie = $pair;
+            }
         }
 
         return [
