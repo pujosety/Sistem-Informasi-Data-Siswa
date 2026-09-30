@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Registration;
 use App\Models\SchoolClass;
 use App\Models\Student;
+use App\Services\Exports\StudentExport;
+use Maatwebsite\Excel\Facades\Excel;
 use App\Services\AuditService;
 use App\Services\CompletenessService;
 use App\Services\StatsService;
@@ -92,6 +94,43 @@ class KesiswaanController extends BaseController
             'options' => $this->filterOptions(),
             'request' => $request,
         ]);
+    }
+
+    /**
+     * Export the student roster.
+     *
+     * `student.export` was in the catalogue, granted to admin and kesiswaan, and
+     * reached nothing — the reports under /laporan export the same data but
+     * are gated on `report.export`, so the permission in the role matrix
+     * described a capability the role could not actually use.
+     *
+     * It reuses StudentExport, which is the same class /laporan uses, so the
+     * two produce identical columns. A school exporting from the roster screen
+     * and from the reports screen gets the same file, and a change to the
+     * columns changes both.
+     */
+    public function export(Request $request, string $format = 'xlsx')
+    {
+        abort_unless($request->user()->can('student.export'), 403);
+
+        $format = $format === 'csv' ? 'csv' : 'xlsx';
+        // The Builder, not a Collection: StudentExport is a FromQuery and
+        // streams, so handing it a materialised collection loads every student
+        // into memory and changes what the export class accepts.
+        $query = $this->filtered($request);
+        $label = 'Daftar Siswa';
+
+        $this->audit->log('student.exported', null, sprintf(
+            'Export %s daftar siswa', strtoupper($format)
+        ), [
+            'rows' => (clone $query)->count(),
+            'filters' => $request->only(['q', 'status', 'class_id', 'department_id', 'entry_year', 'academic_year_id']),
+        ]);
+
+        return Excel::download(
+            new StudentExport($query, $label),
+            'daftar-siswa-'.now()->format('Y-m-d').'.'.$format
+        );
     }
 
     /** Shared, filter-driven student query used by rekap and exports. */

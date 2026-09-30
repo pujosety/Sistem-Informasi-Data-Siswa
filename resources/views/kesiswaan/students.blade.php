@@ -9,6 +9,22 @@
         <x-icon name="file-text" class="w-4 h-4" />
         Buat Laporan
     </a>
+
+    {{-- The filters travel with the export, so what the operator sees is what
+         they get. Gated on its own permission: exporting the whole roster is a
+         different act from reading it. --}}
+    @can('student.export')
+        <a href="{{ route('kesiswaan.students.export', ['format' => 'xlsx'] + request()->query()) }}"
+           class="btn btn-secondary">
+            <x-icon name="download" class="w-4 h-4" />
+            Excel
+        </a>
+        <a href="{{ route('kesiswaan.students.export', ['format' => 'csv'] + request()->query()) }}"
+           class="btn btn-secondary">
+            <x-icon name="download" class="w-4 h-4" />
+            CSV
+        </a>
+    @endcan
 @endsection
 
 @section('content')

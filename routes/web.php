@@ -17,6 +17,7 @@ use App\Http\Controllers\StudentPortalController;
 use App\Http\Controllers\UserManagementController;
 use App\Http\Middleware\EnsureRole;
 use App\Http\Controllers\AcademicYearController;
+use App\Http\Controllers\AlumniController;
 use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\ClassroomController;
@@ -387,6 +388,15 @@ Route::middleware(['auth', 'can:dashboard.admin.view'])->prefix('admin')->name('
         Route::post('/master-data/kelas', [MasterDataController::class, 'storeClass'])->name('master.classes');
         Route::post('/master-data/jenis-dokumen', [MasterDataController::class, 'storeDocumentType'])->name('master.document-types');
     });
+
+    // Correcting a master record, which had no route at all. `master.update` was
+    // one of the dead permissions: an operator could add a class and then never
+    // fix a typo in its name, level or capacity.
+    Route::middleware('can:master.update')->group(function () {
+        Route::put('/master-data/{type}/{id}', [MasterDataController::class, 'update'])
+            ->whereIn('type', ['tahun-ajaran', 'jurusan', 'kelas', 'jenis-dokumen'])
+            ->name('master.update');
+    });
 });
 
 /*
@@ -403,7 +413,31 @@ Route::middleware(['auth', 'can:student.view'])->prefix('kesiswaan')->name('kesi
     Route::get('/data-siswa/{student}', [KesiswaanController::class, 'show'])->name('students.show');
     Route::get('/statistik', [KesiswaanController::class, 'statistics'])->name('statistics');
     Route::get('/rekapitulasi', [KesiswaanController::class, 'rekap'])->name('rekap');
+
+    // Exporting a roster is a distinct, higher-risk act than reading it, and
+    // `student.export` is a separate permission for exactly that reason: it
+    // puts the whole student body outside the application.
+    Route::middleware('can:student.export')->group(function () {
+        Route::get('/data-siswa/{format}/export', [KesiswaanController::class, 'export'])
+            ->whereIn('format', ['xlsx', 'csv'])
+            ->name('students.export');
+    });
 });
+
+/*
+ | Alumni.
+ |
+ | Read-only, and kept out of the kesiswaan group above because it is gated on
+ | `alumni.view` rather than `student.view` — a school may well let kesiswaan
+ | read the current roster and alumni, or neither, independently.
+ */
+Route::middleware(['auth', 'can:alumni.view'])
+    ->prefix('alumni')
+    ->name('alumni.')
+    ->group(function () {
+        Route::get('/', [AlumniController::class, 'index'])->name('index');
+        Route::get('/{alumnus}', [AlumniController::class, 'show'])->name('show');
+    });
 
 /*
 |--------------------------------------------------------------------------

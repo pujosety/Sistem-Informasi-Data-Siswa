@@ -119,6 +119,7 @@ class AppServiceProvider extends ServiceProvider
             \App\Models\Grade::class => \App\Policies\GradePolicy::class,
             \App\Models\Student::class => \App\Policies\GuardianPolicy::class,
             \App\Models\Module::class => \App\Policies\ModulePolicy::class,
+            \App\Models\Alumni::class => \App\Policies\AlumniPolicy::class,
         ] as $model => $policy) {
             Gate::policy($model, $policy);
         }

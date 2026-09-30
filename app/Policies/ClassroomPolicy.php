@@ -132,9 +132,27 @@ class ClassroomPolicy
             && $this->scope->canView($user, $classroom);
     }
 
-    /** Assigning or replacing a Wali Kelas is a Super Admin / delegated action. */
+    /** Appointing a Wali Kelas where there is none. */
     public function assignHomeroom(User $user, SchoolClass $classroom): bool
     {
         return $user->can('homeroom.assign') && $this->scope->canView($user, $classroom);
+    }
+
+    /**
+     * REPLACING a Wali Kelas who is already in place.
+     *
+     * A separate ability, because the two are not the same decision. Appointing
+     * fills a vacancy. Replacing ends somebody's assignment early, which is
+     * visible to that teacher — their "Kelas Saya" workspace empties, and any
+     * class they can no longer reach is no longer theirs. `homeroom.change`
+     * existed in the catalogue from the start and was consulted by nothing,
+     * because one method did both jobs behind `homeroom.assign`.
+     *
+     * Scope is re-checked here exactly as in assignHomeroom: holding this does
+     * not widen which classes the actor can touch.
+     */
+    public function changeHomeroom(User $user, SchoolClass $classroom): bool
+    {
+        return $user->can('homeroom.change') && $this->scope->canView($user, $classroom);
     }
 }

@@ -168,7 +168,23 @@ class ClassroomController extends Controller
     /** Assign a Wali Kelas, replacing any previous holder with history kept. */
     public function assignHomeroom(Request $request, SchoolClass $classroom): RedirectResponse
     {
-        abort_unless($request->user()->can('assignHomeroom', $classroom), 403);
+        /*
+         * Which permission applies depends on what this POST actually DOES, and
+         * the difference is not cosmetic: replacing somebody ends their
+         * assignment, empties their "Kelas Saya" workspace and changes what
+         * they can reach. `homeroom.change` was defined for exactly that and
+         * consulted by nothing, because this one method did both jobs behind
+         * `homeroom.assign`.
+         *
+         * The check is against the CURRENT assignment rather than a hidden
+         * form field, so a crafted payload cannot pick the weaker gate.
+         */
+        $replacing = $this->homerooms->currentAssignment($classroom) !== null;
+
+        abort_unless(
+            $request->user()->can($replacing ? 'changeHomeroom' : 'assignHomeroom', $classroom),
+            403
+        );
 
         $data = $request->validate([
             'user_id' => ['required', 'exists:users,id'],

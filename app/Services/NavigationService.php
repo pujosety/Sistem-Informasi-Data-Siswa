@@ -137,6 +137,10 @@ class NavigationService
 
             ['label' => 'Data', 'icon' => 'database', 'children' => [
                 ['route' => 'kesiswaan.students', 'active' => 'kesiswaan.students', 'label' => 'Data Siswa', 'permission' => 'student.view', 'module' => 'students'],
+                // Alumni is a separate permission from student.view: a school may
+                // well let a role read the current roster and its graduates, or
+                // neither, independently.
+                ['route' => 'alumni.index', 'active' => 'alumni.*', 'label' => 'Alumni', 'permission' => 'alumni.view', 'module' => 'students'],
                 ['route' => 'admin.users', 'active' => 'admin.users*', 'label' => 'Pengguna', 'permission' => 'user.view'],
                 // HRIS. Module-gated AND permission-gated: the registry seeds
                 // `hris` DISABLED, because Phase 3 built the table with no UI.

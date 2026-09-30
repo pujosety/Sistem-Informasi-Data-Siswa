@@ -1,7 +1,40 @@
 # Dead permissions — the honest list
 
 **Date:** 2026-09-30
-**Baseline:** 23 dead permissions before this batch, 14 after.
+**Baseline:** 23 dead permissions before this batch, **10 after**.
+
+Of the 13 cleared, four were not screens that were missing — they were
+**permissions that existed and guarded nothing**:
+
+| Permission | How it was dead |
+|---|---|
+| `school.update` | the school profile's save button did not check what the route checked |
+| `settings.update` | guarded THREE forms at once, and was granted to nobody |
+| `branding.update` | same, granted to nobody |
+| `homeroom.change` | one method appointed AND replaced behind `homeroom.assign` |
+
+Those four are worth separating from the rest, because the symptom was never
+"there is no screen for this". It was a screen that opened, accepted input,
+offered a button, and then refused — which reads as a broken feature rather
+than as an authorization decision nobody had noticed.
+
+## The settings-form dot bug
+
+Worth its own section because it looks nothing like a permissions problem.
+
+Every settings key contains a dot — `school.name`, `app.short_name` — and
+Laravel's validator reads a dot as a **nested array path**. So
+`['school.name' => 'required']` looks for `$data['school']['name']`, finds
+nothing, and reports *"The school.name field is required"* for a value the
+form submitted correctly.
+
+**All four settings forms were permanently unsaveable** — school profile,
+branding, registration, application preferences. The pages opened, the fields
+filled in, the buttons were there, and nothing was ever written.
+
+`SettingsController::settingRules()` now escapes the dot. **Any new settings
+form must use it.** Validating a dotted key by hand is how the bug returns, and
+it presents as "that field can't be edited".
 
 ## What "dead" means here
 
@@ -66,7 +99,7 @@ The policy now reads `module.*`. That is the right direction of travel —
 `system.*` is host configuration (maintenance mode, environment), and a grant
 that can switch off the CMS does not need to sit in the same hand.
 
-## Still dead — 14
+## Still dead — 10
 
 ### Group A — delete permissions with no soft-delete story
 
@@ -98,16 +131,18 @@ site theme.
 
 ### Group C — one permission, one missing screen
 
-`student.export`, `alumni.view`, `homeroom.change`, `dashboard.student.view`
+`dashboard.student.view`
 
-- `student.export` — reporting exports students, but the permission does not
-  gate it. Either the export screen adopts it or it goes.
-- `alumni.view` — the `alumni` table exists and nothing reads it.
-- `homeroom.change` — homeroom assignment exists; the screen only assigns, it
-  does not change. One route and one policy method.
-- `dashboard.student.view` — the student portal exists and does not use it.
+**CLEARED in this batch:** `student.export` (a roster export reusing
+`StudentExport`, so it produces the same columns as /laporan), `alumni.view`
+(list + detail with the enrollment history, read-only by design),
+`homeroom.change` (now a policy ability in its own right, checked against the
+current assignment rather than a form field), `master.update` (edit forms for
+years, departments, classes and document types, which had none at all).
 
-These are small. Each is an afternoon, not a phase.
+**Still open:** `dashboard.student.view`. The student portal is gated by
+`role:siswa`, not by a permission, so this one has no natural home — either the
+portal starts consulting it, or it goes.
 
 ### Group D — deliberate, keep
 
