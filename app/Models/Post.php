@@ -134,6 +134,24 @@ class Post extends Model
         return $this->hasMany(PostRevision::class, 'cms_post_id')->latest('created_at');
     }
 
+    /**
+     * Images attached to this article, in the order the editor placed them.
+     *
+     * Stated rather than inferred, for the same reason as tags(): the schema
+     * is cms_post_media with cms_post_id / cms_media_id, and the inference
+     * would name columns that do not exist. `sort_order` is the editorial
+     * order, so it rides the query rather than being re-applied in PHP.
+     */
+    public function media(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            Media::class,
+            'cms_post_media',
+            'cms_post_id',
+            'cms_media_id'
+        )->withPivot('sort_order')->orderBy('cms_post_media.sort_order');
+    }
+
     // ---------------------------------------------------------------- scopes
 
     public function scopePosts(Builder $query): Builder

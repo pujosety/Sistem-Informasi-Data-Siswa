@@ -41,11 +41,39 @@ class EmployeeManagementTest extends TestCase
 {
     use RefreshDatabase;
 
+    /** @var string[] permissions this test revoked from a role */
+    private array $restorePermissions = [];
+
     protected function setUp(): void
     {
         parent::setUp();
 
         $this->seedRoles();
+    }
+
+    /**
+     * Put back anything adminWithout() took away.
+     *
+     * RefreshDatabase rolls the SCHEMA back, not Spatie's in-process permission
+     * cache. A revoked grant therefore survives into the next test file, and the
+     * failure lands somewhere unrelated — `can()` true, ClassScope empty, a
+     * screen 403 that no test in that file would explain.
+     */
+    protected function tearDown(): void
+    {
+        foreach ($this->restorePermissions as $permission) {
+            foreach (['admin'] as $roleName) {
+                $role = \Spatie\Permission\Models\Role::findByName($roleName);
+
+                if ($role && ! $role->permissions->contains($permission)) {
+                    $role->givePermissionTo($permission);
+                }
+            }
+        }
+
+        app(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
+
+        parent::tearDown();
     }
 
     // ------------------------------------------------------------------ actors
@@ -67,11 +95,25 @@ class EmployeeManagementTest extends TestCase
      * rather than by hand-listing permissions, so the fixture cannot drift
      * away from what the catalogue actually issues.
      */
+    /**
+     * An admin who does NOT hold one permission, for the duration of a test.
+     *
+     * The revoke is undone by TestCase::withoutPermission()'s counterpart in
+     * tearDown — see setUpBelow() — because Spatie's permission cache lives
+     * for the whole PHP process, so a bare revokePermissionTo() would leave
+     * that grant missing from every test that runs afterwards.
+     */
     private function adminWithout(string $permission): User
     {
         $admin = $this->admin();
 
-        $admin->roles->each(fn ($role) => $role->revokePermissionTo($permission));
+        $admin->roles->each(function ($role) use ($permission) {
+            $role->revokePermissionTo($permission);
+        });
+
+        app(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
+
+        $this->restorePermissions[] = $permission;
 
         return $admin->refresh();
     }

@@ -50,14 +50,20 @@
                         @if ($a->author) \u00b7 {{ $a->author->name }} @endif
                     </span>
 
-                    @can('classroom.announcement.delete')
-                        <form method="POST" action="{{ route('academic.announcements.destroy', [$classroom, $a]) }}"
-                              onsubmit="return confirm('Hapus pengumuman ini?')">
-                            @csrf
-                            @method('DELETE')
-                            <button class="rounded-md bg-rose-50 px-2.5 py-1.5 font-medium text-rose-700 hover:bg-rose-100">Hapus</button>
-                        </form>
-                    @endcan
+                    <div class="flex items-center gap-2">
+                        @can('editAnnouncement', $classroom)
+                            <a href="{{ route('academic.announcements.edit', [$classroom, $a]) }}"
+                               class="rounded-md px-2.5 py-1.5 text-xs font-medium text-indigo-700 hover:bg-indigo-50">Ubah</a>
+                        @endcan
+                        @can('deleteAnnouncement', $classroom)
+                            <form method="POST" action="{{ route('academic.announcements.destroy', [$classroom, $a]) }}"
+                                  onsubmit="return confirm('Hapus pengumuman ini?')">
+                                @csrf
+                                @method('DELETE')
+                                <button class="rounded-md bg-rose-50 px-2.5 py-1.5 text-xs font-medium text-rose-700 hover:bg-rose-100">Hapus</button>
+                            </form>
+                        @endcan
+                    </div>
                 </div>
             </article>
         @endforeach

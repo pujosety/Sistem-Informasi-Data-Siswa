@@ -96,6 +96,24 @@ class ClassroomPolicy
             && $this->scope->canView($user, $classroom);
     }
 
+    /**
+     * Correcting a published announcement is a DISTINCT action from writing a
+     * new one: the recipients already hold the wrong text, so the permission is
+     * separate and the scope check is repeated here rather than trusted from
+     * the middleware. A Wali Kelas may correct only their own class.
+     */
+    public function editAnnouncement(User $user, SchoolClass $classroom): bool
+    {
+        return $user->can('classroom.announcement.update')
+            && $this->scope->canView($user, $classroom);
+    }
+
+    public function deleteAnnouncement(User $user, SchoolClass $classroom): bool
+    {
+        return $user->can('classroom.announcement.delete')
+            && $this->scope->canView($user, $classroom);
+    }
+
     public function viewAnnouncements(User $user, SchoolClass $classroom): bool
     {
         return $user->can('classroom.announcement.view')

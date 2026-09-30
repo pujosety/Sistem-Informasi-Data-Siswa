@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Controllers\AnnouncementController;
+use Illuminate\Support\Facades\Route;
+
 /*
 |--------------------------------------------------------------------------
 | Class announcement editing
@@ -16,4 +19,7 @@
 |
 */
 
-// Routes for this feature are added below by its owner.
+Route::middleware(['auth', 'can:academic_year.view'])->prefix('akademik/kelas/{classroom}/pengumuman')->name('academic.announcements.')->group(function () {
+    Route::get('/{announcement}/ubah', [AnnouncementController::class, 'edit'])->name('edit');
+    Route::put('/{announcement}', [AnnouncementController::class, 'update'])->name('update');
+});

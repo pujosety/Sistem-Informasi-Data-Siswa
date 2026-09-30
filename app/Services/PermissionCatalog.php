@@ -395,6 +395,7 @@ class PermissionCatalog
                 // why `employee.*` is its own domain rather than a `user.*`
                 // sub-permission.
                 'employee',
+                'module',
                 'academic_year', 'classroom', 'classroom.view.all', 'enrollment', 'homeroom',
                 'guardian', 'attendance', 'grade', 'alumni', 'announcement',
                 // CMS in full, by prefix. Themes and navigation are trusted to

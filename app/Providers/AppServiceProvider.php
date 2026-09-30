@@ -103,6 +103,22 @@ class AppServiceProvider extends ServiceProvider
             \App\Models\Document::class => \App\Policies\DocumentPolicy::class,
             \App\Models\Employee::class => \App\Policies\EmployeePolicy::class,
             \App\Models\Post::class => \App\Policies\PostPolicy::class,
+            // Media is a shared resource, so removing from it is gated on
+            // cms.media.manage and not on cms.posts.edit. See MediaPolicy.
+            \App\Models\Media::class => \App\Policies\MediaPolicy::class,
+
+            // Grade entry and guardian linking are both permission AND scope,
+            // so they follow the same composition as the academic policies.
+            //
+            // They were missing here, which is why GuardianPolicy::view() ran
+            // and answered false for an admin who demonstrably held both
+            // guardian.view and classroom.view.all: with no policy registered
+            // for Student, `authorize('view', [GuardianPolicy::class, $s])`
+            // never reaches GuardianPolicy at all, and the class name is treated
+            // as a plain argument rather than a policy to resolve.
+            \App\Models\Grade::class => \App\Policies\GradePolicy::class,
+            \App\Models\Student::class => \App\Policies\GuardianPolicy::class,
+            \App\Models\Module::class => \App\Policies\ModulePolicy::class,
         ] as $model => $policy) {
             Gate::policy($model, $policy);
         }

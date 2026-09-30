@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Controllers\GuardianController;
+use Illuminate\Support\Facades\Route;
+
 /*
 |--------------------------------------------------------------------------
 | Guardian linking
@@ -16,4 +19,25 @@
 |
 */
 
-// Routes for this feature are added below by its owner.
+/*
+ | Guardian linking.
+ |
+ | Without this the parent portal is unreachable: a parent account can read a
+ | child only through guardian_relationships, and nothing could create that
+ | row.
+ */
+Route::middleware(['auth', 'can:guardian.view'])
+    ->prefix('kesiswaan/data-siswa/{student}/wali')
+    ->name('kesiswaan.guardians.')
+    ->group(function () {
+        Route::get('/', [GuardianController::class, 'index'])->name('index');
+
+        Route::middleware('can:guardian.link')->group(function () {
+            Route::post('/', [GuardianController::class, 'store'])->name('store');
+        });
+
+        Route::middleware('can:guardian.unlink')->group(function () {
+            Route::delete('/{guardianRelationship}', [GuardianController::class, 'destroy'])->name('destroy');
+        });
+    });
+

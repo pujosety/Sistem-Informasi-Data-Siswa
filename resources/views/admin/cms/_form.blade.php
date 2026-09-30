@@ -71,6 +71,76 @@
             </div>
         </x-card>
 
+        {{--
+            GAMBAR ARTIKEL
+
+            A SEPARATE FORM, deliberately, and not a field inside the editor
+            above.
+
+            The editor's form posts to CmsPostService and every field on it is
+            copied onto the post. An `<input type="file">` inside it would mean
+            the content save and the image save share one request, one failure
+            mode, and one transaction boundary — a rejected image would then
+            block the article, and an article that cannot be saved because of a
+            photo is the wrong trade in either direction.
+
+            So the images are attached by their own request to
+            admin.cms.media.attach, gated on cms.posts.edit, and a failure there
+            leaves the article exactly as it was.
+        --}}
+        @if ($post->exists && auth()->user()?->can('cms.posts.edit'))
+            @php
+                $attached = $post->relationLoaded('media')
+                    ? $post->getRelation('media')
+                    : $post->media()->get();
+                $library = \App\Models\Media::query()
+                    ->orderByDesc('id')
+                    ->limit(60)
+                    ->get();
+                $attachedIds = $attached->pluck('id')->all();
+            @endphp
+
+            <x-card title="Gambar Artikel" icon="image"
+                    description="Pilih gambar yang sudah ada di pustaka media.">
+                @if ($library->isEmpty())
+                    <p class="text-sm text-[var(--app-text-subtle)]">
+                        Pustaka media masih kosong.
+                        @can('cms.media.manage')
+                            <a href="{{ route('admin.media.index') }}" class="text-brand-700 underline">Unggah gambar dulu.</a>
+                        @else
+                            Hubungi pengelola konten yang memiliki izin <code>cms.media.manage</code> untuk mengunggah gambar.
+                        @endcan
+                    </p>
+                @else
+                    <form method="POST" action="{{ route('admin.cms.media.attach', $post) }}">
+                        @csrf
+                        <div class="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-3">
+                            @foreach ($library as $item)
+                                <label class="block border rounded-lg p-1.5 cursor-pointer
+                                              {{ in_array($item->id, $attachedIds, true) ? 'border-brand-500 bg-brand-50' : 'border-[var(--app-border)]' }}">
+                                    <input type="checkbox" name="media_ids[]" value="{{ $item->id }}"
+                                           class="mr-1"
+                                           @checked(in_array($item->id, $attachedIds, true)) />
+                                    <img src="{{ \Illuminate\Support\Facades\Storage::disk($item->disk)->url($item->path) }}"
+                                         alt="{{ $item->alt_text ?? $item->displayName() }}"
+                                         class="w-full h-16 object-cover rounded mt-1" loading="lazy" />
+                                    <span class="block text-caption truncate mt-1" title="{{ $item->displayName() }}">
+                                        {{ $item->displayName() }}
+                                    </span>
+                                </label>
+                            @endforeach
+                        </div>
+
+                        <p class="text-caption text-[var(--app-text-subtle)] mt-3">
+                            Kosongkan semua centang untuk melepas semua gambar dari artikel ini.
+                        </p>
+
+                        <button type="submit" class="btn btn-secondary mt-3">Simpan Gambar Artikel</button>
+                    </form>
+                @endif
+            </x-card>
+        @endif
+
         <div class="flex flex-col sm:flex-row sm:justify-end gap-2">
             <a href="{{ $isEdit ? route('admin.cms.show', $post) : route('admin.cms.index') }}"
                class="btn btn-secondary justify-center">Batal</a>

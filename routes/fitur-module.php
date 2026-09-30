@@ -1,8 +1,11 @@
 <?php
 
+use App\Http\Controllers\ModuleController;
+use Illuminate\Support\Facades\Route;
+
 /*
 |--------------------------------------------------------------------------
-| Module toggle screen
+| Module toggle + employee self-service
 |--------------------------------------------------------------------------
 |
 | OWNED BY ONE FEATURE. Another agent working in parallel must not edit this
@@ -16,4 +19,29 @@
 |
 */
 
-// Routes for this feature are added below by its owner.
+/*
+ | Module toggle and employee self-service.
+ |
+ | The toggle uses `module.*`, NOT `system.*`: switching a section of the
+ | platform on is ordinary administration, while system.* is about host
+ | configuration. An operator should not need a shell to do this.
+ */
+Route::middleware(['auth', 'can:module.view'])
+    ->prefix('admin/modul')
+    ->name('admin.modules.')
+    ->group(function () {
+        Route::get('/', [ModuleController::class, 'index'])->name('index');
+
+        Route::middleware('can:module.toggle')->group(function () {
+            Route::put('/{module}', [ModuleController::class, 'update'])->name('update');
+        });
+    });
+
+/*
+ | A staff member reading their OWN employment record. Read-only, own record
+ | only, 404 for anyone else's — 403 would confirm the record exists.
+ */
+Route::middleware('auth')
+    ->get('/profil/kepegawaian', [\App\Http\Controllers\ProfileController::class, 'employment'])
+    ->name('profile.employment');
+

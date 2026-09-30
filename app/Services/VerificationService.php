@@ -4,10 +4,39 @@ namespace App\Services;
 
 use App\Models\Document;
 use App\Models\Registration;
+use App\Models\User;
+use App\Models\WorkflowAction;
+use App\Models\WorkflowInstance;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * THE DOCUMENT VERIFICATION DESK.
+ *
+ * The approve/reject logic below is the original, hand-rolled implementation.
+ * It is what works today, it is what the suite pins, and it is what the school
+ * actually uses. It has NOT been rewritten onto WorkflowService and must not
+ * be: §39's engine exists to stop *new* flows from growing a seventh bespoke
+ * approval system, not to delete the one that is already in production.
+ *
+ * So the engine is wired ADDITIVELY. Every public method still does exactly
+ * what it did before, in the same order, and THEN records the same decision in
+ * the shared trail via recordOnWorkflow(). The engine is the ledger; this
+ * service remains the source of truth for document status.
+ *
+ * WHY EVERY ENGINE CALL IS BEST-EFFORT
+ *
+ * Because an exception out of the engine must never become an exception out of
+ * a reviewer's click. The definition is seeded data (`sida:seed-verification-
+ * workflow`), not a migration, so an installation that has not run it yet has
+ * no definition — and a missing definition must not stop a registration from
+ * being approved. Hence the swallow-and-report: the trail may be incomplete
+ * on a half-installed system, the decision is never lost.
+ */
 class VerificationService
 {
+    /** The definition key SeedVerificationWorkflow writes. */
+    public const WORKFLOW_KEY = 'registration.verification';
+
     public function __construct(
         private readonly DocumentService $documents,
         private readonly CompletenessService $completeness,

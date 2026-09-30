@@ -65,6 +65,44 @@ abstract class TestCase extends BaseTestCase
         }
     }
 
+    /**
+     * Run a callback with a permission temporarily revoked from a role, and put
+     * it back afterwards.
+     *
+     * WHY THIS EXISTS
+     *
+     * Permissions live on ROLES, and Spatie caches the permission list for the
+     * whole PHP process. `$role->revokePermissionTo('x.view')` is therefore NOT
+     * undone by RefreshDatabase: the cached grant stays revoked for every test
+     * that runs afterwards in the same process. That is how
+     * EmployeeManagementTest's "admin without employee.resign" quietly closed
+     * the gradebook, guardian and class-scope assertions in files that never
+     * mention it — `can()` said yes, `ClassScope` said no, and the failure
+     * pointed at a file that could not possibly be the cause.
+     *
+     * Prefer this over a bare revoke. Where a test needs the revoke for its
+     * whole body, record it in a `revoked` array and restore it in tearDown().
+     */
+    protected function withoutPermission(string $permission, string $role, callable $callback): mixed
+    {
+        $model = \Spatie\Permission\Models\Role::findByName($role);
+
+        $had = $model->permissions->contains($permission);
+
+        $model->revokePermissionTo($permission);
+        // Forget the cache, or `can()` keeps answering from the pre-revoke list.
+        app(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
+
+        try {
+            return $callback();
+        } finally {
+            if ($had) {
+                $model->givePermissionTo($permission);
+                app(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
+            }
+        }
+    }
+
     protected function makeUser(string $role): User
     {
         $user = User::factory()->create(['email_verified_at' => now()]);

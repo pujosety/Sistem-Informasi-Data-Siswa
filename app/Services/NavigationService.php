@@ -129,6 +129,10 @@ class NavigationService
                 ['route' => 'academic.years.index', 'active' => 'academic.years.*', 'label' => 'Tahun Ajaran', 'permission' => 'academic_year.view', 'module' => 'academic'],
                 ['route' => 'academic.classes.index', 'active' => 'academic.classes*', 'label' => 'Kelas', 'permission' => 'classroom.view', 'module' => 'academic'],
                 ['route' => 'academic.enrollments.create', 'active' => 'academic.enrollments*', 'label' => 'Penempatan Siswa', 'permission' => 'enrollment.view', 'module' => 'academic'],
+                // The gradebook is reached FROM a class, not from a list, so it
+                // has no standalone route. It is reached from the class page,
+                // where the class is already in context and ClassScope has
+                // already been applied to that page.
             ]],
 
             ['label' => 'Data', 'icon' => 'database', 'children' => [
@@ -142,6 +146,11 @@ class NavigationService
                 // for one, which is why `module` is repeated on the child.
                 ['route' => 'admin.employees', 'active' => 'admin.employees*', 'label' => 'Kepegawaian', 'permission' => 'employee.view', 'module' => 'hris'],
                 ['route' => 'admin.roles', 'active' => 'admin.roles*', 'label' => 'Role & Hak Akses', 'permission' => 'role.view'],
+                // Module registry. Its own permission, NOT system.*: switching
+                // a section on is ordinary administration, and putting it next
+                // to host configuration would be a much larger grant than the
+                // screen needs.
+                ['route' => 'admin.modules.index', 'active' => 'admin.modules.*', 'label' => 'Modul', 'permission' => 'module.view'],
             ]],
 
             // CMS. Module-gated AND permission-gated: the registry seeds `cms`
@@ -150,6 +159,11 @@ class NavigationService
             // write, while the publish button is simply absent for them.
             ['label' => 'Konten', 'icon' => 'file-text', 'module' => 'cms', 'children' => [
                 ['route' => 'admin.cms.index', 'active' => 'admin.cms.*', 'label' => 'Artikel & Halaman', 'permission' => 'cms.view', 'module' => 'cms'],
+                // Own permission, not cms.view and not cms.posts.edit. The
+                // library is shared across articles — the logo, the head's
+                // photo — so seeing it is granted with `cms.view` but managing
+                // it is not implied by writing an article.
+                ['route' => 'admin.media.index', 'active' => 'admin.media.*', 'label' => 'Media', 'permission' => 'cms.media.manage', 'module' => 'cms'],
             ]],
 
             ['label' => 'Laporan', 'icon' => 'chart-bar', 'children' => [

@@ -41,6 +41,35 @@ class ProfileController extends BaseController
         return back()->with('success', 'Profil berhasil diperbarui.');
     }
 
+    /**
+     * The signed-in person's own employment record.
+     *
+     * Read-only, and it resolves the record from the session rather than from
+     * an id — there is deliberately no route parameter, because a parameter
+     * here would be one more place where a missing check becomes an IDOR, and
+     * the answer to "whose record?" is never a question worth asking on this
+     * screen.
+     *
+     * The empty case is the common one and is NOT an error. Phase 3 created
+     * `employees` and deliberately did not backfill, because guessing which of
+     * the staff accounts is a teacher and which is a clerk writes false HR
+     * records. So most staff have a login and no employment record yet, and
+     * this screen has to say so rather than render an empty shell.
+     */
+    public function employment(Request $request): View
+    {
+        $user = $request->user();
+
+        return view('profile.employment', [
+            'user' => $user,
+            'employee' => $user->employee,
+            // Surfaced rather than resolved silently: a person who works here
+            // and has no record is a task for the office, not a glitch the
+            // employee should be reporting.
+            'isStaff' => app(\App\Services\EmployeeService::class)->isStaff($user),
+        ]);
+    }
+
     public function updatePassword(Request $request): RedirectResponse
     {
         $user = $request->user();

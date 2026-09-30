@@ -74,6 +74,9 @@ require __DIR__.'/fitur-guardian.php';
 /* Feature: CMS media */
 require __DIR__.'/fitur-cms-media.php';
 
+// CMS-MEDIA: media library (own file, own permissions)
+require __DIR__.'/media.php';
+
 /* Feature: module toggle screen */
 require __DIR__.'/fitur-module.php';
 
@@ -481,7 +484,17 @@ Route::middleware(['auth', 'can:classroom.view'])->prefix('akademik')->name('aca
     Route::get('/kelas/{classroom}/pengumuman', [AnnouncementController::class, 'index'])->name('announcements.index');
     Route::get('/kelas/{classroom}/pengumuman/baru', [AnnouncementController::class, 'create'])->name('announcements.create');
     Route::post('/kelas/{classroom}/pengumuman', [AnnouncementController::class, 'store'])->name('announcements.store');
-    Route::delete('/kelas/{classroom}/pengumuman/{announcement}', [AnnouncementController::class, 'destroy'])->name('announcements.destroy');
+
+    // Editing and deleting are separate permissions from creating: recipients
+    // already hold whatever was published, so a correction is its own grant.
+    Route::middleware('can:classroom.announcement.update')->group(function () {
+        Route::get('/kelas/{classroom}/pengumuman/{announcement}/ubah', [AnnouncementController::class, 'edit'])->name('announcements.edit');
+        Route::put('/kelas/{classroom}/pengumuman/{announcement}', [AnnouncementController::class, 'update'])->name('announcements.update');
+    });
+
+    Route::middleware('can:classroom.announcement.delete')->group(function () {
+        Route::delete('/kelas/{classroom}/pengumuman/{announcement}', [AnnouncementController::class, 'destroy'])->name('announcements.destroy');
+    });
 });
 
 // --- Penempatan & pemindahan siswa (permission-gated, scope-checked) -----
