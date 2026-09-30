@@ -140,10 +140,18 @@ class SeedShowcaseHrisAndContentCommand extends Command
      */
     private function writeContent(CmsPostService $posts): void
     {
-        $author = User::where('email', 'kesiswaan@demo.test')->first()
+        // The AUTHOR and the PUBLISHER are different accounts, and the split is
+        // the point: `kesiswaan` holds cms.posts.create and cms.posts.edit and
+        // deliberately NOT cms.posts.publish, so a school can have a teacher
+        // write the news and a head approve it. CmsPostService::publish()
+        // re-checks the permission itself and refused this seeder until the
+        // actor was the one that actually holds it — which is the guard doing
+        // its job, not a bug to work around.
+        $author = User::where('email', 'kesiswaan@demo.test')->first();
+        $publisher = User::where('email', 'admin@sida.test')->first()
             ?? User::where('email', 'like', '%@demo.test')->first();
 
-        if (! $author) {
+        if (! $author || ! $publisher) {
             return;
         }
 
@@ -182,7 +190,7 @@ class SeedShowcaseHrisAndContentCommand extends Command
             ]);
 
             if ($article['publish']) {
-                $posts->publish($post, $author);
+                $posts->publish($post, $publisher);
             }
         }
     }
