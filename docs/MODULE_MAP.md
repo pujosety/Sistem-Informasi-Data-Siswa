@@ -27,29 +27,35 @@ shared table, it asks the architecture owner.
 
 | # | Module | Today | Phase | Effort | New tables |
 |---|---|---|---|---|---|
-| 1 | Public school website | absent | 2 | M | 0–2 |
-| 2 | CMS | absent | 3 | **L** | 14 |
+| 1 | Public school website | **complete** | 2 | M | 0 |
+| 2 | CMS | **partial** — writing + publication + revisions; no media, no themes, no menu editor | 3 | **L** | 14 |
 | 3 | Visual site builder | absent | 4 | **XL** | 2 (themes, blocks) |
 | 4 | SIS | **complete** | 5 | S | 0 |
 | 5 | School management | **complete** | 5 | S | 0 |
-| 6 | Academic management | partial — term exists, no calendar | 1 | S | 2 |
+| 6 | Academic management | **partial** — semester calendar exists; no grade-entry screen | 1 | S | 2 |
 | 7 | LMS / e-learning | absent | 6–7 | **XL** | 17 |
 | 8 | Teacher workspace | partial — dashboards exist | 8 | M | 0 |
 | 9 | Student learning portal | partial — SIS portal exists | 8 | M | 0 |
 | 10 | Staff ERP / HRIS | **partial** — employment records + UI; no payroll, no leave ledger | 9 | **L** | 8 |
-| 11 | Employee workspace | absent | 9 | M | 0 |
+| 11 | Employee workspace | absent — staff cannot see their own record | 9 | M | 0 |
 | 12 | Parent portal | **complete** | 12 | S | 0 |
 | 13 | PPDB / admission | partial — registration exists | 11 | M | 2 |
-| 14 | Workflow engine | absent | 10 | L | 4 |
+| 14 | Workflow engine | **built, not wired** — tables + service + tests; PPDB verification still bypasses it | 10 | L | 4 |
 | 15 | Document management | **complete** | — | S | 0 |
-| 16 | Communication / notification | partial — in-app only | 1 | M | 0 |
+| 16 | Communication / notification | partial — in-app only, no email/WhatsApp | 1 | M | 0 |
 | 17 | Reporting | **complete** | 13 | S | 0 |
-| 18 | Analytics | partial — stats service | 13 | M | 0 |
+| 18 | Analytics | partial — a stats service for the dashboard, not analytics | 13 | M | 0 |
 | 19 | Role & permission | **complete** | 1 | S | 0 |
 | 20 | Audit system | **complete** | 1 | S | 0 |
-| 21 | Module management | absent | 1 | S | 1 |
+| 21 | Module management | **partial** — registry + service + tests; no toggle screen for an operator | 1 | S | 1 |
 
-**Already complete: 9 of 21.** That is the useful finding — the platform brief
+**Complete: 10 of 21** (public website, SIS, school management, parent portal,
+documents, reporting, role & permission, audit — plus academic scaffolding).
+Four more are substantially built and are listed as partial because a piece
+is missing, not because they are stubs: CMS, HRIS, the workflow engine and the
+module registry.
+
+That is the useful finding — the platform brief
 reads as if almost nothing exists, but the SIS, the permission system, the
 document pipeline, reporting and audit are all real and tested.
 
