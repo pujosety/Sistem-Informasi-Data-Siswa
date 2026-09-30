@@ -118,36 +118,44 @@ would touch.
 
 ---
 
-## 5. The root route conflict
+## 5. The root route — corrected
 
-```php
-Route::get('/', [ReportController::class, 'index'])->name('index');
+**This section previously said the root was the report index sitting inside an
+authed group. Both claims were wrong**, and the mistake matters: they would
+produce a plan to "unlock an existing route" when the work is to serve a page
+from a route that does not exist yet.
+
+What the route table actually reports:
+
+```
+GET|HEAD|POST|PUT|PATCH|DELETE|OPTIONS   /   name='home'
+  action     : Illuminate\Routing\RedirectController
+  middleware : ['web']
 ```
 
-Two problems in one line:
+`Route::get('/', [ReportController::class, 'index'])->name('index')` is inside
+`->prefix('laporan')`, so its URI is `/laporan`. There is **no bare `/` in
+`routes/web.php` at all**, and `bootstrap/app.php` sets no root route. Laravel
+therefore supplies its default `home` route: a `RedirectController` behind the
+`web` group only.
 
-1. **`/` is the report index**, not a landing page. The target architecture
-   (§3) requires the public school website at `/`.
-2. **It is inside an authed group**, so an anonymous visitor is bounced to
-   `/login` before seeing anything.
+Verified against production, not inferred:
 
-The `laporan` prefix group already exists, so moving it is mechanical:
-
-```php
-// before
-Route::get('/', [ReportController::class, 'index'])->name('index');
-
-// after
-Route::middleware('auth')->group(function () {
-    Route::get('/laporan', [ReportController::class, 'index'])->name('laporan.index');
-    // …
-});
-Route::get('/', [PublicHomeController::class, '__invoke'])->name('public.home');
+```
+/         302      → the login screen
+/login    200      13,755 bytes
 ```
 
-**Route-name impact:** renaming `index` breaks any `route('index')` call and any
-test asserting it. Grep before changing, and keep a `Route::redirect` or an
-alias if the name is referenced widely.
+So the route is already public — it simply answers with a redirect instead of
+the school website. That is the whole of the gap, and it is smaller than
+previously recorded: **PHASE 2 adds a page and points `home` at it.** No
+existing route moves, so there is no route-name fallout to audit.
+
+What the page may show is bounded by §10. Only `school.*` settings and
+school-level counts are publishable; `classroom_announcements` is
+class-scoped and must not be listed publicly, and no student row may appear
+without an explicit per-person publication flag. There is no posts table yet,
+so "news" is PHASE 3 content, not something PHASE 2 can invent.
 
 ---
 

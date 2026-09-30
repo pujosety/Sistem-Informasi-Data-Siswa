@@ -204,18 +204,16 @@ Eight prefix groups, 119 named routes:
 | `/laporan` | reporting | `auth` + permission |
 | `/berkas/{document}` | private document streaming | `auth` + ownership |
 
-### The root route problem
+### The root route — corrected
 
-```php
-Route::get('/', [ReportController::class, 'index'])->name('index');
-```
+An earlier draft claimed `/` was the report index inside an authed group, with
+no public entry point. That was wrong: the report route is inside
+`->prefix('laporan')`, so its URI is `/laporan`, and no bare `/` exists in
+`routes/web.php`.
 
-`/` is the **report index**, and it sits inside a group requiring
-authentication. There is no public entry point: an anonymous visitor reaching
-`/` is redirected to `/login` and sees nothing else.
-
-The target architecture requires `/` to be the public school website. This is
-the single most visible structural change in PHASE 2.
+`/` is served by Laravel's default `home` route — a `RedirectController` behind
+the `web` group, confirmed in production as `302 → /login`. The route is already
+public; it just answers with a redirect. PHASE 2 points it at a page.
 
 ---
 
@@ -240,9 +238,9 @@ Stated plainly, because it should not be lost in a large refactor:
 
 | Finding | Impact | Where addressed |
 |---|---|---|
-| `/` is an authed report, not a public page | No public entry; §3 unmet | PHASE 2 |
+| `/` is an authed report, not a public page | `/` redirects to login instead of a school page; §3 unmet | PHASE 2 |
 | 2 policies for 21 models | Resource-level authorization is inconsistent; IDOR risk | PHASE 1 |
-| No `semester` anywhere | Blocks §16, §18 (courses are per-semester) | PHASE 1 |
+| No semester *calendar* | `grades.term` exists but is an unbound string: no dates, not tied to a year, not a FK | PHASE 1 |
 | No LMS / CMS / HRIS tables | 100% of §17–§39 is greenfield | PHASE 3+ |
 | No module registry | §50 cannot switch a module off | PHASE 1 |
 | No unified search | §45 | PHASE 1 |

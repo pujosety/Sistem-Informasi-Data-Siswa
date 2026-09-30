@@ -15,6 +15,25 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
         then: function () {
+            /*
+             | The public school website takes the root route HERE, in the `then`
+             | hook, and not in routes/web.php.
+             |
+             | Laravel registers its default `home` route AFTER the application's
+             | own routes, and registers it as `ANY` — so it answers `/` for
+             | every method and, being later in the collection, is matched first.
+             | Defining the same path in web.php is not enough: the route is
+             | registered correctly and is still never reached, which looks
+             | exactly like the application route being missing.
+             |
+             | `then` runs after every other route file has been loaded, so
+             | registering here puts ours last and therefore first in matching
+             | order. The name stays `home` so any existing `route('home')` call
+             | keeps working.
+             */
+            Route::get('/', [\App\Http\Controllers\PublicHomeController::class, '__invoke'])
+                ->name('home');
+
             /* TEMPORARY deployment diagnostic. Registered directly rather than
                in routes/web.php, because everything there is wrapped in the
                `web` group — StartSession included — so a session failure killed

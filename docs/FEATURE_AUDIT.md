@@ -21,7 +21,7 @@ Audit date: 2026-09-29
 | Classes & homeroom | **works** | assignment-derived scope |
 | Academic years | **works** | active/upcoming/archived lifecycle |
 | Attendance | **works** | sessions, records, per-class |
-| Grades | **partial** | flat per-subject; no semester, no categories |
+| Grades | **partial** | per-term already; no calendar, no categories |
 | Reports | **works** | builder, preview, Excel/CSV/PDF |
 | Notifications | **partial** | in-app only; email not wired |
 | Audit log | **works** | `ActivityLog`, `AuditService` |
@@ -29,7 +29,7 @@ Audit date: 2026-09-29
 | Parent portal | **works** | relationship-scoped |
 | Student portal | **works** | role-scoped |
 | Installer | **absent** | no installer route or command |
-| Public website | **absent** | `/` is an authed report |
+| Public website | **absent** | `/` is public but redirects to login (RedirectController) |
 | CMS | **absent** | — |
 | LMS | **absent** | — |
 | HRIS / ERP | **absent** | — |
@@ -100,18 +100,22 @@ workflow engine in §39.
 
 ## 3. What is partial
 
-### 3.1 Grades — no semester, no categories
+### 3.1 Grades — a term string, but no calendar and no categories
 
-`grades` holds one row per `(enrollment, subject)`. The target architecture
-requires (§16, §18, §25):
+`grades` already splits by term: the row is keyed `(enrollment_id, subject_id,
+term)` with `term` defaulting to `'1'`.
 
-- a **semester** distinction
+What the target architecture adds on top (§16, §18, §25):
+
+- a **semester calendar** — dates, a label, a current flag, tied to an academic
+  year, enforced by a foreign key. Today `term` is a bare string, so `term = '1'`
+  means the same thing in every year and cannot be joined or scheduled.
 - **categories** — assignments, quizzes, projects, midterm, final
 - **weighting**
 
-Today a student's year has a single score per subject. Adding a semester later
-makes every existing row ambiguous, so this is the cheapest possible moment to
-add it — and the most expensive to defer.
+This is a smaller job than adding a column would have been, because the data is
+already split. It is also not free: a course still cannot say when its semester
+runs.
 
 ### 3.2 Notifications — in-app only
 
@@ -188,7 +192,7 @@ module → migration needed → risk → test status.
 | Homeroom assignment | `HomeroomService` | School (5) | none | low | `ClassScopeAuthorizationTest` |
 | Academic years | `AcademicYearService` | Academic (6) | add semester | medium | — |
 | Attendance | `attendance_*` | School (5) + ERP (9) | none | low | `StrictGroupByTest` |
-| Grades | `grades` | Academic (6) + LMS (7) | add semester, categories | **high** | `EnrollmentIntegrityTest` |
+| Grades | `grades` | Academic (6) + LMS (7) | add semester calendar, categories | medium | `EnrollmentIntegrityTest` |
 | Alumni | `alumni` | School (5) | none | low | — |
 | Class announcements | `classroom_announcements` | LMS (7) | none | low | — |
 | Reports + export | `ReportController`, `Exports/` | Reporting (13) | none | low | `ProductionUrlTest` |
