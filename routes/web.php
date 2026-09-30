@@ -568,9 +568,29 @@ Route::middleware(['auth', 'can:classroom.view'])
     Route::get('/pengaturan/pendaftaran', [SettingsController::class, 'registration'])->name('settings.registration');
     Route::get('/pengaturan/aplikasi', [SettingsController::class, 'application'])->name('settings.application');
 
-    Route::middleware('can:settings.update')->group(function () {
+    /*
+     | Each form is gated on the permission that governs IT, not on a blanket
+     | `settings.update`.
+     |
+     | All three saves were guarded by `settings.update`, which is defined in
+     | the catalogue and granted to NO role — so the school profile, the
+     | registration settings and the application preferences were all
+     | permanently unsaveable. Opening the page worked; pressing save did not,
+     | and nothing on the page said why.
+     |
+     | `settings.update` is now gone from the routes entirely. A blanket gate
+     | over three unrelated screens is what made the failure invisible: each
+     | one now names the permission the form's own save button checks.
+     */
+    Route::middleware('can:school.update')->group(function () {
         Route::put('/pengaturan/profil-sekolah', [SettingsController::class, 'updateSchool'])->name('settings.school.update');
+    });
+
+    Route::middleware('can:settings.update')->group(function () {
         Route::put('/pengaturan/pendaftaran', [SettingsController::class, 'updateRegistration'])->name('settings.registration.update');
+    });
+
+    Route::middleware('can:settings.update')->group(function () {
         Route::put('/pengaturan/aplikasi', [SettingsController::class, 'updateApplication'])->name('settings.application.update');
     });
 

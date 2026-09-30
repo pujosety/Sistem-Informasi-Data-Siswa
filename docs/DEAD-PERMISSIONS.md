@@ -33,6 +33,27 @@ promise the product has not kept.
 | `classroom.announcement.update` | `AnnouncementController::update` |
 | `cms.media.manage` | `MediaController` + `MediaPolicy` |
 | `system.view` | `ModuleController` — renamed to `module.view` (see below) |
+| `module.view`, `module.toggle` | `ModulePolicy` — were `system.*`, i.e. a different name |
+| `school.update` | existed, granted to nobody, and the save button did not check it |
+| `settings.update` | existed, granted to nobody, and guarded THREE forms at once |
+| `branding.update` | existed, granted to nobody |
+
+## The settings form bug — worth reading before adding any new setting
+
+`school.update`, `settings.update` and `branding.update` were all defined in
+the catalogue, granted to **no role**, and referenced by the routes that guard
+the school profile, branding, registration and application forms. So every
+settings page opened and none of them could be saved.
+
+Worse: **every settings form validated its keys as nested array paths.** A key
+like `school.name` is read by Laravel's validator as `$data['school']['name']`,
+while the form posts `school.name` as a flat key. So `required` failed on a
+value that had been submitted correctly, on all four forms, forever.
+
+`SettingsController::settingRules()` now escapes the dot. **Any new setting
+form must go through that helper** — validating a dotted key by hand is how
+the bug comes back, and it presents as "that field cannot be edited" rather
+than as anything to do with dots.
 
 ## `system.*` → `module.*` — a correction, not an addition
 

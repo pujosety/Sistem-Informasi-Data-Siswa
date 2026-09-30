@@ -383,7 +383,17 @@ class PermissionCatalog
                 'report.view', 'report.export',
                 'master.view', 'master.create', 'master.update',
                 'activity.view',
-                'settings.view', 'branding.view', 'school.view',
+                // settings.update and branding.update were DEAD: defined,
+                // granted to nobody, and required by the routes that guard the
+                // registration, application and branding forms. Those three
+                // pages opened and were permanently unsaveable.
+                'settings', 'branding',
+                // `school.view` AND `school.update`. Only the view half was
+                // granted, so the profile page rendered with a working-looking
+                // save button and every save 403'd. The school profile is the
+                // school's own identity — if admin may open the page, it should
+                // be able to correct a typo in it.
+                'school',
                 // Module registry: which sections exist is an operator's
                 // decision, and it is reversible — nothing is lost when a
                 // module is switched off, unlike the three unresolved

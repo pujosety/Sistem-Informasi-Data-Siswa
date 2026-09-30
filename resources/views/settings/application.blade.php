@@ -18,6 +18,25 @@
         @csrf
         @method('PUT')
 
+        {{--
+            The application's own name. It appears in the browser title, the
+            PWA manifest and the login page, and until this field existed the
+            only way to change it was to edit the settings table by hand.
+        --}}
+        <x-card title="Identitas Aplikasi" icon="school">
+            <div class="grid sm:grid-cols-2 gap-4">
+                <x-form-field name="app.name" label="Nama Aplikasi" required
+                              :value="old('app.name', $values['app.name']['value'] ?? 'Sistem Informasi Data Siswa')"
+                              hint="Tampil di judul browser, manifest, dan halaman masuk." />
+                <x-form-field name="app.short_name" label="Nama Pendek" required maxlength="60"
+                              :value="old('app.short_name', $values['app.short_name']['value'] ?? 'SIDA')"
+                              hint="Dipakai pada menu sisi dan nama ringkas." />
+                <x-form-field name="app.tagline" class="sm:col-span-2"
+                              :value="old('app.tagline', $values['app.tagline']['value'] ?? null)"
+                              placeholder="Contoh: Pendaftaran, akademik, dan informasi sekolah." />
+            </div>
+        </x-card>
+
         <x-card title="Format & Regional" icon="settings">
             <div class="grid sm:grid-cols-2 gap-4">
                 <x-form-field name="app.timezone" type="select" label="Zona Waktu" required

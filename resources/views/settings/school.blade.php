@@ -17,6 +17,11 @@
     <form method="POST" action="{{ route('settings.school.update') }}" class="space-y-4 sm:space-y-5" novalidate>
         @csrf
         @method('PUT')
+        {{-- Set once at the top rather than on every field: a form that LOOKS
+             editable but is not is the thing this guards against. --}}
+        @if (! auth()->user()->can('school.update'))
+            <fieldset disabled>
+        @endif
 
         <x-card title="Identitas Utama" icon="school">
             <div class="grid sm:grid-cols-2 gap-4">
@@ -66,12 +71,31 @@
             </p>
         </x-card>
 
-        <div class="flex justify-end">
-            <button type="submit" class="btn btn-primary">
-                <x-icon name="save" class="w-4 h-4" />
-                Simpan Profil Sekolah
-            </button>
-        </div>
+        {{--
+            The save button is gated, and the fields are made readonly when it
+            is absent.
+
+            The route is guarded on school.update, so an unsaved form for a role
+            without it is a form that looks editable and 403s on submit. Showing
+            a working-looking button and refusing the POST is worse than saying
+            plainly that this is read-only.
+        --}}
+        @can('school.update')
+            <div class="flex justify-end">
+                <button type="submit" class="btn btn-primary">
+                    <x-icon name="save" class="w-4 h-4" />
+                    Simpan Profil Sekolah
+                </button>
+            </div>
+        @else
+            <x-alert variant="info"
+                     title="Hanya dapat dilihat"
+                     message="Anda memiliki izin untuk melihat profil sekolah, tetapi tidak untuk mengubahnya. Hubungi Super Admin." />
+        @endcan
+
+        @if (! auth()->user()->can('school.update'))
+            </fieldset>
+        @endif
     </form>
 </div>
 @endsection

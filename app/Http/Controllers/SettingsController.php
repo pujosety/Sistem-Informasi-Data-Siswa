@@ -72,9 +72,44 @@ class SettingsController extends BaseController
         ]);
     }
 
+    /**
+     * Validation rules for setting keys, escaped so the dot is literal.
+     *
+     * WHY THIS EXISTS
+     *
+     * Every setting key contains a dot — `school.name`, `app.short_name` — and
+     * Laravel's validator reads a dot as a NESTED ARRAY PATH. So
+     * `['school.name' => 'required']` looks for `$data['school']['name']`,
+     * finds nothing, and reports "The school.name field is required" for a
+     * value that was submitted correctly.
+     *
+     * The consequence was total and silent: EVERY settings form in the
+     * application — school profile, branding, registration, application
+     * preferences — redirected back with a validation error and wrote nothing.
+     * The pages opened, the fields filled in, the button was there, and the
+     * save never happened. Reported as "the school name can't be edited".
+     *
+     * `\*` tells the validator the dot is part of the name, not a separator.
+     * This is applied by a helper rather than by hand at each of the twenty-odd
+     * rules, because forgetting one is how the bug comes back.
+     *
+     * @param  array<string, mixed>  $rules
+     * @return array<string, mixed>
+     */
+    private function settingRules(array $rules): array
+    {
+        $escaped = [];
+
+        foreach ($rules as $key => $rule) {
+            $escaped[str_replace('.', '\\.', $key)] = $rule;
+        }
+
+        return $escaped;
+    }
+
     public function updateSchool(Request $request): RedirectResponse
     {
-        $data = $request->validate([
+        $data = $request->validate($this->settingRules([
             'school.name' => ['required', 'string', 'max:190'],
             'school.npsn' => ['nullable', 'string', 'max:20'],
             'school.address' => ['nullable', 'string', 'max:500'],
@@ -86,7 +121,7 @@ class SettingsController extends BaseController
             'school.phone' => ['nullable', 'string', 'max:40'],
             'school.website' => ['nullable', 'string', 'max:190'],
             'school.headmaster' => ['nullable', 'string', 'max:150'],
-        ]);
+        ]));
 
         $this->settings->setMany($data);
         $this->audit->log('settings.school_updated', null, 'Mengubah profil sekolah');
@@ -107,14 +142,18 @@ class SettingsController extends BaseController
 
     public function updateBranding(Request $request): RedirectResponse
     {
-        $data = $request->validate([
+        $data = $request->validate($this->settingRules([
             'app.name' => ['required', 'string', 'max:120'],
             'app.short_name' => ['required', 'string', 'max:20'],
             'app.tagline' => ['nullable', 'string', 'max:120'],
             'branding.primary_color' => ['required', 'regex:/^#[0-9a-fA-F]{6}$/'],
             'branding.accent_color' => ['required', 'regex:/^#[0-9a-fA-F]{6}$/'],
-        ], [
-            'branding.primary_color.regex' => 'Format warna harus hex, contoh #1D4ED8.',
+        ]), [
+            // The message keys carry the SAME dot, so they need the same
+            // escape — otherwise a colour error is reported against a field
+            // the validator never looked at.
+            'branding\\.primary_color.regex' => 'Format warna harus hex, contoh #1D4ED8.',
+            'branding\\.accent_color.regex' => 'Format warna harus hex, contoh #1D4ED8.',
         ]);
 
         // Uploads are validated as real images before they ever reach disk.
@@ -163,12 +202,12 @@ class SettingsController extends BaseController
 
     public function updateRegistration(Request $request): RedirectResponse
     {
-        $data = $request->validate([
+        $data = $request->validate($this->settingRules([
             'registration.open' => ['nullable', 'boolean'],
             'registration.start_at' => ['nullable', 'date'],
-            'registration.end_at' => ['nullable', 'date', 'after_or_equal:registration.start_at'],
+            'registration.end_at' => ['nullable', 'date', 'after_or_equal:registration\\.start_at'],
             'registration.default_academic_year_id' => ['nullable', 'exists:academic_years,id'],
-        ]);
+        ]));
 
         $this->settings->setMany([
             'registration.open' => $request->boolean('registration.open'),
@@ -195,14 +234,26 @@ class SettingsController extends BaseController
 
     public function updateApplication(Request $request): RedirectResponse
     {
-        $data = $request->validate([
+        $data = $request->validate($this->settingRules([
+            /*
+             * These three are HERE and were not before.
+             *
+             * `app.name` and `app.short_name` existed as settings and were
+             * printed in the browser title, the manifest and the login page —
+             * but no form field and no validation rule ever wrote them. The
+             * only way to change the application's name was to edit the
+             * database by hand, which is not a feature.
+             */
+            'app.name' => ['required', 'string', 'max:190'],
+            'app.short_name' => ['required', 'string', 'max:60'],
+            'app.tagline' => ['nullable', 'string', 'max:255'],
             'app.timezone' => ['required', 'string', 'max:60', Rule::in(timezone_identifiers_list())],
             'app.date_format' => ['required', 'string', 'max:20'],
             'app.per_page' => ['required', 'integer', 'min:5', 'max:100'],
-        ]);
+        ]));
 
         $this->settings->setMany($data);
-        $this->audit->log('settings.application_updated', null, 'Memperbarui preferensi aplikasi');
+        $this->audit->log('settings.application_updated', null, 'Memperbarui nama dan preferensi aplikasi');
 
         return back()->with('success', 'Preferensi aplikasi berhasil disimpan.');
     }
