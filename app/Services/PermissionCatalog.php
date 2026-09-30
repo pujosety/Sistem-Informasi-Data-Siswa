@@ -266,6 +266,30 @@ class PermissionCatalog
                 ],
             ],
 
+            /*
+             * HRIS — employment records, which are NOT the account.
+             *
+             * Deliberately a separate domain from `user.*`: creating a login for
+             * someone is a different decision from recording that they hold a
+             * post, with a contract and a department. Merging them is how an
+             * HRIS starts duplicating name/email/phone into a second copy that
+             * silently disagrees with `users`.
+             *
+             * The view/write split mirrors the rest of the catalogue: reading a
+             * staff list is ordinary administration, ending someone's
+             * employment is not.
+             */
+            'employee' => [
+                'label' => 'Kepegawaian',
+                'permissions' => [
+                    'employee.view' => 'Lihat data pegawai',
+                    'employee.create' => 'Buat catatan kepegawaian',
+                    'employee.update' => 'Ubah data kepegawaian',
+                    'employee.resign' => 'Akhiri hubungan kerja',
+                    'employee.export' => 'Ekspor data kepegawaian',
+                ],
+            ],
+
             'system' => [
                 'label' => 'Sistem',
                 'permissions' => [
@@ -344,6 +368,12 @@ class PermissionCatalog
                 'master.view', 'master.create', 'master.update',
                 'activity.view',
                 'settings.view', 'branding.view', 'school.view',
+                // HRIS in full, but NOT `user.*`: recording that someone holds
+                // a post is ordinary administration, while minting and
+                // disabling their login stays Super Admin only. That split is
+                // why `employee.*` is its own domain rather than a `user.*`
+                // sub-permission.
+                'employee',
                 'academic_year', 'classroom', 'classroom.view.all', 'enrollment', 'homeroom',
                 'guardian', 'attendance', 'grade', 'alumni', 'announcement',
                 // CMS in full, by prefix. Themes and navigation are trusted to

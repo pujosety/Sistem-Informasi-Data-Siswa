@@ -134,6 +134,13 @@ class NavigationService
             ['label' => 'Data', 'icon' => 'database', 'children' => [
                 ['route' => 'kesiswaan.students', 'active' => 'kesiswaan.students', 'label' => 'Data Siswa', 'permission' => 'student.view', 'module' => 'students'],
                 ['route' => 'admin.users', 'active' => 'admin.users*', 'label' => 'Pengguna', 'permission' => 'user.view'],
+                // HRIS. Module-gated AND permission-gated: the registry seeds
+                // `hris` DISABLED, because Phase 3 built the table with no UI.
+                // Until an operator switches it on the section is hidden
+                // everywhere at once — sidebar, dock, overflow — so there is
+                // no link to a screen that 403s. Both gates must be removed
+                // for one, which is why `module` is repeated on the child.
+                ['route' => 'admin.employees', 'active' => 'admin.employees*', 'label' => 'Kepegawaian', 'permission' => 'employee.view', 'module' => 'hris'],
                 ['route' => 'admin.roles', 'active' => 'admin.roles*', 'label' => 'Role & Hak Akses', 'permission' => 'role.view'],
             ]],
 

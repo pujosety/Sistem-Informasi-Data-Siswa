@@ -36,11 +36,13 @@ class DiagnosticController extends Controller
         try {
             DB::connection()->getPdo();
             $report['connection'] = 'ok';
-        } catch (Throwable $e) {
-            // The exception CLASS is safe and diagnostic; its MESSAGE is not,
-            // because PDO messages embed the host and sometimes the user.
+        } catch (\Throwable $e) {
+            // A single boolean collapses three different faults, and each has a
+            // different fix. Classify the layer so the operator knows whether to
+            // look at the host, the network, or the credentials.
             $report['connection'] = 'failed';
             $report['connection_exception'] = class_basename($e);
+            $report['failure_layer'] = $this->classifyConnectionFailure($e);
 
             return response()->json($report);
         }
@@ -106,5 +108,72 @@ class DiagnosticController extends Controller
         }
 
         return response()->json($report);
+    }
+
+    /**
+     * Which layer a database connection failure belongs to.
+     *
+     * WHY NOT JUST "connection: failed"
+     *
+     * That single flag collapses three faults which need three different
+     * fixes, and on a managed host the operator cannot see the difference from
+     * the outside:
+     *
+     *   - credentials   the variables exist but the user/password is wrong,
+     *                   or the user was never granted access to the database
+     *   - network       the host is right but unreachable — DNS, firewall, a
+     *                   private network the app is not attached to
+     *   - driver        the PHP PDO driver for the configured driver is not
+     *                   installed, so nothing can be attempted at all
+     *
+     * Reporting the layer is what makes this diagnostic worth its one request:
+     * it turns "the site is down" into an action.
+     *
+     * Classification is by exception class and the SQLSTATE prefix, never by
+     * message text — a message is exactly what this controller refuses to
+     * return, because it embeds the host and the user.
+     */
+    private function classifyConnectionFailure(\Throwable $e): string
+    {
+        // "could not find driver" is thrown before any network I/O, so no
+        // amount of credential or network work will help.
+        if (str_contains($e->getMessage(), 'could not find driver')) {
+            return 'driver';
+        }
+
+        $code = $e->getCode();
+
+        // Access denied for user — the credentials are wrong, or the grant
+        // is missing. MySQL reports 1045 for both.
+        if ($code === 1045 || $code === '28000') {
+            return 'credentials';
+        }
+
+        // Unknown database — the app connected but the schema is not there.
+        // Distinct from credentials: fixing the password will not help.
+        if ($code === 1049) {
+            return 'database_missing';
+        }
+
+        // Cannot connect to MySQL server — host unreachable, refused, or the
+        // connection attempt timed out. MySQL client errors 2002 (unix) and
+        // 2003 (TCP); the raw connection error is reported as errno 0 or 111
+        // with SQLSTATE HY000 when the failure was below the driver.
+        if (in_array($code, [2002, 2003, 111, 0], true)) {
+            return 'network';
+        }
+
+        // SQLSTATE class 08 is "connection exception" and 28000 is
+        // "invalid authorization" — the standards-compliant spellings of the
+        // two faults above, which a non-MySQL driver would use.
+        if (is_string($code) && str_starts_with($code, '08')) {
+            return 'network';
+        }
+
+        if (is_string($code) && str_starts_with($code, '28')) {
+            return 'credentials';
+        }
+
+        return 'unknown';
     }
 }

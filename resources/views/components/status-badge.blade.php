@@ -29,6 +29,13 @@
         'graduated' => ['label' => 'Lulus',           'tone' => 'success', 'icon' => 'award'],
         'withdrawn' => ['label' => 'Berhenti',        'tone' => 'neutral', 'icon' => 'user-minus'],
         'completed' => ['label' => 'Selesai',         'tone' => 'success', 'icon' => 'check-circle'],
+
+        // Employment (HRIS). `inactive` above is the CLASSROOM status; the two
+        // share a key on purpose so one badge component covers both, and the
+        // labels are worded the same way.
+        'active'    => ['label' => 'Aktif',           'tone' => 'success', 'icon' => 'check-circle'],
+        'on_leave'  => ['label' => 'Cuti',            'tone' => 'warning', 'icon' => 'clock'],
+        'resigned'  => ['label' => 'Berhenti',        'tone' => 'danger',  'icon' => 'x'],
     ];
 
     // Accept a Registration model or a Student as a convenience, and never let

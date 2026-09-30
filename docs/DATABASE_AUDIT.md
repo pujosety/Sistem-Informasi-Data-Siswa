@@ -58,10 +58,25 @@ read `enrollments`, never these two columns, or the two will drift.
 | `grades` | `enrollment_id` `subject_id` `score` `status` `teacher_id` `published_by` `published_at` |
 | `homeroom_assignments` | `user_id` `classroom_id` `academic_year_id` `started_at` `ended_at` `status` `notes` `created_by` |
 
-**`grades` has no term/semester column.** A single academic year holds one row
-per subject per student. The target architecture requires a semester
-distinction (§16, §18, §25). This is the most consequential schema gap: adding
-it later means every historical grade becomes ambiguous.
+**`grades.term` already exists** — a `string(20)` defaulting to `'1'`, with a
+unique constraint on `(enrollment_id, subject_id, term)` named `grade_unique`.
+
+An earlier draft of this audit claimed grades had no semester. That was wrong,
+and the correction matters: grades are already split per term, and the existing
+data is unambiguous.
+
+The real gap is narrower and different. `term` is a bare string with no
+calendar behind it:
+
+- no dates, so nothing can say when a term runs or whether one is current
+- not bound to an academic year, so `term = '1'` is the same label in every year
+  and cannot be joined
+- no label, so the UI has to hard-code how to render it
+- not a foreign key, so a typo is silently accepted and produces a grade that
+  belongs to no term
+
+That is a real calendar problem, not a missing column, and it is a smaller and
+safer migration than the one this audit previously described.
 
 ### Family, attendance, outcomes
 
@@ -117,7 +132,8 @@ query per render.
 | Requirement | Missing | Severity |
 |---|---|---|
 | §16 semesters, §18 courses-per-semester | no `semester` anywhere | **high** |
-| §25 gradebook categories (assignments/quizzes/midterm/final) | `grades` is a single flat row per subject | **high** |
+| §25 gradebook categories (assignments/quizzes/midterm/final) | `grades` has `term` but no category | medium |
+| §16/§18 semester calendar | `grades.term` is an unbound string with no dates | medium |
 | §17–§22 LMS | no `lms_*` tables | greenfield |
 | §5–§14 CMS | no `cms_*` tables | greenfield |
 | §34–§38 HRIS | no `employees` table; staff are `users` with a role | **high** |
@@ -157,8 +173,10 @@ Non-negotiable, derived from what already exists:
    are mirrors. Read `enrollments`.
 2. **Never delete an enrollment.** Promotion calls
    `EnrollmentService::close()` then `assign()`. History is the point.
-3. **Adding `semester` requires backfilling every existing grade.** With 35
-   tables and no production volume yet, this is the cheapest moment to do it.
+3. **Adding a semester calendar must backfill from `grades.term`.** Every
+   existing grade already names a term, so the backfill is a copy rather than a
+   guess. With no production volume this is still the cheapest moment, but the
+   risk is lower than previously recorded here.
 4. **Spatie tables are framework-owned.** Do not rename `model_has_roles`.
 5. **Migrations must be reversible** or explicitly documented as one-way.
 6. **Migrations must not run at request time.** Wasmer's Anybuild build

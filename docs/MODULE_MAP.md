@@ -32,11 +32,11 @@ shared table, it asks the architecture owner.
 | 3 | Visual site builder | absent | 4 | **XL** | 2 (themes, blocks) |
 | 4 | SIS | **complete** | 5 | S | 0 |
 | 5 | School management | **complete** | 5 | S | 0 |
-| 6 | Academic management | partial — no semester | 1 | M | 2 |
+| 6 | Academic management | partial — term exists, no calendar | 1 | S | 2 |
 | 7 | LMS / e-learning | absent | 6–7 | **XL** | 17 |
 | 8 | Teacher workspace | partial — dashboards exist | 8 | M | 0 |
 | 9 | Student learning portal | partial — SIS portal exists | 8 | M | 0 |
-| 10 | Staff ERP / HRIS | absent | 9 | **L** | 8 |
+| 10 | Staff ERP / HRIS | **partial** — employment records + UI; no payroll, no leave ledger | 9 | **L** | 8 |
 | 11 | Employee workspace | absent | 9 | M | 0 |
 | 12 | Parent portal | **complete** | 12 | S | 0 |
 | 13 | PPDB / admission | partial — registration exists | 11 | M | 2 |
@@ -197,8 +197,11 @@ PHASE 14 multi-tenancy               ← only after single-school is stable
 
 Two orderings matter more than they look:
 
-- **Semester before LMS.** Courses are per-semester. Building the LMS first
-  means retrofitting a semester column into live tables.
+- **A semester calendar before the LMS.** `grades.term` already splits scores
+  per term, so the LMS does not need a new column — it needs a calendar those
+  terms can join: dates, a label, a current flag, and a foreign key to the
+  academic year. Building the LMS first means retrofitting that calendar into
+  live tables once courses exist.
 - **Workflow tables before PPDB.** PPDB verification is the second approval
   flow. Building it bespoke, then generalising, means two implementations.
 

@@ -4,6 +4,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthenticatedSessionController;
 use App\Http\Controllers\BrandAssetController;
 use App\Http\Controllers\DocumentFileController;
+use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\KesiswaanController;
 use App\Http\Controllers\MasterDataController;
 use App\Http\Controllers\NotificationController;
@@ -225,6 +226,36 @@ Route::middleware(['auth', 'can:dashboard.admin.view'])->prefix('admin')->name('
 
     Route::middleware('can:user.delete')->group(function () {
         Route::delete('/pengguna/{user}', [UserManagementController::class, 'destroy'])->name('users.destroy');
+    });
+
+    // --- Kepegawaian / HRIS (Phase 9) -------------------------------
+    /*
+     | The table and service landed in Phase 3 with no UI, so this group is
+     | new. Guarded on `employee.*`, not `user.*`: reading the staff list and
+     | recording a post are ordinary administration, while minting and
+     | disabling a login stays Super Admin only. Conflating the two is how an
+     | HRIS ends up able to create super admins.
+     */
+    Route::middleware('can:employee.view')->group(function () {
+        Route::get('/kepegawaian', [EmployeeController::class, 'index'])->name('employees');
+        Route::get('/kepegawaian/{employee}', [EmployeeController::class, 'show'])->name('employees.show');
+    });
+
+    Route::middleware('can:employee.create')->group(function () {
+        Route::get('/kepegawaian/baru', [EmployeeController::class, 'create'])->name('employees.create');
+        Route::post('/kepegawaian', [EmployeeController::class, 'store'])->name('employees.store');
+    });
+
+    Route::middleware('can:employee.update')->group(function () {
+        Route::get('/kepegawaian/{employee}/ubah', [EmployeeController::class, 'edit'])->name('employees.edit');
+        Route::put('/kepegawaian/{employee}', [EmployeeController::class, 'update'])->name('employees.update');
+    });
+
+    // Ending an employment is a separate ability from editing one, so a
+    // crafted POST to the update route cannot terminate anyone's contract.
+    Route::middleware('can:employee.resign')->group(function () {
+        Route::post('/kepegawaian/{employee}/berhenti', [EmployeeController::class, 'resign'])->name('employees.resign');
+        Route::post('/kepegawaian/{employee}/aktifkan', [EmployeeController::class, 'reinstate'])->name('employees.reinstate');
     });
 
     // --- Roles & permissions (ADMIN → ROLE & HAK AKSES) -------------

@@ -42,6 +42,19 @@ class User extends Authenticatable
         return $this->hasOne(Student::class);
     }
 
+    /**
+     * Their employment record, if the school has keyed one in.
+     *
+     * Nullable in the strict sense: most staff do not have one yet, because the
+     * Phase 3 migration deliberately refused to guess who is a teacher and who
+     * is a clerk. Every caller has to cope with null — a login is not proof of
+     * employment.
+     */
+    public function employee(): HasOne
+    {
+        return $this->hasOne(Employee::class);
+    }
+
     public function creator(): BelongsTo
     {
         return $this->belongsTo(self::class, 'created_by');
