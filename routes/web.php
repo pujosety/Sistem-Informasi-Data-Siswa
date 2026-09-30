@@ -44,6 +44,41 @@ use Illuminate\Support\Facades\Route;
 // operational probe must not be masked by a cache-store failure.
 /*
 |--------------------------------------------------------------------------
+| Feature route files
+|--------------------------------------------------------------------------
+|
+| Each remaining feature owns ONE file here rather than adding its routes to
+| this one. The reason is not tidiness: five features were built in parallel by
+| five agents, and every one of them needed a line in this file and the policy
+| block. Concurrent edits to a single 500-line file produce merge conflicts
+| where two unrelated features collide on adjacent lines, and the resolution
+| silently drops one of them.
+|
+| A file per feature means the only shared edit in the whole project is the
+| require below, which is why the integration owner makes it once.
+|
+| Every group keeps the same shape: auth, the permission that actually defines
+| the surface, and nothing wider.
+|
+*/
+
+/* Feature: grade entry */
+require __DIR__.'/fitur-grade.php';
+
+/* Feature: class announcement editing */
+require __DIR__.'/fitur-announcement.php';
+
+/* Feature: guardian linking */
+require __DIR__.'/fitur-guardian.php';
+
+/* Feature: CMS media */
+require __DIR__.'/fitur-cms-media.php';
+
+/* Feature: module toggle screen */
+require __DIR__.'/fitur-module.php';
+
+/*
+|--------------------------------------------------------------------------
 | Public school website
 |--------------------------------------------------------------------------
 |

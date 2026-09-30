@@ -290,6 +290,22 @@ class PermissionCatalog
                 ],
             ],
 
+            /*
+             * Module registry. The registry and the service existed with no
+             * screen, so switching a module on meant opening a shell. These two
+             * are the screen's own permissions; they are deliberately NOT part
+             * of `settings.*`, because a school that lets someone re-brand the
+             * site has not necessarily given them the ability to hide a whole
+             * section of the application.
+             */
+            'module' => [
+                'label' => 'Modul Aplikasi',
+                'permissions' => [
+                    'module.view' => 'Lihat daftar modul',
+                    'module.toggle' => 'Nyalakan / matikan modul',
+                ],
+            ],
+
             'system' => [
                 'label' => 'Sistem',
                 'permissions' => [
@@ -368,6 +384,11 @@ class PermissionCatalog
                 'master.view', 'master.create', 'master.update',
                 'activity.view',
                 'settings.view', 'branding.view', 'school.view',
+                // Module registry: which sections exist is an operator's
+                // decision, and it is reversible — nothing is lost when a
+                // module is switched off, unlike the three unresolved
+                // decisions at the end of this file.
+                'module',
                 // HRIS in full, but NOT `user.*`: recording that someone holds
                 // a post is ordinary administration, while minting and
                 // disabling their login stays Super Admin only. That split is
