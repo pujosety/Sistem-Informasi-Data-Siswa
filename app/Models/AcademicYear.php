@@ -52,6 +52,21 @@ class AcademicYear extends Model
         return $this->hasMany(Enrollment::class);
     }
 
+    /**
+     * Semesters are always read through the year they belong to: `term` is a
+     * bare string that repeats in every year, so the year is what disambiguates
+     * it.
+     */
+    public function semesters()
+    {
+        return $this->hasMany(Semester::class);
+    }
+
+    public function gradeCategories()
+    {
+        return $this->hasMany(GradeCategory::class);
+    }
+
     public function homeroomAssignments()
     {
         return $this->hasMany(HomeroomAssignment::class);

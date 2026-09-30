@@ -15,6 +15,52 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
         then: function () {
+            /*
+             | The public school website takes the root route HERE, in the `then`
+             | hook, and not in routes/web.php.
+             |
+             | Laravel registers its default `home` route AFTER the application's
+             | own routes, and registers it as `ANY` — so it answers `/` for
+             | every method and, being later in the collection, is matched first.
+             | Defining the same path in web.php is not enough: the route is
+             | registered correctly and is still never reached, which looks
+             | exactly like the application route being missing.
+             |
+             | `then` runs after every other route file has been loaded, so
+             | registering here puts ours last and therefore first in matching
+             | order. The name stays `home` so any existing `route('home')` call
+             | keeps working.
+             */
+            Route::get('/', [\App\Http\Controllers\PublicHomeController::class, '__invoke'])
+                ->name('home');
+
+            // The rest of the public school website. Indonesian paths, matching
+            // the rest of the application; no auth, and none of them load a
+            // student record.
+            //
+            // `/tentang`, not `/profil`. `/profil` is already the STUDENT's
+            // profile — profile.edit, profile.update and profile.password — and
+            // registering a second route on that path shadowed all three,
+            // which took out the topbar and nav on every authenticated page.
+            // The public page needed a name that was actually free.
+            Route::get('/tentang', [\App\Http\Controllers\PublicHomeController::class, 'profile'])
+                ->name('public.about');
+            Route::get('/program', [\App\Http\Controllers\PublicHomeController::class, 'programs'])
+                ->name('public.programs');
+            Route::get('/ppdb', [\App\Http\Controllers\PublicHomeController::class, 'admission'])
+                ->name('public.admission');
+            Route::get('/kontak', [\App\Http\Controllers\PublicHomeController::class, 'contact'])
+                ->name('public.contact');
+
+            // News, read from the CMS. Both routes go through
+            // publishedAndPublic(), so a draft, an unpublished post, a future
+            // post and a post outside its window are all excluded by the query
+            // rather than by a check a caller has to remember.
+            Route::get('/berita', [\App\Http\Controllers\PublicCmsController::class, 'news'])
+                ->name('public.news');
+            Route::get('/berita/{slug}', [\App\Http\Controllers\PublicCmsController::class, 'post'])
+                ->name('public.news.show');
+
             /* TEMPORARY deployment diagnostic. Registered directly rather than
                in routes/web.php, because everything there is wrapped in the
                `web` group — StartSession included — so a session failure killed

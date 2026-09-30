@@ -23,6 +23,10 @@ class Grade extends Model
     protected $fillable = [
         'enrollment_id', 'subject_id', 'term', 'score', 'status',
         'teacher_id', 'published_by', 'published_at',
+        // Added by 2026_09_29_100000. `term` remains authoritative for the
+        // existing gradebook and its unique constraint; these give that bare
+        // string a calendar to belong to.
+        'semester_id', 'category_id',
     ];
 
     protected $casts = [
@@ -43,6 +47,34 @@ class Grade extends Model
     public function teacher(): BelongsTo
     {
         return $this->belongsTo(User::class, 'teacher_id');
+    }
+
+    public function semester(): BelongsTo
+    {
+        return $this->belongsTo(Semester::class);
+    }
+
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(GradeCategory::class, 'category_id');
+    }
+
+    /**
+     * The term label, preferring the calendar and falling back to the raw
+     * string.
+     *
+     * Grades created before the semester migration have no semester_id, and a
+     * null-safe read keeps the report cards rendering rather than throwing in the
+     * middle of a transcript.
+     */
+    public function termLabel(): string
+    {
+        return $this->semester?->label ?? $this->categoryLabel() ?? 'Semester '.$this->term;
+    }
+
+    public function categoryLabel(): ?string
+    {
+        return $this->category?->label;
     }
 
     public function scopePublished(Builder $query): Builder

@@ -153,6 +153,28 @@ class PermissionCatalog
                 ],
             ],
 
+            'cms' => [
+                'label' => 'Website & CMS',
+                'permissions' => [
+                    'cms.view' => 'Buka manage konten',
+                    'cms.posts.create' => 'Tulis artikel',
+                    'cms.posts.edit' => 'Ubah artikel',
+                    'cms.posts.publish' => 'Terbitkan artikel',
+                    /*
+                     * Publication is a SEPARATE permission from editing, for
+                     * the same reason document.verify is separate from
+                     * document.view: a school may want a teacher to write the
+                     * news and a head to approve it before anyone sees it.
+                     */
+                    'cms.pages.edit' => 'Ubah halaman',
+                    'cms.pages.publish' => 'Terbitkan halaman',
+                    'cms.media.manage' => 'Kelola media',
+                    'cms.navigation.manage' => 'Kelola menu',
+                    'cms.themes.manage' => 'Kelola tema',
+                    'cms.settings.manage' => 'Kelola pengaturan situs',
+                ],
+            ],
+
             'document' => [
                 'label' => 'Dokumen',
                 'permissions' => [
@@ -324,6 +346,10 @@ class PermissionCatalog
                 'settings.view', 'branding.view', 'school.view',
                 'academic_year', 'classroom', 'classroom.view.all', 'enrollment', 'homeroom',
                 'guardian', 'attendance', 'grade', 'alumni', 'announcement',
+                // CMS in full, by prefix. Themes and navigation are trusted to
+                // the same role that already holds settings.view, because both
+                // change what every visitor sees.
+                'cms',
             ),
 
             // Read + report. No writes to master data, no user management.
@@ -340,6 +366,10 @@ class PermissionCatalog
                 'classroom.student.view', 'classroom.parent.view',
                 'classroom.report.view', 'classroom.report.export',
                 'attendance.view', 'grade.view', 'alumni.view',
+                // Writes content, does not publish it. cms.posts.publish is
+                // deliberately absent: a school that wants a teacher to draft
+                // the news and a head to approve it grants exactly this.
+                'cms.view', 'cms.posts.create', 'cms.posts.edit', 'cms.pages.edit',
                 'guardian.view', 'announcement.view',
             ),
 

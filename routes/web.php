@@ -24,6 +24,7 @@ use App\Http\Controllers\HomeroomController;
 use App\Http\Controllers\WorkspaceController;
 use App\Http\Controllers\HealthController;
 use App\Http\Controllers\ParentPortalController;
+use App\Http\Controllers\PublicHomeController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -39,6 +40,31 @@ use Illuminate\Support\Facades\Route;
 */
 // Same reason as /__diag: an operational probe must not be masked by a
 // cache-store failure.
+/*
+|--------------------------------------------------------------------------
+| Public school website
+|--------------------------------------------------------------------------
+|
+| §3 asks for the public site to be the entry point, and until now `/` was
+| Laravel's default `home` route — a RedirectController behind the `web`
+| group, so it needed no authentication but answered 302 → /login. A visitor
+| could reach the root and saw nothing but a login form.
+|
+| Defining `/` here replaces that default. Nothing is being unlocked: the
+| route was always public. What changes is that it now serves a page.
+|
+| It is deliberately its own controller rather than a view shared with the
+| authenticated shell. §10 makes the privacy boundary a property of what this
+| page is allowed to load, and the cheapest way to keep a public page from
+| growing staff features is for it not to have the machinery to.
+|
+*/
+// NOTE: the public `/` route is registered in bootstrap/app.php's `then` hook,
+// not here. Laravel registers its default `home` route AFTER the application
+// routes and as `ANY`, so a `/` defined in this file registers correctly and is
+// then never reached — the redirect wins. `then` runs last, which is what makes
+// ours win. Do not add a competing `home` route here.
+
 Route::get('/health', HealthController::class)->name('health');
 
 /*

@@ -100,6 +100,7 @@ class AppServiceProvider extends ServiceProvider
         foreach ([
             \App\Models\SchoolClass::class => \App\Policies\ClassroomPolicy::class,
             \App\Models\Enrollment::class => \App\Policies\EnrollmentPolicy::class,
+            \App\Models\Document::class => \App\Policies\DocumentPolicy::class,
         ] as $model => $policy) {
             Gate::policy($model, $policy);
         }
