@@ -176,20 +176,34 @@ class SeedPublicSiteCommand extends Command
         $created = 0;
 
         foreach ($programmes as [$department, $description, $subjects]) {
-            $row = Department::firstOrCreate(
-                ['name' => $department],
-                [
-                    // `code` is NOT NULL with no default.
-                    'code' => strtoupper(substr(preg_replace('/[^A-Za-z]/', '', $department), 0, 5)),
-                    'description' => $description,
-                ]
+            $code = strtoupper(substr(preg_replace('/[^A-Za-z]/', '', $department), 0, 5));
+
+            // Same reason as the subjects above: `code` is the unique index.
+            Department::firstOrCreate(
+                ['code' => $code],
+                ['name' => $department, 'description' => $description]
             );
 
             foreach ($subjects as $subject) {
-                Subject::firstOrCreate(
-                    ['name' => $subject],
-                    ['code' => strtoupper(substr(preg_replace('/[^A-Za-z]/', '', $subject), 0, 8))],
-                );
+                $code = strtoupper(substr(preg_replace('/[^A-Za-z]/', '', $subject), 0, 8));
+
+                /*
+                 * Looked up by CODE as well as name, not name alone.
+                 *
+                 * `code` carries a unique index and `name` does not, so
+                 * firstOrCreate(['name' => 'Sejarah']) finds nothing when a
+                 * "Sejarah" already exists under a different code, and the
+                 * insert then dies on the code index. The name is what the
+                 * seeder means, but the index is what the database enforces,
+                 * and both have to be consulted before writing.
+                 */
+                if (Subject::where('name', $subject)->orWhere('code', $code)->exists()) {
+                    $created++;
+
+                    continue;
+                }
+
+                Subject::create(['name' => $subject, 'code' => $code]);
 
                 $created++;
             }
