@@ -161,7 +161,7 @@ Neither is urgent. Neither should be "fixed" by a migration during PHASE 1.
 | 4 | no workflow engine | each approval flow will reinvent itself | 10 |
 | 5 | no installer | no guided first-run experience | 1 |
 | 6 | 2 policies for 21 models | inconsistent resource authorization; IDOR risk | 1 |
-| 7 | `/__diag` still deployed | temporary public diagnostic | 1 |
+| 7 | ~~`/__diag` still deployed~~ **removed** | temporary public diagnostic | done |
 | 8 | queue unused in production | exports block requests | 1 |
 | 9 | no module registry | §50 cannot be honoured | 1 |
 | 10 | README overstates table count | misleads planning | corrected in CURRENT_ARCHITECTURE.md |

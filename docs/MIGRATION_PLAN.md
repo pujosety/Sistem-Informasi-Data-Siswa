@@ -127,7 +127,7 @@ and should be done alone, after the rest of PHASE 1 is stable.
 | policies for `Student`, `Document`, `Registration`, `Grade` | 2 policies for 21 models; §58 IDOR audit |
 | unified search service | §45; must be permission-filtered per result |
 | real queue driver in production | `sync` blocks exports and mail |
-| remove `/__diag` | temporary public diagnostic |
+| ~~remove `/__diag`~~ **removed** | temporary public diagnostic | done |
 | index on `notifications (user_id, read_at)` | unread count runs per render |
 | installer | §63 — no first-run experience exists |
 

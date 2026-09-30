@@ -144,6 +144,14 @@ class NavigationService
                 ['route' => 'admin.roles', 'active' => 'admin.roles*', 'label' => 'Role & Hak Akses', 'permission' => 'role.view'],
             ]],
 
+            // CMS. Module-gated AND permission-gated: the registry seeds `cms`
+            // DISABLED, and `kesiswaan` holds cms.view + the draft permissions
+            // but NOT cms.posts.publish — so a teacher sees the section and can
+            // write, while the publish button is simply absent for them.
+            ['label' => 'Konten', 'icon' => 'file-text', 'module' => 'cms', 'children' => [
+                ['route' => 'admin.cms.index', 'active' => 'admin.cms.*', 'label' => 'Artikel & Halaman', 'permission' => 'cms.view', 'module' => 'cms'],
+            ]],
+
             ['label' => 'Laporan', 'icon' => 'chart-bar', 'children' => [
                 ['route' => 'kesiswaan.statistics', 'active' => 'kesiswaan.statistics', 'label' => 'Statistik', 'permission' => 'student.view'],
                 ['route' => 'kesiswaan.rekap', 'active' => 'kesiswaan.rekap', 'label' => 'Rekapitulasi', 'permission' => 'student.view'],

@@ -61,13 +61,21 @@ return Application::configure(basePath: dirname(__DIR__))
             Route::get('/berita/{slug}', [\App\Http\Controllers\PublicCmsController::class, 'post'])
                 ->name('public.news.show');
 
-            /* TEMPORARY deployment diagnostic. Registered directly rather than
-               in routes/web.php, because everything there is wrapped in the
-               `web` group — StartSession included — so a session failure killed
-               the diagnostic before its controller could report the failure.
-               DELETE once the production cause is resolved. */
-            Route::get('/__diag', \App\Http\Controllers\DiagnosticController::class)
-                ->withoutMiddleware(\Illuminate\Foundation\Http\Middleware\PreventRequestsDuringMaintenance::class);
+            /* The temporary /__diag deployment probe was removed here.
+
+               It existed while the production database was unreachable and the
+               cause was unknown. It answered one question — reachable, or
+               reachable but empty — and it has: production reports 17
+               migrations applied and every public route returns 200.
+
+               It went because it is an UNAUTHENTICATED endpoint that reports
+               the driver, the session driver, the cache store, which tables
+               exist and how many migrations ran. That is a deployment posture
+               described to anyone who asks for it, on a school system, and
+               keeping it "just in case" is how it survives for years. The
+               verified replacement for a boot check is /up, which is Laravel's
+               own and says only that the app is up.
+            */
         },
     )
     ->withMiddleware(function (Middleware $middleware): void {

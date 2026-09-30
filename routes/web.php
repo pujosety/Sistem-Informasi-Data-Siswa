@@ -20,6 +20,7 @@ use App\Http\Controllers\AcademicYearController;
 use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\ClassroomController;
+use App\Http\Controllers\CmsAdminController;
 use App\Http\Controllers\EnrollmentController;
 use App\Http\Controllers\HomeroomController;
 use App\Http\Controllers\WorkspaceController;
@@ -39,8 +40,8 @@ use Illuminate\Support\Facades\Route;
 | group and free of any session or settings dependency.
 |
 */
-// Same reason as /__diag: an operational probe must not be masked by a
-// cache-store failure.
+// Also outside the auth group and free of any store dependency: an
+// operational probe must not be masked by a cache-store failure.
 /*
 |--------------------------------------------------------------------------
 | Public school website
@@ -226,6 +227,46 @@ Route::middleware(['auth', 'can:dashboard.admin.view'])->prefix('admin')->name('
 
     Route::middleware('can:user.delete')->group(function () {
         Route::delete('/pengguna/{user}', [UserManagementController::class, 'destroy'])->name('users.destroy');
+    });
+
+    // --- Konten / CMS ------------------------------------------------
+    /*
+     | Phase 3 built the CMS tables, the writing service and the public news
+     | pages, but no room to write in: ten cms.* permissions were granted and
+     | reached nothing. These routes are what make them real.
+     |
+     | Each write is gated on its OWN permission rather than one `cms.manage`,
+     | so a school can grant a teacher the ability to draft without granting
+     | the ability to publish. See PostPolicy for why that split exists.
+     */
+    Route::middleware('can:cms.view')->group(function () {
+        Route::get('/konten', [CmsAdminController::class, 'index'])->name('cms.index');
+        Route::get('/konten/{post}', [CmsAdminController::class, 'show'])->name('cms.show');
+    });
+
+    Route::middleware('can:cms.posts.create')->group(function () {
+        Route::get('/konten/baru', [CmsAdminController::class, 'create'])->name('cms.create');
+        Route::post('/konten', [CmsAdminController::class, 'store'])->name('cms.store');
+    });
+
+    Route::middleware('can:cms.posts.edit')->group(function () {
+        Route::get('/konten/{post}/ubah', [CmsAdminController::class, 'edit'])->name('cms.edit');
+        Route::put('/konten/{post}', [CmsAdminController::class, 'update'])->name('cms.update');
+        Route::get('/konten/{post}/revisi', [CmsAdminController::class, 'revisions'])->name('cms.revisions');
+        Route::post('/konten/{post}/revisi/{revision}/kembalikan', [CmsAdminController::class, 'restoreRevision'])->name('cms.revisions.restore');
+    });
+
+    Route::middleware('can:cms.posts.publish')->group(function () {
+        Route::post('/konten/{post}/terbitkan', [CmsAdminController::class, 'publish'])->name('cms.publish');
+        Route::post('/konten/{post}/tarik', [CmsAdminController::class, 'unpublish'])->name('cms.unpublish');
+        // The scheduler is not running on a single-container host, so a due
+        // post can also be published by hand.
+        Route::post('/konten/terbitkan-jatuh-tempo', [CmsAdminController::class, 'publishDue'])->name('cms.publish-due');
+    });
+
+    // Sending a draft for review is an edit, not a publication.
+    Route::middleware('can:cms.posts.edit')->group(function () {
+        Route::post('/konten/{post}/tinjau', [CmsAdminController::class, 'submitForReview'])->name('cms.submit');
     });
 
     // --- Kepegawaian / HRIS (Phase 9) -------------------------------

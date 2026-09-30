@@ -51,6 +51,14 @@ class CmsPostService
         $post->body = $this->sanitizer->clean($attributes['body'] ?? null);
         $post->excerpt = $attributes['excerpt']
             ?? $this->sanitizer->excerpt($attributes['body'] ?? null);
+
+        // Copied on create, not left to a later update. It was accepted here
+        // and silently dropped, so a category chosen in the new-article form
+        // vanished and had to be picked again on the second save — which
+        // reads as the form losing the selection rather than as the service
+        // ignoring the field.
+        $post->category_id = $attributes['category_id'] ?? null;
+
         $post->author_id = $author->id;
         $post->status = Post::DRAFT;
         $post->is_public = false;
@@ -227,10 +235,11 @@ class CmsPostService
     /**
      * Publish posts whose scheduled time has arrived.
      *
-     * Separate from publish() on purpose: a scheduled post is already public
-     * (the author decided that when they scheduled it) and only needs the
-     * status advanced. Running it through publish() would need a permission
-     * that the scheduler does not have, and would re-derive published_at.
+     * Separate from publish() on purpose: the scheduler has no actor, so it
+     * cannot satisfy the permission check inside publish(). It also does not
+     * re-derive published_at, because a scheduled post's date is when the
+     * author asked for it to appear, not the moment a cron job happened to
+     * run.
      */
     public function publishDue(): int
     {
@@ -241,7 +250,20 @@ class CmsPostService
             ->get();
 
         foreach ($due as $post) {
-            $post->update(['status' => Post::PUBLISHED]);
+            // is_public is set HERE, not assumed. The service's own docblock
+            // claimed a scheduled post is "already public", which was true of
+            // the schema and false of every path that could actually produce
+            // one: create() forces is_public = false and there was no screen
+            // that scheduled anything, so a post could reach SCHEDULED only
+            // with the flag off. Advancing the status alone then published
+            // nothing — publishDue() returned a count and the site was
+            // unchanged, which is the worst shape of this bug: it reports
+            // work done.
+            $post->update([
+                'status' => Post::PUBLISHED,
+                'is_public' => true,
+                'published_at' => $post->published_at ?? now(),
+            ]);
         }
 
         return $due->count();

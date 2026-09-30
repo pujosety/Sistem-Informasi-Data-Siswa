@@ -54,12 +54,9 @@ class EmployeeManagementTest extends TestCase
     {
         $user = $this->makeUser('admin');
 
-        // The registry ships `hris` DISABLED because Phase 3 had no UI. The
-        // tests here are about authorization, not the module switch, so the
-        // switch is turned on explicitly — ModuleRegistryTest owns the
-        // "shipped disabled" assertion.
-        app(ModuleService::class)->setEnabled('hris', true);
-
+        // The registry ships `hris` ENABLED now that the UI exists, so nothing
+        // is toggled here. ModuleRegistryTest owns the seed assertion, and the
+        // navigation tests below flip it off and on themselves.
         return $user;
     }
 
@@ -409,13 +406,14 @@ class EmployeeManagementTest extends TestCase
     // ------------------------------------------------------------- navigation
 
     /** @test */
-    public function the_hris_module_is_seeded_disabled_so_the_section_stays_hidden(): void
+    public function the_hris_module_is_seeded_enabled_now_that_it_has_a_ui(): void
     {
-        // MySQL hands back 0/1, not a PHP bool, so a strict assertFalse()
-        // would fail on the very value it is checking. Cast explicitly.
-        $this->assertFalse(
+        // It shipped disabled while the table existed with no screen. The
+        // employment UI landed, so the section is reachable. MySQL hands back
+        // 0/1 rather than a PHP bool, hence the cast.
+        $this->assertTrue(
             (bool) DB::table('modules')->where('key', 'hris')->value('is_enabled'),
-            'HRIS has an employment UI now — revisit whether it should still ship off.'
+            'HRIS has an employment UI and must be seeded enabled.'
         );
     }
 
@@ -443,9 +441,9 @@ class EmployeeManagementTest extends TestCase
     public function the_section_stays_hidden_for_a_role_that_lacks_the_permission(): void
     {
         // Module on, permission absent: the item must still be filtered out,
-        // or it becomes a link that 403s.
+        // or it becomes a link that 403s. The module ships enabled, so this
+        // exercises the permission gate on its own.
         $kesiswaan = $this->makeUser('kesiswaan');
-        app(ModuleService::class)->setEnabled('hris', true);
 
         $this->assertNotContains('Kepegawaian', $this->labels(app(NavigationService::class), $kesiswaan));
     }

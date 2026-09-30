@@ -95,9 +95,14 @@ return new class extends Migration
 
             // Seeded present but disabled: registered for the platform's
             // completeness, switched on when the module is built.
-            ['cms', 'Website & CMS', false, false, '/cms', 70],
+            //
+            // cms and hris are now ENABLED. Both were seeded off because the
+            // tables existed with no way to reach them; a registry that hides a
+            // finished module is not honesty, it is a switch nobody flipped.
+            // LMS stays off — it has no tables at all.
+            ['cms', 'Website & CMS', false, true, '/cms', 70],
             ['lms', 'E-Learning', false, false, '/lms', 80],
-            ['hris', 'Kepegawaian', false, false, '/erp', 90],
+            ['hris', 'Kepegawaian', false, true, '/erp', 90],
             ['assets', 'Inventaris', false, false, null, 100],
 
             // Named in §50 as future modules. Disabled, with no route prefix,

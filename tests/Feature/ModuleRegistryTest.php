@@ -123,10 +123,32 @@ class ModuleRegistryTest extends TestCase
     {
         // The registry lists the whole platform, but a navigation filter that
         // consults it must not surface a section that leads nowhere.
-        foreach (['lms', 'cms', 'hris', 'payroll', 'finance', 'procurement'] as $key) {
+        //
+        // cms and hris were in this list until their UIs landed. Both were
+        // seeded OFF because the tables existed with no screen to reach them,
+        // and a section that 403s is worse than an absent one. Now that the
+        // editor and the staff list exist, they ship ON — see
+        // test_built_modules_are_seeded_enabled.
+        foreach (['lms', 'payroll', 'finance', 'procurement'] as $key) {
             $this->assertFalse(
                 \App\Models\Module::where('key', $key)->firstOrFail()->is_enabled,
                 "Module [{$key}] has no implementation and must be seeded disabled."
+            );
+        }
+    }
+
+    /**
+     * @test
+     */
+    public function test_built_modules_are_seeded_enabled(): void
+    {
+        // A module whose screen is built must not ship hidden. A registry that
+        // hides finished work is not honesty, it is a switch nobody flipped —
+        // and the operator has no way to know it exists.
+        foreach (['cms', 'hris'] as $key) {
+            $this->assertTrue(
+                \App\Models\Module::where('key', $key)->firstOrFail()->is_enabled,
+                "Module [{$key}] has a screen and must be seeded enabled."
             );
         }
     }

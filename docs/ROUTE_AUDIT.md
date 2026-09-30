@@ -21,16 +21,21 @@ Audit date: 2026-09-29 · Source: `routes/web.php`, 119 named routes, 8 prefixes
 | POST | `/daftar` | — | `guest`, `throttle:6,1` | |
 | POST | `/logout` | `logout` | `auth` | |
 | — | `/__screenshot/*` | | conditional | `LOCAL_DEBUG_HELPER=1` **and** not production; the controller also aborts in production |
-| — | `/__diag` | — | none | **TEMPORARY** deployment diagnostic, should be removed |
 | — | `/__boot` | — | none | already removed (commit `d57e0ff`) |
+| — | `/__diag` | — | none | **removed** — the route, the controller and the docblock are gone |
 
-### Risk: `/__diag` is unauthenticated and still present
+### `/__diag` — removed
 
-It is documented as temporary and returns only booleans (driver name, table
-existence, cache writability) with hostnames and messages scrubbed. That is
-defensible, but it is a public endpoint whose entire purpose is to describe the
-deployment's internals. **Remove it in PHASE 1** once the incident it was built
-for is closed out.
+It was registered outside the `web` group and with **no authentication**, and
+it answered with the driver, which tables exist, how many migrations are
+recorded, and whether the cache and session stores are writable. Scrubbing the
+hostnames and the messages made it defensible, not safe: its entire purpose was
+to describe the deployment's internals to anyone who asked, on a school system.
+
+The incident that justified it is closed — production reports 17 migrations
+applied and every public route returns 200 — so keeping it "in case" is how
+this kind of endpoint survives for years. The remaining checks are `/health`
+and `/up`, both of which are Laravel's own and say considerably less.
 
 ---
 

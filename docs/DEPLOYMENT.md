@@ -134,8 +134,23 @@ curl -s https://<domain-anda>/health
 | `booting` | Database menjawab, tabel belum ada |
 | `unavailable` | Database tidak dapat dijangkau |
 
-`/__diag` memberi detail lebih lengkap (driver, tabel per nama, jumlah
-migrasi, apakah store bisa ditulis) dan **akan dihapus** setelah insiden ditutup.
+### `/__diag` sudah dihapus
+
+Probe sementara itu terdaftar di luar grup `web` dan **tanpa autentikasi**, dan ia
+melaporkan driver, tabel yang ada, jumlah migrasi, serta apakah store bisa
+ditulis. Itu deskripsi posisi deployment untuk siapa pun yang meminta, pada
+sistem sekolah — dan setelah insiden 500 selesai, ia tidak lagi dibenarkan
+tetap ada "siapa tahu nanti".
+
+Setelah dihapus, verifikasi yang tersedia hanyalah:
+
+```bash
+curl -s https://<domain-anda>/health   # state: ok | booting | unavailable
+curl -sI https://<domain-anda>/berita  # 200 = CMS hidup
+```
+
+Untuk angka migrasi yang rinci, jalankan `bash hermes-wasmer-migrate.sh` dari
+mesin pengembangan, bukan dari URL publik.
 
 ---
 
@@ -158,10 +173,11 @@ curl -s https://<domain-anda>/health
 
 `StartSession` gagal sebelum controller jalan. Periksa:
 
-1. Apakah `app.yaml` berisi `migrate --force`?
-2. Apakah tabel `sessions` ada? — `curl -s https://<domain>/__diag`
-3. `CACHE_STORE` dan `SESSION_DRIVER` — bila database belum siap, keduanya
- otomatis mundur ke driver `file` dan alasannya dicatat di log
+1. Jalankan `bash hermes-wasmer-migrate.sh` — Wasmer **tidak** menjalankan
+   migrasi sendiri saat rebuild
+2. `CACHE_STORE` dan `SESSION_DRIVER` — bila database belum siap, keduanya
+   otomatis mundur ke driver `file` dan alasannya dicatat di log. Pesan itu
+   muncul di stdout sebelum aplikasi menjawab, jadi cari kata `SIDA` di log
 
 ### Tautan mengarah ke localhost
 
