@@ -24,9 +24,12 @@ use Illuminate\Support\Facades\Schema;
  *
  * WHY NOTHING IS DUPLICATED FROM USERS
  *
- * `name`, `email`, `phone` and `is_active` already live on `users` and stay
+ * `name`, `email` and `is_active` already live on `users` and stay
  * there. Copying them would create two sources that disagree the first time a
- * teacher changes their phone number. An employee is a person; this row is
+ * teacher changes their phone number. `users.phone` arrived later, in
+ * 2026_09_30_190000_add_phone_to_users_table — this comment used to claim the
+ * column was already here, which is why the profile form's `phone` field was
+ * believed to be safe. An employee is a person; this row is
  * their employment.
  */
 return new class extends Migration

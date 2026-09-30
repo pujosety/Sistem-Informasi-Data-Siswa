@@ -66,7 +66,15 @@ class WizardStepRequest extends FormRequest
         return [
             // Akun
             'name' => ['nullable', 'string', 'max:150'],
-            'email' => ['nullable', 'string', 'email', 'max:190'],
+            // unique() is what turns "someone already uses this address" into
+            // a message under the field instead of a 500. `nisn` right below
+            // already carries the same guard; the wizard's email was the one
+            // write path that lacked it, so a student retyping an address that
+            // existed hit SQLSTATE[23000] Duplicate entry on 'users_email_unique'.
+            'email' => [
+                'nullable', 'string', 'email', 'max:190',
+                Rule::unique('users', 'email')->ignore($this->user()?->id),
+            ],
 
             // Pribadi
             'full_name' => ['required', 'string', 'max:150'],

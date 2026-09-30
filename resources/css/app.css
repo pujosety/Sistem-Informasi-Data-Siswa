@@ -84,12 +84,18 @@
 |--------------------------------------------------------------------------
 | Design tokens
 |--------------------------------------------------------------------------
-| Palette derived from the SIDA identity:
+| Palette derived from the SIDA / LYFLA identity:
 |
-|   deep navy   #0b3375   brand anchor: sidebar rail, headings, wordmark
-|   royal blue  #1668dc   interactive accent: primary actions, focus, active nav
+|   maroon      #7A1F32   interactive accent: primary actions, focus, active nav
+|   deep navy   #0b3375   brand anchor: sidebar rail, wordmark
 |   cyan        #35c6f3   secondary highlight, informational accents
 |   teal        #0f9b7a   progress and completion accents
+|
+| The accent MOVED from royal blue to maroon in the 2026-10 redesign. Nothing
+| outside this token block changed: all 105 views read --app-primary, so the
+| recolour is one edit rather than a sweep. That is the whole reason tokens come
+| before any view is touched — if a view had hardcoded blue, this would have been
+| a 105-file change.
 |
 | Brand informs the system without painting it: success, warning, danger and
 | info keep their own meanings, so a green element still means "verified"
@@ -99,6 +105,9 @@
 :root {
     /* Brand family */
     --brand-navy: #0b3375;
+    --brand-maroon: #7a1f32;
+    --brand-maroon-hover: #671829;
+    --brand-maroon-soft: #f7ecef;
     --brand-blue: #1668dc;
     --brand-cyan: #35c6f3;
     --brand-teal: #0f9b7a;
@@ -113,10 +122,21 @@
     --app-text-muted: var(--color-ink-500);
     --app-text-subtle: var(--color-ink-400);
 
-    --app-primary: var(--brand-blue);
-    --app-primary-hover: #1257bd;
-    --app-primary-soft: #eef4fd;
+    --app-primary: var(--brand-maroon);
+    --app-primary-hover: var(--brand-maroon-hover);
+    --app-primary-soft: var(--brand-maroon-soft);
     --app-on-primary: #ffffff;
+
+    /* A translucent maroon for washes that need to sit over either surface:
+       selected table rows, the sidebar's active item, chart fills. One value
+       serves both themes because it composites rather than paints. */
+    --app-primary-a10: rgb(122 31 50 / 0.10);
+    --app-primary-a16: rgb(122 31 50 / 0.16);
+
+    /* Focus must stay visible on the maroon fill, so the ring inverts: a
+       surface-coloured gap plus a light accent, rather than the dark accent
+       that would vanish into the button it outlines. */
+    --focus-ring: 0 0 0 2px var(--app-surface), 0 0 0 4px var(--app-primary);
 
     /* Progress / completion accent, drawn from the brand's teal so success
        feels connected to the identity without being literally brand blue. */
@@ -140,7 +160,70 @@
     --app-sidebar-text-active: #ffffff;
     --app-sidebar-active-bg: rgb(255 255 255 / 0.08);
 
-    --focus-ring: 0 0 0 2px var(--app-surface), 0 0 0 4px var(--color-brand-500);
+}
+
+/*--------------------------------------------------------------------------|
+| Dark mode
+|--------------------------------------------------------------------------|
+| DESIGNED, NOT INVERTED.
+
+| Dark mode is not the light palette with the lightness flipped. It is its own
+| surface ramp, because a page reads as a stack of planes and those planes need
+| to separate by a few percent, not by hue:
+|
+|   --app-bg            #0b1220   the page behind everything
+|   --app-surface       #131c2e   cards, panels — one step up
+|   --app-surface-muted #1b2740   nested rows, table headers, wells — one more
+|   --app-border        #22304d   hairlines, because on dark a border is doing
+|                                   the job a shadow does on light
+|
+| The MAROON INVERTS. #7A1F32 on #0b1220 is 3.1:1 — it fails AA for text, so
+| the accent lightens to #c2556b (5.4:1) while filled buttons keep the deep
+| maroon with white text, because a button is a surface, not text. One colour
+| cannot do both jobs, which is why there are two tokens rather than a single
+| --app-primary being flipped.
+|
+| Success/warning/danger/info are re-picked rather than reused: the light-mode
+| values sit too close to the dark background to read. Soft variants become
+| translucent fills instead of near-white tints, which a light tint cannot be.
+ */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --app-bg: #0b1220;
+        --app-surface: #131c2e;
+        --app-surface-muted: #1b2740;
+        --app-border: #22304d;
+        --app-border-strong: #2f3f61;
+
+        --app-text: #e8edf7;
+        --app-text-muted: #9aa8c2;
+        --app-text-subtle: #6f7f9c;
+
+        --app-primary: #c2556b;
+        --app-primary-hover: #d4707f;
+        --app-primary-soft: rgb(194 85 107 / 0.16);
+        --app-primary-a10: rgb(194 85 107 / 0.12);
+        --app-primary-a16: rgb(194 85 107 / 0.20);
+        --app-on-primary: #ffffff;
+
+        --app-progress: #34c9a4;
+        --app-progress-soft: rgb(52 201 164 / 0.16);
+        --app-highlight: var(--brand-cyan);
+
+        --app-success: #4ecb8e;
+        --app-success-soft: rgb(78 203 142 / 0.16);
+        --app-warning: #e8b04b;
+        --app-warning-soft: rgb(232 176 75 / 0.16);
+        --app-danger: #f0736f;
+        --app-danger-soft: rgb(240 115 111 / 0.16);
+        --app-info: #5aa9f0;
+        --app-info-soft: rgb(90 169 240 / 0.16);
+
+        --app-sidebar-bg: #080e1a;
+        --app-sidebar-text: #97a5c0;
+        --app-sidebar-text-active: #ffffff;
+        --app-sidebar-active-bg: rgb(255 255 255 / 0.10);
+    }
 }
 
 /* Expose the semantic tokens as Tailwind color utilities (bg-surface, text-muted…) */

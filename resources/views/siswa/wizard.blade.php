@@ -100,6 +100,19 @@
         @endif
 
         {{-- ============ FORM WRAPPER (posts one step at a time) ============ --}}
+        {{-- Only the data steps post here. `dokumen` owns per-document upload
+             forms and `review` owns the submit form, and HTML forbids nesting a
+             form inside a form: a browser silently discards the inner <form>
+             tags, so their inputs fall through to THIS form. That is why
+             uploading a document from the wizard discarded the file while
+             reporting success, and why "Kirim untuk verifikasi" could never
+             succeed — it posted step=review here, whose rules are ['*'], so
+             all fifteen biodata fields failed validation on a display-only
+             page. --}}
+        @php
+            $postsToWizard = in_array($step, ['akun', 'pribadi', 'orang-tua', 'pendidikan'], true);
+        @endphp
+        @if ($postsToWizard)
         <form method="POST" action="{{ route('siswa.wizard.save') }}" novalidate
               x-data="{ dirty: false }"
               @input="dirty = true"
@@ -107,6 +120,7 @@
               @beforeunload.window="if (dirty) $event.preventDefault()">
             @csrf
             <input type="hidden" name="step" value="{{ $step }}">
+        @endif
 
             {{-- ---------- STEP 1: AKUN ---------- --}}
             @if ($step === 'akun')
@@ -453,7 +467,9 @@
                     </a>
                 </div>
             @endif
+        @if ($postsToWizard)
         </form>
+        @endif
     </div>
 
     {{-- ============ Side rail ============ --}}
