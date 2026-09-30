@@ -106,3 +106,4 @@ should stay regardless — but the permission is then decorative.
 > the catalogue. There is no third state.
 
 This was already the definition of done in the batch plan. It is not met yet.
+
