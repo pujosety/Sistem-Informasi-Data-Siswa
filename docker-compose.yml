@@ -17,6 +17,14 @@ services:
       - .:/var/www/html
       - vendor-data:/var/www/html/vendor
     working_dir: /var/www/html
+    # `artisan serve` is a SINGLE-process server, and it caches the framework
+    # in memory on boot. That combination is why it answered 500 while the very
+    # same request returned 200 through the kernel: the boot happened before
+    # .env existed, so APP_KEY was empty in that process, and one cached
+    # bootstrap cannot recover from a file appearing underneath it. The
+    # multi-worker built-in server below reads the environment per request and
+    # is what production (PHPix) does too.
+    command: sh -c "PHP_CLI_SERVER_WORKERS=4 php -S 0.0.0.0:8000 -t public"
     ports:
       - "8000:8000"
     depends_on:

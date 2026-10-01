@@ -75,14 +75,44 @@ decorative.
 `login lands each role on its own workspace` already passes and must keep
 passing — it is the regression test for role-based UI.
 
-## Deployment gotcha, recorded so it does not recur
+# Deployment gotcha, recorded so it does not recur
 
-`app.yaml` DOES run `npm install` + `npm run build`. But nothing rebuilds
-until `wasmer app deploy` runs — **`git push` alone changes nothing visible.**
-`public/build` is gitignored, so the CSS on the live site is whatever the last
-deploy built.
+**How SIDA actually reaches production, verified 2026-10-01:**
 
-And the deploy failed for an unrelated reason: the shell exports `WASMER_DIR`
-at the *install* directory, so the CLI never finds `~/.wasmer/wasmer.toml` and
-answers "no token provided". `hermes-wasmer-deploy.sh` now reads the token out
-of that file itself.
+1. `git push` to `main` → GitHub Actions runs **tests only** (`ci.yml` has three
+   jobs: `php`, `frontend`, `blade` — and `grep -ci wasmer` is `0`). **No job
+   deploys.**
+2. The Wasmer app is therefore rebuilt **manually from the dashboard**, from
+   the same commit. `app.yaml` is read by Anybuild at that point, so its
+   `npm install` / `npm run build` DO run — but only during that manual step.
+
+Three dead ends, each checked rather than assumed:
+
+- **`wasmer app deploy` is the wrong mechanism.** It fails with
+  `missing field 'package'` — and `git log -S 'package:' -- app.yaml` shows that
+  field has *never* existed, so this is not a regression to fix. Running it
+  would build a second, divergent app. The CLI also cannot authenticate: this
+  shell exports `WASMER_DIR` at the *install* directory, so it never finds
+  `~/.wasmer/wasmer.toml`. `hermes-wasmer-deploy.sh` now reads the token from
+  that file itself — kept, because it is correct and useful, but the deploy
+  command inside it should stay unused.
+- **`public/build` is gitignored**, so the CSS on the live site is whatever the
+  last manual build produced. A frontend change is invisible until that rebuild.
+- **CDN cache was not the cause.** `wasmer app purge-cache` ran successfully and
+  the served hash did not move, which is what ruled it out.
+
+**To verify a rebuild landed**, compare the served hash against the local
+build. They differ by content hash, so they are not expected to be equal:
+
+```bash
+# production
+curl -s https://sida-4136.wasmer.app/login | grep -oE 'app-[A-Za-z0-9]+\.css'
+# local truth
+cat public/build/manifest.json | python -c \
+  "import json,sys; print(json.load(sys.stdin)['resources/css/app.css']['file'])"
+```
+
+Local currently builds `app-CnsyAJbI.css`, which contains
+`--app-primary:var(--brand-maroon)`. Production was still serving
+`app-Cw4JUCID.css` with `--app-primary:var(--brand-blue)` at the time of
+writing, i.e. the pre-redesign token set.
