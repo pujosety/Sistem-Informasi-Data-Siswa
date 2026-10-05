@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\AcademicYear;
+use App\Models\LandingSection;
 use App\Models\Department;
 use App\Models\SchoolClass;
 use App\Models\Student;
@@ -42,6 +43,17 @@ class PublicHomeController extends Controller
             'school' => $this->schoolProfile(),
             'figures' => $this->figures(),
             'portalUrl' => route('login'),
+
+            // The landing page is assembled from CMS blocks, in the order and
+            // with the enabled flag the administrator set. Nothing here is
+            // hardcoded: an empty section table renders an empty page, which is
+            // the honest signal that the landing page has not been set up yet.
+            'sections' => LandingSection::forPage('home'),
+
+            // Real counts for the hero. The blocks carry their own copy, but a
+            // school enrolment figure is a fact about the school and must not
+            // be a marketing sentence that drifts from reality.
+            'landingFigures' => $this->figures(),
         ]);
     }
 

@@ -148,11 +148,13 @@ class BrandingTest extends TestCase
         foreach (File::allFiles(resource_path('views')) as $file) {
             $contents = File::get($file->getPathname());
 
-            // Match the standalone brand word, not every substring: "SIDA" is
-            // not present inside Indonesian words, but a naive check would also
-            // catch `validated()` and `consider()` in any Blade comment, and a
-            // test that cries wolf gets ignored.
-            if (preg_match('/\bSIDA\b/', $contents)) {
+            // Both spellings of the old brand. Matching only the standalone
+            // word "SIDA" let "Sistem Informasi Data Siswa" survive the rebrand
+            // in the public header — the same name in a longer form is still
+            // the old brand, and a check that only knows one spelling is a
+            // check that gives false assurance.
+            if (preg_match('/\bSIDA\b/', $contents)
+                || stripos($contents, 'Sistem Informasi Data Siswa') !== false) {
                 $offenders[] = $file->getRelativePathname();
             }
         }

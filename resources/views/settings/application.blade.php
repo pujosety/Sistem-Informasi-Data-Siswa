@@ -26,7 +26,7 @@
         <x-card title="Identitas Aplikasi" icon="school">
             <div class="grid sm:grid-cols-2 gap-4">
                 <x-form-field name="app.name" label="Nama Aplikasi" required
-                              :value="old('app.name', $values['app.name']['value'] ?? 'Sistem Informasi Data Siswa')"
+                              :value="old('app.name', $values['app.name']['value'] ?? config('branding.platform.full_name'))"
                               hint="Tampil di judul browser, manifest, dan halaman masuk." />
                 <x-form-field name="app.short_name" label="Nama Pendek" required maxlength="60"
                               :value="old('app.short_name', $values['app.short_name']['value'] ?? config('branding.platform.name'))"

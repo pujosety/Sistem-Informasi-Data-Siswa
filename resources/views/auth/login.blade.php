@@ -31,7 +31,7 @@
             </span>
             <div>
                 <p class="text-body font-bold text-white leading-tight">{{ config('branding.platform.name') }}</p>
-                <p class="text-[11px] text-white/50 leading-tight">Sistem Informasi Data Siswa</p>
+                <p class="text-[11px] text-white/50 leading-tight">{{ config('branding.platform.expansion') }}</p>
             </div>
         </div>
 
@@ -76,7 +76,7 @@
                 </span>
                 <div>
                     <p class="text-body font-bold text-[var(--app-text)] leading-tight">{{ config('branding.platform.name') }}</p>
-                    <p class="text-[11px] text-[var(--app-text-muted)] leading-tight">Sistem Informasi Data Siswa</p>
+                    <p class="text-[11px] text-[var(--app-text-muted)] leading-tight">{{ config('branding.platform.expansion') }}</p>
                 </div>
             </div>
 

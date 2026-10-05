@@ -43,6 +43,6 @@
         </tbody>
     </table>
 
-    <p class="footer">Sistem Informasi Data Siswa — {{ config('app.name') }}</p>
+    <p class="footer">{{ config('branding.document.produced_by') }}</p>
 </body>
 </html>

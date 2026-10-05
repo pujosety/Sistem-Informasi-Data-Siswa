@@ -14,19 +14,36 @@
     --font-display: 'Manrope', 'Inter', ui-sans-serif, system-ui, sans-serif;
     --font-mono: ui-monospace, 'SF Mono', 'Cascadia Code', monospace;
 
-    --text-display: 2.25rem;
-    --text-display--line-height: 2.5rem;
-    --text-display--letter-spacing: -0.02em;
+    /*
+     * FLUID TYPE SCALE — brief §TYPOGRAPHY RESPONSIVENESS.
+     *
+     * These were fixed rem values: `--text-display: 2.25rem` is 36px at every
+     * viewport, which is why the hero overflowed a 320px phone and why the
+     * section headings looked small on a 1920px monitor. A fixed scale cannot
+     * be right at both ends, so each step is a clamp() between a floor that
+     * fits the narrowest supported phone and a ceiling that suits a desktop.
+     *
+     * The line-heights are fluid too, and deliberately TIGHTER on small
+     * screens: a 44px headline needs proportionally less leading than a 76px
+     * one, or the paragraph below it drifts off the screen.
+     *
+     * The body floor stays at 14px rather than scaling up — body text is the one
+     * size that must never move, because a reader who learned the layout at one
+     * size has to keep it.
+     */
+    --text-display: clamp(2rem, 1.55rem + 2.4vw, 3.5rem);
+    --text-display--line-height: clamp(2.25rem, 1.8rem + 2.4vw, 4rem);
+    --text-display--letter-spacing: -0.025em;
 
-    --text-h1: 1.5rem;
-    --text-h1--line-height: 2rem;
-    --text-h1--letter-spacing: -0.01em;
+    --text-h1: clamp(1.5rem, 1.28rem + 1.1vw, 2.25rem);
+    --text-h1--line-height: clamp(1.875rem, 1.6rem + 1.45vw, 2.875rem);
+    --text-h1--letter-spacing: -0.015em;
 
-    --text-h2: 1.125rem;
-    --text-h2--line-height: 1.625rem;
+    --text-h2: clamp(1.25rem, 1.14rem + 0.55vw, 1.625rem);
+    --text-h2--line-height: clamp(1.625rem, 1.45rem + 0.9vw, 2.25rem);
 
-    --text-h3: 0.9375rem;
-    --text-h3--line-height: 1.375rem;
+    --text-h3: clamp(1rem, 0.96rem + 0.2vw, 1.125rem);
+    --text-h3--line-height: clamp(1.375rem, 1.3rem + 0.4vw, 1.625rem);
 
     --text-body: 0.875rem;
     --text-body--line-height: 1.5rem;
@@ -523,6 +540,70 @@
     /* A checkbox sized for the platform rather than for a design tool: the
        default is 13px, which is below the 16px minimum comfortable tap target
        on touch even when the visible box is larger. */
+    /* --- Layout system -------------------------------------------------------
+     *
+     * A CONTAINER SCALE rather than a max-width invented per page. The brief
+     * asks for 1440 outer / 1280 content with padding that steps 16 → 24 → 32,
+     * and the landing blocks were each hand-rolling `max-w-7xl px-5 sm:px-8
+     * lg:px-10` — which is three different paddings for the same container, and
+     * the reason sections line up on one screen and not the next.
+     *
+     * `.shell`      1280px content  — the default for reading width
+     * `.shell-wide` 1440px          — for grids that genuinely need the room
+     * `.shell-prose` 68ch          — long-form copy, so a paragraph is not
+     *                               90 characters wide on a desktop monitor
+     */
+    .shell {
+        width: 100%;
+        max-width: 80rem;              /* 1280px */
+        margin-inline: auto;
+        padding-inline: 1rem;          /* mobile  16px */
+    }
+    @media (min-width: 40rem) { .shell { padding-inline: 1.5rem; } }  /* tablet 24px */
+    @media (min-width: 64rem) { .shell { padding-inline: 2rem; } }    /* desktop 32px */
+    @media (min-width: 90rem) { .shell { padding-inline: 3rem; } }    /* wide   48px */
+
+    .shell-wide {
+        width: 100%;
+        max-width: 90rem;              /* 1440px */
+        margin-inline: auto;
+        padding-inline: 1rem;
+    }
+    @media (min-width: 40rem) { .shell-wide { padding-inline: 1.5rem; } }
+    @media (min-width: 64rem) { .shell-wide { padding-inline: 2.5rem; } }
+    @media (min-width: 90rem) { .shell-wide { padding-inline: 3rem; } }
+
+    .shell-prose {
+        width: 100%;
+        max-width: 68ch;
+        margin-inline: auto;
+        padding-inline: 1rem;
+    }
+    @media (min-width: 40rem) { .shell-prose { padding-inline: 1.5rem; } }
+
+    /*
+     * A long unbroken token — a school name, an NISN pasted from a PDF, a URL
+     * in an email — is the most common cause of a horizontal scrollbar on a
+     * phone, and it looks like the page is broken rather than that one word is
+     * long. Breaking is correct here: `anywhere` will split mid-word only when
+     * it genuinely has to.
+     */
+    .break-anywhere { overflow-wrap: anywhere; }
+
+    /* A checkbox sized for a finger. The default 13px box is below the 44px
+       minimum comfortable tap target on touch, so the CONTROL is 44px tall
+       while the visible box stays 16px — the hit area grows, the visual does
+       not. */
+    .checkbox-hit {
+        position: relative;
+        display: inline-grid;
+        place-items: center;
+        width: 44px;
+        height: 44px;
+        margin: -22px;
+        cursor: pointer;
+    }
+
     .checkbox {
         width: 1rem;
         height: 1rem;

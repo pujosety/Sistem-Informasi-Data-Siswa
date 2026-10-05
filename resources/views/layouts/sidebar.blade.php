@@ -37,7 +37,7 @@
 <aside class="hidden lg:flex w-64 flex-col bg-slate-900 text-slate-300 shrink-0">
     <div class="px-5 py-5 border-b border-slate-800">
         <div class="text-white font-bold text-lg">{{ config('branding.platform.name') }}</div>
-        <div class="text-xs text-slate-400 mt-0.5">Sistem Informasi Data Siswa</div>
+        <div class="text-xs text-slate-400 mt-0.5">{{ config('branding.platform.expansion') }}</div>
     </div>
     <nav class="flex-1 overflow-y-auto p-3 space-y-1">
         @foreach ($menu as $item)

@@ -43,18 +43,34 @@
                         <p class="text-body font-bold leading-tight truncate group-hover:underline">
                             {{ $school['name'] ?: config('branding.platform.name') }}
                         </p>
-                        <p class="text-[11px] text-white/55 leading-tight">Sistem Informasi Data Siswa</p>
+                        <p class="text-[11px] text-white/55 leading-tight truncate">{{ config('branding.platform.expansion') }}</p>
                     </div>
                 </a>
 
-                <a href="{{ route('login') }}"
-                   class="shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-[var(--radius-md)]
-                          bg-white text-[var(--app-primary)] text-body font-semibold
-                          hover:bg-white/90 transition-colors focus-visible:outline-2
-                          focus-visible:outline-offset-2 focus-visible:outline-white">
-                    <x-icon name="log-in" class="w-4 h-4" />
-                    <span class="hidden sm:inline">LYFLA</span>
-                </a>
+                {{-- Brief §HEADER: the registration CTA must be the dominant one
+                     for a public visitor. The portal link is present but secondary —
+                     a prospective family opens this page to enquire about a place,
+                     not to sign in to one they already have. --}}
+                <div class="flex shrink-0 items-center gap-2">
+                    <a href="{{ route('login') }}"
+                       class="inline-flex items-center gap-2 rounded-[var(--radius-md)] px-3 py-2
+                              text-small font-semibold text-white ring-1 ring-inset ring-white/35
+                              transition-colors hover:bg-white/10 focus-visible:outline-2
+                              focus-visible:outline-offset-2 focus-visible:outline-white">
+                        <x-icon name="log-in" class="w-4 h-4" />
+                        <span class="hidden sm:inline">Portal {{ config('branding.platform.name') }}</span>
+                    </a>
+
+                    @if (Route::has('register'))
+                        <a href="{{ route('register') }}"
+                           class="inline-flex items-center gap-2 rounded-[var(--radius-md)]
+                                  bg-white px-4 py-2 text-body font-semibold text-[var(--app-primary)]
+                                  hover:bg-white/90 transition-colors focus-visible:outline-2
+                                  focus-visible:outline-offset-2 focus-visible:outline-white">
+                            Daftar Sekarang
+                        </a>
+                    @endif
+                </div>
             </div>
         </div>
     </header>

@@ -37,6 +37,31 @@ class Media extends Model
         return $this->belongsTo(User::class, 'uploaded_by');
     }
 
+    /**
+     * A public URL for this file.
+     *
+     * Added because every block on the landing page needs one, and the
+     * alternative is `Storage::disk($media->disk)->url($media->path)` written
+     * into sixteen Blade templates. A disk name lives on the row, so a template
+     * cannot know which disk to ask — it has to come from the model.
+     *
+     * Returns null rather than throwing when the file is gone, because the
+     * landing page is public and a missing image must degrade to a placeholder
+     * rather than take the page down for every visitor.
+     */
+    public function getUrlAttribute(): ?string
+    {
+        if (! $this->path) {
+            return null;
+        }
+
+        try {
+            return Storage::disk($this->disk ?: 'public')->url($this->path);
+        } catch (\Throwable) {
+            return null;
+        }
+    }
+
     public function posts(): BelongsToMany
     {
         // Stated rather than inferred — same reason as Post::tags().
