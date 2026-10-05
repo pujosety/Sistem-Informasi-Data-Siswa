@@ -1,20 +1,4 @@
 <!DOCTYPE html>
-{{--
-    Shared chrome for the public school website.
-
-    Deliberately not the authenticated app shell. That shell assumes a session,
-    a workspace and a role, and a public page has none of those; sharing it
-    would mean every public view carried the machinery for something it can
-    never show.
-
-    The one thing shared with the rest of the app is the design system — the
-    same tokens, the same components, the same fonts — so the public site and
-    the portal look like one product.
---}}
-@php
-    $current = trim(parse_url(request()->path(), PHP_URL_PATH) ?? '/', '/');
-@endphp
-<!DOCTYPE html>
 <html lang="id" class="h-full">
 <head>
     <meta charset="utf-8">
@@ -31,59 +15,213 @@
 </head>
 <body class="h-full bg-[var(--app-bg)]">
 <div class="min-h-full flex flex-col">
+<header class="sticky top-0 z-40 bg-[var(--app-sidebar-bg)] text-white">
+    <div class="shell-wide">
+        <div class="flex items-center justify-between gap-4 h-16">
 
-    <header class="bg-[var(--app-sidebar-bg)] text-white">
-        <div class="mx-auto max-w-6xl px-5 sm:px-8">
-            <div class="flex items-center justify-between gap-4 py-4">
-                <a href="{{ route('home') }}" class="flex items-center gap-3 min-w-0 group">
-                    <span class="grid place-items-center w-10 h-10 shrink-0 rounded-[var(--radius-lg)] bg-white">
-                        <x-brand.logo variant="icon" height="h-8" alt="{{ config('branding.platform.name') }}" />
-                    </span>
-                    <div class="min-w-0">
-                        <p class="text-body font-bold leading-tight truncate group-hover:underline">
-                            {{ $school['name'] ?: config('branding.platform.name') }}
-                        </p>
-                        <p class="text-[11px] text-white/55 leading-tight truncate">{{ config('branding.platform.expansion') }}</p>
-                    </div>
-                </a>
+            {{-- ============ Brand ============ --}}
+            <a href="{{ route('home') }}" class="flex items-center gap-3 min-w-0 group">
+                <span class="grid place-items-center w-10 h-10 shrink-0 rounded-[var(--radius-lg)] bg-white">
+                    <x-brand.logo variant="icon" height="h-8" alt="{{ config('branding.platform.name') }}" />
+                </span>
+                <div class="min-w-0">
+                    <p class="text-body font-bold leading-tight truncate group-hover:underline">
+                        {{ $school['name'] ?: config('branding.platform.name') }}
+                    </p>
+                    <p class="text-[11px] text-white/55 leading-tight truncate hidden sm:block">{{ config('branding.platform.expansion') }}</p>
+                </div>
+            </a>
 
-                {{-- Brief §HEADER: the registration CTA must be the dominant one
-                     for a public visitor. The portal link is present but secondary —
-                     a prospective family opens this page to enquire about a place,
-                     not to sign in to one they already have. --}}
-                <div class="flex shrink-0 items-center gap-2">
+            {{-- ============ Desktop navigation ============ --}}
+            {{--
+                Hidden below `lg` and replaced by the drawer, because a seven-item
+                horizontal row cannot fit a 768px tablet without either wrapping
+                into two ragged lines or becoming a horizontal scroller — and a
+                navigation that scrolls sideways hides items the visitor cannot
+                see are there.
+
+                `Route::has()` on every entry: a school running a build without
+                one of these pages must not get a link to a 404 in its own header.
+            --}}
+            <nav aria-label="Navigasi utama" class="hidden lg:block">
+                <ul class="flex items-center gap-1">
+                    @foreach ([
+                        ['route' => 'home',              'label' => 'Beranda'],
+                        ['route' => 'public.about',      'label' => 'Profil'],
+                        ['route' => 'public.programs',   'label' => 'Program'],
+                        ['route' => 'public.news',       'label' => 'Berita'],
+                        ['route' => 'public.contact',    'label' => 'Kontak'],
+                    ] as $item)
+                        @if (Route::has($item['route']))
+                            @php $active = $item['route'] === 'home'
+                                ? request()->routeIs('home')
+                                : request()->routeIs($item['route'], $item['route'].'*'); @endphp
+
+                            <li>
+                                <a href="{{ route($item['route']) }}"
+                                   @if ($active) aria-current="page" @endif
+                                   class="relative block rounded-[var(--radius-sm)] px-3 py-2 text-small font-medium transition-colors
+                                          {{ $active
+                                                ? 'text-white'
+                                                : 'text-white/70 hover:text-white hover:bg-white/10' }}">
+                                    {{ $item['label'] }}
+
+                                    {{-- The underline grows from the centre on
+                                         hover and is a solid bar when current, so
+                                         the active item is not marked by colour
+                                         alone. --}}
+                                    <span @class([
+                                        'absolute inset-x-3 -bottom-px h-0.5 rounded-full transition-transform',
+                                        'bg-[var(--brand-gold)]' => $active,
+                                        'bg-white/50 origin-center scale-x-0 group-hover:scale-x-100' => ! $active,
+                                    ])></span>
+                                </a>
+                            </li>
+                        @endif
+                    @endforeach
+                </ul>
+            </nav>
+
+            {{-- ============ Actions ============ --}}
+            <div class="flex shrink-0 items-center gap-2">
+
+                {{-- The registration CTA is the dominant one for a public
+                     visitor; the portal link is present but secondary. --}}
+                @if (Route::has('login'))
                     <a href="{{ route('login') }}"
-                       class="inline-flex items-center gap-2 rounded-[var(--radius-md)] px-3 py-2
-                              text-small font-semibold text-white ring-1 ring-inset ring-white/35
+                       class="hidden sm:inline-flex items-center gap-2 rounded-[var(--radius-md)] px-3 py-2
+                              text-small font-semibold text-white ring-1 ring-inset ring-white/30
                               transition-colors hover:bg-white/10 focus-visible:outline-2
                               focus-visible:outline-offset-2 focus-visible:outline-white">
                         <x-icon name="log-in" class="w-4 h-4" />
-                        <span class="hidden sm:inline">Portal {{ config('branding.platform.name') }}</span>
+                        <span class="hidden xl:inline">Portal {{ config('branding.platform.name') }}</span>
+                        <span class="xl:hidden">Portal</span>
                     </a>
+                @endif
 
+                @if (Route::has('public.admission'))
+                    <a href="{{ route('public.admission') }}"
+                       class="inline-flex items-center gap-2 rounded-[var(--radius-md)] bg-white px-4 py-2
+                              text-small font-semibold text-[var(--app-primary)]
+                              transition-colors hover:bg-white/90 focus-visible:outline-2
+                              focus-visible:outline-offset-2 focus-visible:outline-white">
+                        Daftar
+                    </a>
+                @endif
+
+                {{-- Mobile: the drawer trigger. 44px tall, because a 40px target
+                     is under the comfortable minimum on a phone. --}}
+                <button type="button"
+                        x-data
+                        @click="$store.app.openMobileNav()"
+                        class="lg:hidden grid place-items-center w-11 h-11 -mr-2 rounded-[var(--radius-md)]
+                               text-white/80 hover:bg-white/10 transition-colors"
+                        aria-label="Buka menu navigasi">
+                    <x-icon name="menu" class="w-5 h-5" />
+                </button>
+            </div>
+        </div>
+    </div>
+
+    {{-- ============ Mobile drawer ============ --}}
+    {{--
+        A full-height panel rather than a dropdown: the list runs to seven
+        items plus two actions, and a dropdown that ends above the fold on a
+        667px phone leaves the last items unreachable.
+    --}}
+    <div x-data="{ open: false }"
+         x-show="open" x-cloak
+         @keydown.escape.window="open = false"
+         class="lg:hidden">
+
+        <div x-show="open"
+             x-transition.opacity.duration.200ms
+             class="fixed inset-0 z-50 bg-black/60"
+             @click="open = false"
+             aria-hidden="true"></div>
+
+        <nav x-show="open"
+             x-transition:enter="transition ease-out duration-250"
+             x-transition:enter-start="translate-x-full"
+             x-transition:enter-end="translate-x-0"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="translate-x-0"
+             x-transition:leave-end="translate-x-full"
+             class="fixed inset-y-0 right-0 z-[60] flex w-[min(20rem,85vw)] flex-col
+                    bg-[var(--app-sidebar-bg)] shadow-2xl"
+             role="dialog"
+             aria-modal="true"
+             aria-label="Menu navigasi">
+
+            <div class="flex items-center justify-between gap-3 h-16 px-4 border-b border-white/10 shrink-0">
+                <span class="text-small font-semibold text-white">Menu</span>
+                <button type="button" @click="open = false"
+                        class="grid place-items-center w-11 h-11 -mr-2 rounded-[var(--radius-md)]
+                               text-white/80 hover:bg-white/10 transition-colors"
+                        aria-label="Tutup menu">
+                    <x-icon name="x" class="w-5 h-5" />
+                </button>
+            </div>
+
+            <ul class="flex-1 overflow-y-auto p-3 space-y-1">
+                @foreach ([
+                    ['route' => 'home',            'label' => 'Beranda'],
+                    ['route' => 'public.about',    'label' => 'Profil Sekolah'],
+                    ['route' => 'public.programs', 'label' => 'Program'],
+                    ['route' => 'public.admission','label' => 'PPDB'],
+                    ['route' => 'public.news',     'label' => 'Berita'],
+                    ['route' => 'public.contact',  'label' => 'Kontak'],
+                ] as $item)
+                    @if (Route::has($item['route']))
+                        @php $active = $item['route'] === 'home'
+                            ? request()->routeIs('home')
+                            : request()->routeIs($item['route'], $item['route'].'*'); @endphp
+
+                        <li>
+                            <a href="{{ route($item['route']) }}"
+                               @if ($active) aria-current="page" @endif
+                               class="flex items-center min-h-11 rounded-[var(--radius-md)] px-3 text-body transition-colors
+                                      {{ $active
+                                            ? 'bg-white/15 text-white font-semibold'
+                                            : 'text-white/75 hover:bg-white/10 hover:text-white' }}">
+                                {{ $item['label'] }}
+                                @if ($active)
+                                    <x-icon name="check" class="w-4 h-4 ml-auto shrink-0 text-[var(--brand-gold)]" />
+                                @endif
+                            </a>
+                        </li>
+                    @endif
+                @endforeach
+            </ul>
+
+            @if (Route::has('login') || Route::has('register'))
+                <div class="p-3 border-t border-white/10 space-y-2 shrink-0">
                     @if (Route::has('register'))
                         <a href="{{ route('register') }}"
-                           class="inline-flex items-center gap-2 rounded-[var(--radius-md)]
-                                  bg-white px-4 py-2 text-body font-semibold text-[var(--app-primary)]
-                                  hover:bg-white/90 transition-colors focus-visible:outline-2
-                                  focus-visible:outline-offset-2 focus-visible:outline-white">
+                           class="flex items-center justify-center min-h-11 rounded-[var(--radius-md)] bg-white
+                                  text-body font-semibold text-[var(--app-primary)]">
                             Daftar Sekarang
                         </a>
                     @endif
+
+                    @if (Route::has('login'))
+                        <a href="{{ route('login') }}"
+                           class="flex items-center justify-center min-h-11 rounded-[var(--radius-md)]
+                                  text-body font-semibold text-white ring-1 ring-inset ring-white/30">
+                            Portal {{ config('branding.platform.name') }}
+                        </a>
+                    @endif
                 </div>
-            </div>
-        </div>
-    </header>
+            @endif
+        </nav>
+    </div>
+</header>
 
     <main class="flex-1">
         @yield('body')
     </main>
 
-    {{--
-        Footer navigation. Each link is conditional on the page existing, so a
-        school running an older build never sees a 404 in its own footer.
-    --}}
-    <footer class="border-t border-[var(--app-border)] bg-[var(--app-surface)]">
+<footer class="mt-auto border-t border-[var(--app-border)] bg-[var(--app-surface)]">
         <div class="mx-auto max-w-6xl px-5 sm:px-8 py-8">
             <div class="flex flex-wrap items-start justify-between gap-6">
                 <div class="min-w-0">
@@ -97,27 +235,27 @@
 
                 <nav aria-label="Halaman publik" class="flex flex-wrap gap-x-6 gap-y-2 text-caption">
                     <a href="{{ route('home') }}"
-                       @class(['font-semibold text-[var(--app-primary)]' => $current === '', 'text-[var(--app-text-muted)] hover:text-[var(--app-text)]' => $current !== ''])>
+                       @class(['font-semibold text-[var(--app-primary)]' => request()->routeIs('home'), 'text-[var(--app-text-muted)] hover:text-[var(--app-text)]' => ! request()->routeIs('home')])>
                         Beranda
                     </a>
                     <a href="{{ route('public.about') }}"
-                       @class(['font-semibold text-[var(--app-primary)]' => $current === 'tentang', 'text-[var(--app-text-muted)] hover:text-[var(--app-text)]' => $current !== 'tentang'])>
+                       @class(['font-semibold text-[var(--app-primary)]' => request()->routeIs('public.about'), 'text-[var(--app-text-muted)] hover:text-[var(--app-text)]' => ! request()->routeIs('public.about')])>
                         Profil
                     </a>
                     <a href="{{ route('public.news') }}"
-                       @class(['font-semibold text-[var(--app-primary)]' => str_starts_with($current, 'berita'), 'text-[var(--app-text-muted)] hover:text-[var(--app-text)]' => ! str_starts_with($current, 'berita')])>
+                       @class(['font-semibold text-[var(--app-primary)]' => request()->routeIs('public.news', 'public.news.*'), 'text-[var(--app-text-muted)] hover:text-[var(--app-text)]' => ! request()->routeIs('public.news', 'public.news.*')])>
                         Berita
                     </a>
                     <a href="{{ route('public.programs') }}"
-                       @class(['font-semibold text-[var(--app-primary)]' => $current === 'program', 'text-[var(--app-text-muted)] hover:text-[var(--app-text)]' => $current !== 'program'])>
+                       @class(['font-semibold text-[var(--app-primary)]' => request()->routeIs('public.programs'), 'text-[var(--app-text-muted)] hover:text-[var(--app-text)]' => ! request()->routeIs('public.programs')])>
                         Program
                     </a>
                     <a href="{{ route('public.admission') }}"
-                       @class(['font-semibold text-[var(--app-primary)]' => $current === 'ppdb', 'text-[var(--app-text-muted)] hover:text-[var(--app-text)]' => $current !== 'ppdb'])>
+                       @class(['font-semibold text-[var(--app-primary)]' => request()->routeIs('public.admission'), 'text-[var(--app-text-muted)] hover:text-[var(--app-text)]' => ! request()->routeIs('public.admission')])>
                         PPDB
                     </a>
                     <a href="{{ route('public.contact') }}"
-                       @class(['font-semibold text-[var(--app-primary)]' => $current === 'kontak', 'text-[var(--app-text-muted)] hover:text-[var(--app-text)]' => $current !== 'kontak'])>
+                       @class(['font-semibold text-[var(--app-primary)]' => request()->routeIs('public.contact'), 'text-[var(--app-text-muted)] hover:text-[var(--app-text)]' => ! request()->routeIs('public.contact')])>
                         Kontak
                     </a>
                 </nav>

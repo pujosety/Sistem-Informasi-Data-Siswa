@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\AcademicYear;
-use App\Models\LandingSection;
+use App\Models\Alumni;
 use App\Models\Department;
+use App\Models\LandingSection;
+use App\Models\Post;
 use App\Models\SchoolClass;
 use App\Models\Student;
 use App\Models\Subject;
@@ -48,7 +50,7 @@ class PublicHomeController extends Controller
             // with the enabled flag the administrator set. Nothing here is
             // hardcoded: an empty section table renders an empty page, which is
             // the honest signal that the landing page has not been set up yet.
-            'sections' => LandingSection::forPage('home'),
+            'sections' => $this->sectionsWithLiveData(),
 
             // Real counts for the hero. The blocks carry their own copy, but a
             // school enrolment figure is a fact about the school and must not
@@ -102,6 +104,173 @@ class PublicHomeController extends Controller
         ];
     }
 
+
+    /**
+     * The landing sections, with the data-driven ones filled in.
+     *
+     * A CMS block's `content` is what an administrator typed. That is the right
+     * place for prose and for hand-ordered highlights, and the WRONG place for
+     * the four most recent news posts — which change on their own and would be
+     * stale the moment somebody published something.
+     *
+     * So a block's `items` are treated as FALLBACKS: if the section declares
+     * `use_live` (or simply has no items) and live rows exist, the live rows
+     * win. A school with three published articles sees three articles without
+     * anyone touching the CMS, and a school with none still sees the curated
+     * list it wrote by hand.
+     *
+     * Each block renders nothing when it ends up with neither — which is why
+     * the news block has an @if around its markup and not an empty state: a
+     * homepage advertising "Berita & Kegiatan" above the word "Belum ada
+     * berita" is worse than a homepage without the section.
+     */
+    private function sectionsWithLiveData(): \Illuminate\Support\Collection
+    {
+        $sections = LandingSection::forPage('home');
+
+        $news = $this->latestNews();
+
+        foreach ($sections as $section) {
+            if ($section->type === 'news' && $news !== []) {
+                $section->content = array_merge($section->content ?? [], ['items' => $news]);
+            }
+
+            // Achievements and alumni are COUNTS and OUTCOMES, and those belong
+            // to the database rather than to a CMS text field. A school that
+            // graduates a class should see the number move without an
+            // administrator retyping it.
+            if ($section->type === 'achievements') {
+                $section->content = array_merge($section->content ?? [], $this->achievementFigures());
+            }
+
+            if ($section->type === 'alumni') {
+                $section->content = array_merge($section->content ?? [], $this->alumniFigures());
+            }
+        }
+
+        return $sections;
+    }
+
+    /**
+     * The four most recent published, public posts.
+     *
+     * Reuses `publishedAndPublic()` rather than restating the visibility
+     * rules: a second copy of "what is public" would drift, and the drift would
+     * show as a draft on the front page.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    private function latestNews(): array
+    {
+        try {
+            $posts = Post::query()
+                ->posts()
+                ->publishedAndPublic()
+                ->with(['category', 'media'])
+                ->orderByDesc('published_at')
+                ->limit(4)
+                ->get();
+        } catch (\Throwable $e) {
+            report($e);
+
+            return [];
+        }
+
+        return $posts->map(fn (Post $post) => [
+            'title' => $post->title,
+            'url' => route('public.news.show', $post->slug),
+            'excerpt' => $post->excerpt,
+            'category' => $post->category?->name,
+            'date' => $post->published_at?->translatedFormat('d M Y'),
+            'image' => $post->media->first()?->url,
+        ])->all();
+    }
+
+    /**
+     * Real counts for the achievements block.
+     *
+     * The breakdown by graduation year is derived from the `alumni` table
+     * rather than typed in: it is a fact about the school, and a fact that
+     * lives in prose is a fact that is wrong by next year.
+     *
+     * @return array<string, mixed>
+     */
+    private function achievementFigures(): array
+    {
+        try {
+            $total = Alumni::query()->count();
+
+            $byYear = Alumni::query()
+                ->selectRaw('graduation_year as year, COUNT(*) as total')
+                ->whereNotNull('graduation_year')
+                ->groupBy('graduation_year')
+                ->orderByDesc('graduation_year')
+                ->limit(3)
+                ->pluck('total', 'year');
+        } catch (\Throwable $e) {
+            report($e);
+
+            return [];
+        }
+
+        $stats = [[
+            'value' => (string) $total,
+            'suffix' => $total > 0 ? '+' : null,
+            'label' => 'Alumni yang telah lulus',
+        ]];
+
+        foreach ($byYear as $year => $count) {
+            $stats[] = [
+                'value' => (string) $count,
+                'label' => "Lulus {$year}",
+            ];
+        }
+
+        // With no alumni the block keeps only its CMS-authored figures, which
+        // may be empty; the block then renders nothing, which is the correct
+        // outcome rather than an empty "Prestasi" heading.
+        return ['stats' => $stats];
+    }
+
+    /**
+     * Alumni outcomes, read from the same table.
+     *
+     * @return array<string, mixed>
+     */
+    private function alumniFigures(): array
+    {
+        try {
+            $recent = Alumni::query()
+                ->with(['student', 'lastClassroom', 'department'])
+                ->whereNotNull('graduation_year')
+                ->orderByDesc('graduation_year')
+                ->limit(4)
+                ->get();
+        } catch (\Throwable $e) {
+            report($e);
+
+            return [];
+        }
+
+        if ($recent->isEmpty()) {
+            return [];
+        }
+
+        return [
+            'stats' => [[
+                'value' => (string) $recent->count(),
+                'label' => 'Alumni tahun ini',
+            ]],
+            'notables' => $recent->map(fn (Alumni $row) => [
+                'name' => $row->student?->full_name ?? 'Alumni',
+                'detail' => trim(implode(' · ', array_filter([
+                    $row->graduation_year ? "Lulus {$row->graduation_year}" : null,
+                    $row->lastClassroom?->name,
+                    $row->department?->name,
+                ]))),
+            ])->all(),
+        ];
+    }
 
     /**
      * School profile: the published identity, and nothing else.

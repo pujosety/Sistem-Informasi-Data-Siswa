@@ -1,0 +1,30 @@
+{
+  "students-walking-courtyard": {
+    "alt": "Empat siswa berseragam berjalan bersama di halaman sekolah, tersenyum",
+    "source": "user-supplied"
+  },
+  "students-library-tablet": {
+    "alt": "Siswa berdiskusi di perpustakaan dengan laptop dan tablet",
+    "source": "user-supplied"
+  },
+  "teacher-guidance-classroom": {
+    "alt": "Guru mendampingi tiga siswa di kelas",
+    "source": "user-supplied"
+  },
+  "campus-entry-checkpoint": {
+    "alt": "Siswa absen di pintu masuk sekolah dengan petugas",
+    "source": "user-supplied"
+  },
+  "staff-meeting-tablet": {
+    "alt": "Tiga guru berdiskusi di ruang rapat",
+    "source": "user-supplied"
+  },
+  "students-tablet-courtyard": {
+    "alt": "Tiga siswa mempelajari materi bersama di halaman sekolah",
+    "source": "user-supplied"
+  },
+  "computer-lab-class": {
+    "alt": "Siswa belajar di laboratorium komputer bersama guru",
+    "source": "user-supplied"
+  }
+}

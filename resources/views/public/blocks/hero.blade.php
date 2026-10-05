@@ -30,8 +30,11 @@
 
 @php
     $items    = $section->items('stats');
-    $heroWide = asset('images/school/students-classroom.webp');
-    $heroSm   = asset('images/school/students-classroom-sm.webp');
+    // The photograph comes from the CMS media row, so an administrator can
+    // replace it without a deploy. The -sm variant is derived from the same
+    // slug: one upload, two crops.
+    $heroWide = $section->media?->url() ?? asset('images/school/students-walking-courtyard.webp');
+    $heroSm   = str_replace('.webp', '-sm.webp', $heroWide);
     $alt      = $section->value('image_alt', 'Siswa SMA berkonsentrasi belajar di kelas. Beberapa siswa mengenakan seragam sekolah dan siswi berhijab di belakangnya.');
     $ctaLabel = $section->value('cta_label', 'Daftar Sekarang');
     $ctaUrl   = $section->value('cta_url', route('public.admission'));

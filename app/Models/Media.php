@@ -49,10 +49,34 @@ class Media extends Model
      * landing page is public and a missing image must degrade to a placeholder
      * rather than take the page down for every visitor.
      */
-    public function getUrlAttribute(): ?string
+    /**
+     * The public URL for this file.
+     *
+     * Called through the `url` cast rather than a legacy accessor, because
+     * `url` is also a Builder method and an unresolved `$media->url()` gets
+     * forwarded there and throws.
+     */
+    public function url(): ?string
     {
         if (! $this->path) {
             return null;
+        }
+
+        // Two kinds of file live in the media library, and they resolve
+        // differently:
+        //
+        //   uploads/documents/a.pdf   → served by the storage disk at
+        //                                /storage/uploads/documents/a.pdf
+        //   images/school/hero.webp   → served STATICALLY from public/, so the
+        //                                disk URL would 404
+        //
+        // The landing photographs are the second kind, so they are checked on
+        // disk first. Guessing wrong here produces a section with a broken
+        // image, which is exactly the placeholder look this replaces.
+        if (str_starts_with($this->path, 'images/') || str_starts_with($this->path, 'branding/')) {
+            if (is_file(public_path($this->path))) {
+                return asset($this->path);
+            }
         }
 
         try {
