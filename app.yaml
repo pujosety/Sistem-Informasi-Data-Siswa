@@ -52,6 +52,8 @@ scripts:
     php artisan config:clear \
       && php artisan migrate --force --no-interaction \
       && php artisan db:seed --class=PermissionSeeder --force --no-interaction \
+      && php artisan db:seed --class=LandingPageSeeder --force --no-interaction \
+      && php artisan db:seed --class=LandingPhotosSeeder --force --no-interaction \
       && php artisan config:cache \
       && php artisan route:cache \
       && php -S 0.0.0.0:8080 -t public
@@ -68,5 +70,7 @@ jobs:
           php artisan config:clear \
             && php artisan migrate --force --no-interaction \
             && php artisan db:seed --class=PermissionSeeder --force --no-interaction \
+            && php artisan db:seed --class=LandingPageSeeder --force --no-interaction \
+            && php artisan db:seed --class=LandingPhotosSeeder --force --no-interaction \
             && php artisan config:cache \
             && php artisan route:cache
