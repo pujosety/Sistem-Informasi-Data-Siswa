@@ -38,17 +38,47 @@
 
         <div class="flex-1"></div>
 
-        {{-- Notifications --}}
-        <a href="{{ route('notifications.index') }}"
-           class="relative grid place-items-center w-10 h-10 rounded-[var(--radius-md)] text-[var(--app-text-muted)] hover:bg-[var(--app-surface-muted)] transition-colors"
-           aria-label="Notifikasi{{ $unreadNotifications ? ', ada yang belum dibaca' : '' }}">
-            <x-icon name="bell" class="w-5 h-5" />
-            @if ($unreadNotifications)
-                <span class="absolute top-1.5 right-1.5 min-w-[16px] h-4 px-1 grid place-items-center rounded-full bg-[var(--app-danger)] text-white text-[10px] font-bold ring-2 ring-[var(--app-surface)]">
-                    {{ $unreadNotifications > 9 ? '9+' : $unreadNotifications }}
-                </span>
-            @endif
-        </a>
+        {{-- Global search + command palette (brief §31). --}}
+        <div class="hidden md:flex w-full max-w-sm items-center">
+            @php
+                // Permission-gated, exactly like the sidebar. A command palette
+                // full of links that 403 is worse than no palette: it advertises
+                // the whole application to someone who may only use a third of it.
+                $commandActions = [];
+
+                foreach (app(\App\Services\NavigationService::class)->forUser(auth()->user())['items'] ?? [] as $item) {
+                    // The palette is built from the SAME navigation the sidebar
+                    // renders, which is already permission-filtered. Deriving it
+                    // here rather than from a second list means a menu item that
+                    // appears in the rail cannot be absent from the palette, and
+                    // neither can appear for someone who may not reach it.
+                    // A group contributes its children, so the palette stays
+                    // flat — a two-level list inside a search box is worse than
+                    // the flat one the reference component uses.
+                    $entries = ! empty($item['children']) ? $item['children'] : [$item];
+
+                    foreach ($entries as $entry) {
+                        if (! isset($entry['route'])) {
+                            continue;
+                        }
+
+                        $commandActions[] = [
+                            'label' => $entry['label'],
+                            'url'   => route($entry['route']),
+                            'icon'  => $entry['icon'] ?? 'corner-down-left',
+                            'group' => ! empty($item['children']) ? $item['label'] : null,
+                        ];
+                    }
+                }
+            @endphp
+
+            <x-command-palette :actions="$commandActions" />
+        </div>
+
+        {{-- Notification centre: a drawer of deep-linked items (brief §32). --}}
+        <x-notification-center
+            :items="$notificationItems ?? []"
+            :unread-count="$unreadNotifications ?? 0" />
 
         {{-- User menu (desktop) --}}
         <div x-data="{ open: false }" class="relative hidden sm:block">

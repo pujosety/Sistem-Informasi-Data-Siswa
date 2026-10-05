@@ -21,15 +21,17 @@
          title="Daftar ini hanya dibaca"
          message="Data kelulusan dicatat oleh proses akademik yang menutup enrollment. Di sini Anda bisa mencari dan membuka riwayat alumni, tetapi tidak mengubahnya." />
 
-<form method="GET" class="surface p-4 mb-4 grid sm:grid-cols-2 lg:grid-cols-5 gap-3">
-    <div class="lg:col-span-2">
-        <label for="q" class="sr-only">Cari alumni</label>
-        <div class="relative">
-            <x-icon name="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[var(--app-text-subtle)] pointer-events-none" />
-            <input id="q" name="q" value="{{ $q }}" class="field pl-9" placeholder="Cari nama atau NISN">
-        </div>
+{{-- The same three filters and the same query parameters as before, now
+     through the shared components. The "Reset" control only appears when a
+     filter is actually applied, which the hand-written version could not do:
+     it rendered an always-there reset button that did nothing on a fresh
+     visit. --}}
+<x-filter-bar>
+    <div class="lg:col-span-2 min-w-[220px]">
+        <x-search-input inline :value="$q" placeholder="Cari nama atau NISN" />
     </div>
-    <div>
+
+    <div class="min-w-[160px]">
         <label for="year" class="sr-only">Tahun lulus</label>
         <select id="year" name="year" class="field">
             <option value="">Semua tahun</option>
@@ -40,7 +42,8 @@
             @endforeach
         </select>
     </div>
-    <div>
+
+    <div class="min-w-[160px]">
         <label for="department_id" class="sr-only">Jurusan</label>
         <select id="department_id" name="department_id" class="field">
             <option value="">Semua jurusan</option>
@@ -51,13 +54,7 @@
             @endforeach
         </select>
     </div>
-    <div class="flex gap-2">
-        <button class="btn btn-primary flex-1 justify-center" type="submit">Filter</button>
-        <a href="{{ route('alumni.index') }}" class="btn btn-secondary shrink-0" aria-label="Reset">
-            <x-icon name="refresh-cw" class="w-4 h-4" />
-        </a>
-    </div>
-</form>
+</x-filter-bar>
 
 @forelse ($alumni as $row)
     <div class="surface p-4 mb-3">

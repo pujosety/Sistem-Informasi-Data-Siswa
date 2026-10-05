@@ -475,6 +475,25 @@
     }
 
     .data-table tbody tr:last-child td { border-bottom: none; }
+
+    /* --- Filter bar ---------------------------------------------------------- */
+    .filter-bar {
+        padding: 0.875rem 1rem;
+        margin-bottom: 1rem;
+        background-color: var(--app-surface);
+        border: 1px solid var(--app-border);
+        border-radius: var(--radius-md);
+    }
+
+    /* A checkbox sized for the platform rather than for a design tool: the
+       default is 13px, which is below the 16px minimum comfortable tap target
+       on touch even when the visible box is larger. */
+    .checkbox {
+        width: 1rem;
+        height: 1rem;
+        accent-color: var(--app-primary);
+        cursor: pointer;
+    }
     .data-table tbody tr:hover { background-color: var(--color-ink-50); }
 
     /* ------------------------------------------------------------------

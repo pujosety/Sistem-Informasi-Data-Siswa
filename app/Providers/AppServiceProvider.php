@@ -14,6 +14,44 @@ class AppServiceProvider extends ServiceProvider
 {
     private ?int $unreadCache = null;
 
+    /**
+     * The six most recent notifications, shaped for the header drawer.
+     *
+     * WHY THE SHAPE IS BUILT HERE AND NOT IN THE COMPONENT: the drawer's rows
+     * need a label, an icon, a link and a readable time, and the raw
+     * notifications table carries a JSON `data` column whose keys differ per
+     * notification class. Translating that here means the Blade component stays
+     * a presentation concern, and a notification type that arrives with no icon
+     * simply falls back instead of throwing inside a global view composer.
+     */
+    private function recentNotifications(): array
+    {
+        if (! auth()->check()) {
+            return [];
+        }
+
+        try {
+            $rows = auth()->user()->notifications()->latest()->limit(6)->get();
+        } catch (\Throwable $e) {
+            report($e);
+
+            return [];
+        }
+
+        return $rows->map(fn ($notification) => [
+            'title'   => $notification->data['title'] ?? 'Notifikasi',
+            'body'    => $notification->data['body'] ?? $notification->data['message'] ?? null,
+            'group'   => $notification->data['group'] ?? str(class_basename($notification->type), 'Notification'),
+            'icon'    => $notification->data['icon'] ?? 'bell',
+            // Deep-link through the read route, not straight to the resource:
+            // opening a notification is what marks it read, so a link that
+            // skipped that step would leave the badge permanently one too high.
+            'url'     => route('notifications.read', $notification->id),
+            'read_at' => $notification->read_at,
+            'time'    => $notification->created_at?->diffForHumans(),
+        ])->all();
+    }
+
     private function unreadCount(): int
     {
         if (! auth()->check()) {
@@ -169,8 +207,15 @@ class AppServiceProvider extends ServiceProvider
 
         // Components rendered from a page (topbar, badges) do NOT inherit the
         // data a view composer passes to the parent view.
+        //
+        // `notificationItems` feeds the header's notification drawer. It is
+        // capped at six on purpose: the drawer opens on every page in the
+        // application, so an unbounded query here is a query on every request,
+        // and a drawer that lists forty notifications has stopped being a
+        // summary. The full list lives at notifications.index.
         View::composer('*', function ($view) {
             $view->with('unreadNotifications', $this->unreadCount());
+            $view->with('notificationItems', $this->recentNotifications());
         });
 
         /*
