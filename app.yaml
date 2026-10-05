@@ -55,3 +55,18 @@ scripts:
       && php artisan config:cache \
       && php artisan route:cache \
       && php -S 0.0.0.0:8080 -t public
+
+# Override the dashboard's legacy post-deployment job as well. The old job ran
+# `php artisan migrate` without --force, which cancelled in the non-interactive
+# container and left landing_sections absent.
+jobs:
+  - name: after_deploy
+    trigger: post-deployment
+    action:
+      execute:
+        command: |
+          php artisan config:clear \
+            && php artisan migrate --force --no-interaction \
+            && php artisan db:seed --class=PermissionSeeder --force --no-interaction \
+            && php artisan config:cache \
+            && php artisan route:cache
