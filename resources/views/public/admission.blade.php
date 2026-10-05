@@ -1,6 +1,6 @@
 @extends('public.layout')
 
-@php $title = 'PPDB · ' . ($school['name'] ?: 'SIDA'); @endphp
+@php $title = 'PPDB · ' . ($school['name'] ?: config('branding.platform.name')); @endphp
 @section('title', $title)
 @php $description = 'Pendaftaran siswa baru ' . ($school['name'] ?: 'sekolah') . ' ' . ($figures['academicYear'] ?? '') . '.'; @endphp
 @section('description', $description)
@@ -65,7 +65,7 @@
 
     <p class="mt-6 text-caption text-[var(--app-text-muted)]">
         Sudah mendaftar? Masuk dengan akun Anda melalui
-        <a href="{{ route('login') }}" class="text-[var(--app-primary)] hover:underline">Portal SIDA</a>.
+        <a href="{{ route('login') }}" class="text-[var(--app-primary)] hover:underline">LYFLA</a>.
     </p>
 </section>
 @endsection

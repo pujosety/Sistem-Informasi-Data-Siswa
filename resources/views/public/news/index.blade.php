@@ -1,7 +1,7 @@
 @extends('public.layout')
 
 @php
-    $pageTitle = 'Berita · ' . ($school['name'] ?: 'SIDA');
+    $pageTitle = 'Berita · ' . ($school['name'] ?: config('branding.platform.name'));
     $pageDescription = 'Kabar dan pengumuman ' . ($school['name'] ?: 'sekolah') . '.';
 @endphp
 @section('title', $pageTitle)

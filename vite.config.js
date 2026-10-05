@@ -7,20 +7,29 @@ const pwaOptions = {
     registerType: 'prompt',
     injectRegister: null, // we register manually in resources/js/pwa.js
     manifest: {
-        name: 'SIDA — Sistem Informasi Data Siswa',
-        short_name: 'SIDA',
-        description: 'Pengelolaan data siswa, dokumen, dan verifikasi pendaftaran.',
+        // LYFLA — Learning & Your Future, Linked Anywhere.
+        //
+        // These are literals rather than config('branding.platform.*') because
+        // this file is evaluated by Node, not by PHP: there is no Laravel
+        // container here to ask. The values are pinned to the same constants as
+        // config/branding.php, and a test asserts the two agree — a duplicated
+        // literal with nothing checking it is exactly how "SIDA" survived on the
+        // home screen while the app was already maroon.
+        name: 'LYFLA — Learning & Your Future, Linked Anywhere',
+        short_name: 'LYFLA',
+        description: 'Modern Education Management Platform — manajemen sekolah, akademik, PPDB, dokumen, dan e-learning.',
         lang: 'id',
         dir: 'ltr',
         start_url: '/dashboard',
         scope: '/',
         display: 'standalone',
         orientation: 'portrait-primary',
-        // Brand palette, taken from the SIDA identity: deep navy anchor,
-        // royal blue interactive accent, teal for progress. background_color is
-        // the splash screen behind the window, so it stays a light neutral.
-        background_color: '#f5f7fb',
-        theme_color: '#0b3375',
+        // LYFLA palette: maroon accent, warm neutral splash. background_color is
+        // the splash screen behind the installed window, so it stays a light
+        // warm neutral rather than taking the brand colour — a full-bleed maroon
+        // splash reads as an error state on launch.
+        background_color: '#fbf9f8',
+        theme_color: '#7A1F32',
         categories: ['education', 'productivity'],
         icons: [
             { src: '/branding/pwa-192x192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },

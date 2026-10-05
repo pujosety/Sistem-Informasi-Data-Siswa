@@ -1,6 +1,6 @@
 @extends('public.layout')
 
-@php $pageTitle = 'Program Studi · ' . ($school['name'] ?: 'SIDA'); @endphp
+@php $pageTitle = 'Program Studi · ' . ($school['name'] ?: config('branding.platform.name')); @endphp
 @section('title', $pageTitle)
 @php $pageDescription = 'Program dan mata pelajaran di ' . ($school['name'] ?: 'sekolah') . '.'; @endphp
 @section('description', $pageDescription)

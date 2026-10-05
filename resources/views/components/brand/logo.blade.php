@@ -16,15 +16,23 @@
 
     // The lockup already contains the product name, so it is described once
     // rather than announced twice.
+    // Read from config/branding.php: the alt text is what a screen reader
+    // announces, so a stale word here is the one place the old brand survives
+    // where nobody can see it.
     $altText = $alt ?? ($isIcon
-        ? 'SIDA'
-        : 'SIDA — Sistem Informasi Data Siswa');
+        ? config('branding.platform.name')
+        : config('branding.platform.name').' — '.config('branding.platform.expansion'));
 
     $heightClass = $height ?? ($isIcon ? 'h-8 w-8' : 'h-9 w-auto');
 
-    $src = $isIcon
-        ? asset('branding/sida-logo-icon.png')
-        : asset('branding/sida-logo.png');
+    // SVG, not PNG: the mark has to stay sharp on a HiDPI phone and recolour
+    // cleanly for the collapsed rail. The old files were raster and are still on
+    // disk, unused.
+    $src = match ($variant) {
+        'icon'      => asset(config('branding.assets.logo_icon')),
+        'horizontal'=> asset(config('branding.assets.logo_horizontal')),
+        default     => asset(config('branding.assets.logo')),
+    };
 
     // attributes already carries any class passed by the caller, so it is
     // appended once — merge() would add the default a second time and produce

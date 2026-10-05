@@ -14,7 +14,7 @@
 <div class="flex flex-col h-full">
 
     {{-- Brand + workspace ---------------------------------------------------- --}}
-    {{-- Official SIDA emblem, not an icon-font stand-in: the mark combines a
+    {{-- Official LYFLA mark, not an icon-font stand-in: the mark combines a
          graduation cap with a flowing S-ribbon and has no Lucide equivalent.
          The wordmark beside it is real text, so it collapses with the rail and
          the emblem never moves. --}}
@@ -25,11 +25,11 @@
              artwork or applying a filter to it. --}}
         <span class="nav-brand-icon grid place-items-center w-9 h-9 shrink-0
                      rounded-[var(--radius-md)] bg-white">
-            <x-brand.logo variant="icon" height="h-8" alt="SIDA" />
+            <x-brand.logo variant="icon" height="h-8" :alt="config('branding.platform.name')" />
         </span>
 
         <div class="min-w-0 nav-label">
-            <p class="text-body font-bold text-white leading-tight truncate">SIDA</p>
+            <p class="text-body font-bold text-white leading-tight truncate">{{ config('branding.platform.name') }}</p>
             <p class="text-[11px] text-[var(--app-sidebar-text)] leading-tight truncate">{{ $workspaceLabel }}</p>
         </div>
 

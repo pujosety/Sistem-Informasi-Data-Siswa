@@ -19,12 +19,12 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <title>@yield('title', $school['name'] ?: 'SIDA')</title>
+    <title>@yield('title', $school['name'] ?: config('branding.platform.name'))</title>
     <meta name="description" content="@yield('description', 'Portal informasi dan administrasi ' . ($school['name'] ?: 'sekolah') . '.')">
     <link rel="icon" href="{{ asset('branding/favicon.ico') }}" sizes="any">
     <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('branding/favicon-32x32.png') }}">
     <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('branding/apple-touch-icon.png') }}">
-    <meta name="theme-color" content="#0b3375">
+    <meta name="theme-color" content="{{ config('branding.theme_color') }}">
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700|manrope:600,700,800&display=swap" rel="stylesheet">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -37,11 +37,11 @@
             <div class="flex items-center justify-between gap-4 py-4">
                 <a href="{{ route('home') }}" class="flex items-center gap-3 min-w-0 group">
                     <span class="grid place-items-center w-10 h-10 shrink-0 rounded-[var(--radius-lg)] bg-white">
-                        <x-brand.logo variant="icon" height="h-8" alt="SIDA" />
+                        <x-brand.logo variant="icon" height="h-8" alt="{{ config('branding.platform.name') }}" />
                     </span>
                     <div class="min-w-0">
                         <p class="text-body font-bold leading-tight truncate group-hover:underline">
-                            {{ $school['name'] ?: 'SIDA' }}
+                            {{ $school['name'] ?: config('branding.platform.name') }}
                         </p>
                         <p class="text-[11px] text-white/55 leading-tight">Sistem Informasi Data Siswa</p>
                     </div>
@@ -53,7 +53,7 @@
                           hover:bg-white/90 transition-colors focus-visible:outline-2
                           focus-visible:outline-offset-2 focus-visible:outline-white">
                     <x-icon name="log-in" class="w-4 h-4" />
-                    <span class="hidden sm:inline">Portal SIDA</span>
+                    <span class="hidden sm:inline">LYFLA</span>
                 </a>
             </div>
         </div>
@@ -71,7 +71,7 @@
         <div class="mx-auto max-w-6xl px-5 sm:px-8 py-8">
             <div class="flex flex-wrap items-start justify-between gap-6">
                 <div class="min-w-0">
-                    <p class="text-body font-bold text-[var(--app-text)]">{{ $school['name'] ?: 'SIDA' }}</p>
+                    <p class="text-body font-bold text-[var(--app-text)]">{{ $school['name'] ?: config('branding.platform.name') }}</p>
                     @if (filled($school['address']) || filled($school['city']))
                         <p class="mt-1 text-caption text-[var(--app-text-muted)] max-w-sm">
                             {{ collect([$school['address'], $school['city'], $school['province']])->filter()->join(', ') }}
@@ -108,7 +108,7 @@
             </div>
 
             <p class="mt-6 pt-5 border-t border-[var(--app-border)] text-caption text-[var(--app-text-muted)]">
-                © {{ now()->year }} {{ $school['name'] ?: 'SIDA' }}
+                © {{ now()->year }} {{ $school['name'] ?: config('branding.platform.name') }}
                 @if (filled($school['npsn'])) · NPSN {{ $school['npsn'] }}@endif
             </p>
         </div>

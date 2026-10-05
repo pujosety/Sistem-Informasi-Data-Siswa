@@ -1,6 +1,6 @@
 @extends('public.layout')
 
-@php $title = 'Kontak · ' . ($school['name'] ?: 'SIDA'); @endphp
+@php $title = 'Kontak · ' . ($school['name'] ?: config('branding.platform.name')); @endphp
 @section('title', $title)
 @php $description = 'Kontak dan lokasi ' . ($school['name'] ?: 'sekolah') . '.'; @endphp
 @section('description', $description)

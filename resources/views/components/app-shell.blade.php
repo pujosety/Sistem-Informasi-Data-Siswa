@@ -8,24 +8,26 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    {{-- SIDA brand palette: deep navy anchor, royal blue interactive accent. --}}
-    <meta name="theme-color" content="#0b3375">
+    {{-- Read from config/branding.php rather than written here. It used to be
+         #0b3375 while --app-primary was maroon, so an Android status bar showed
+         one brand above a page in another; two literals cannot stay in step. --}}
+    <meta name="theme-color" content="{{ config('branding.theme_color') }}">
     <meta name="description" content="Pengelolaan data siswa, dokumen, dan verifikasi pendaftaran.">
 
-    {{-- One naming rule everywhere: "<halaman> · SIDA". The full product name
-         appears in the manifest and the login page instead. --}}
-    <title>@yield('title', 'Dashboard') · SIDA</title>
+    {{-- One naming rule everywhere: "<halaman> · LYFLA". --}}
+    <title>@yield('title', 'Dashboard') · {{ config('branding.platform.name') }}</title>
 
     <link rel="manifest" href="/manifest.webmanifest">
 
-    {{-- SIDA favicons. The multi-resolution .ico covers older browsers; the
-         explicit PNGs keep the emblem sharp on modern ones. --}}
+    {{-- Favicons. The multi-resolution .ico covers older browsers; the
+         explicit PNGs keep the mark sharp on modern ones. --}}
     <link rel="icon" href="{{ asset('branding/favicon.ico') }}" sizes="any">
     <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('branding/favicon-32x32.png') }}">
     <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('branding/favicon-16x16.png') }}">
     <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('branding/apple-touch-icon.png') }}">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-title" content="SIDA">
+    <meta name="apple-mobile-web-app-title" content="{{ config('branding.platform.name') }}">
+    <meta name="description" content="{{ config('branding.platform.positioning') }} — {{ config('branding.platform.expansion') }}.">
 
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700|manrope:600,700,800&display=swap" rel="stylesheet">

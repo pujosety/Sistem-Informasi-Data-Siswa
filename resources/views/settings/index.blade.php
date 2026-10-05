@@ -2,7 +2,7 @@
 
 @section('title', 'Pengaturan')
 @section('page-title', 'Pengaturan')
-@section('page-description', 'Konfigurasi aplikasi SIDA')
+@section('page-description', 'Konfigurasi aplikasi {{ config('branding.platform.name') }}')
 
 @section('content')
 

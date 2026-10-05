@@ -12,7 +12,7 @@
 --}}
 @extends('public.layout')
 
-@php $title = ($school['name'] ?: 'SIDA') . ' — Sistem Informasi Data Siswa'; @endphp
+@php $title = ($school['name'] ?: config('branding.platform.name')) . ' — Sistem Informasi Data Siswa'; @endphp
 @section('title', $title)
 @php $description = 'Portal informasi dan administrasi ' . ($school['name'] ?: 'sekolah') . '. Pendaftaran siswa, akademik, dan dokumentasi dalam satu sistem.'; @endphp
 @section('description', $description)
@@ -133,7 +133,7 @@
     <footer class="mt-auto border-t border-[var(--app-border)]">
         <div class="mx-auto max-w-6xl px-5 sm:px-8 py-6 flex flex-wrap items-center justify-between gap-3">
             <p class="text-caption text-[var(--app-text-muted)]">
-                © {{ now()->year }} {{ $school['name'] ?: 'SIDA' }}
+                © {{ now()->year }} {{ $school['name'] ?: config('branding.platform.name') }}
                 @if (filled($school['npsn'])) · NPSN {{ $school['npsn'] }}@endif
             </p>
             <a href="{{ $portalUrl }}" class="text-caption font-semibold text-[var(--app-primary)] hover:underline">

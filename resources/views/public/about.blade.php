@@ -1,6 +1,6 @@
 @extends('public.layout')
 
-@php $title = 'Tentang sekolah · ' . ($school['name'] ?: 'SIDA'); @endphp
+@php $title = 'Tentang sekolah · ' . ($school['name'] ?: config('branding.platform.name')); @endphp
 @section('title', $title)
 @php $description = 'Profil dan informasi ' . ($school['name'] ?: 'sekolah') . '.'; @endphp
 @section('description', $description)
@@ -10,7 +10,7 @@
     <div class="mx-auto max-w-6xl px-5 sm:px-8 py-12">
         <p class="text-caption uppercase tracking-[0.18em] text-white/50">Profil sekolah</p>
         <h1 class="mt-2 font-[var(--font-display)] text-3xl sm:text-4xl font-extrabold tracking-tight">
-            {{ $school['name'] ?: 'SIDA' }}
+            {{ $school['name'] ?: config('branding.platform.name') }}
         </h1>
     </div>
 </section>

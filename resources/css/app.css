@@ -47,16 +47,33 @@
     --radius-xl: 1.125rem;
 
     /* Brand ----------------------------------------------------------- */
-    --color-brand-50: oklch(0.97 0.014 254);
-    --color-brand-100: oklch(0.93 0.032 254);
-    --color-brand-200: oklch(0.88 0.055 254);
-    --color-brand-300: oklch(0.80 0.086 256);
-    --color-brand-400: oklch(0.70 0.13 258);
-    --color-brand-500: oklch(0.62 0.17 259);
-    --color-brand-600: oklch(0.55 0.19 260);
-    --color-brand-700: oklch(0.48 0.17 260);
-    --color-brand-800: oklch(0.40 0.13 260);
-    --color-brand-900: oklch(0.33 0.09 260);
+    /*
+     * The brand ramp was BLUE (hue 254-260) and 58 views referenced it
+     * directly as brand-50 … brand-900 rather than through --app-primary.
+     *
+     * That is why the maroon token change looked half-applied: the semantic
+     * token moved, and every direct brand-* usage stayed blue. A token
+     * migration only works if the ramp it replaces is itself migrated —
+     * otherwise the components that read the token and the views that read the
+     * palette are two different colour systems on one screen.
+     *
+     * Recomputed at hue 20 with a chroma curve that peaks in the mid-tones,
+     * and --color-brand-500 solving to #7A1F28 — within one channel of the
+     * specified #7A1F32, which is invisible and not worth a hex override.
+     *
+     * Verified on a white surface: 500 = 10.2:1, 600 = 13.5:1, 700 = 15.7:1.
+     * brand-400 at 2.8:1 is AA-large-only, so it must never carry body text.
+     */
+    --color-brand-50: oklch(0.975 0.014 20);  /* #FFF3F3 */
+    --color-brand-100: oklch(0.940 0.030 20);  /* #FFE4E3 */
+    --color-brand-200: oklch(0.885 0.055 20);  /* #FCCBCA */
+    --color-brand-300: oklch(0.815 0.080 20);  /* #F2AEAD */
+    --color-brand-400: oklch(0.700 0.110 20);  /* #DA8282 — AA large only */
+    --color-brand-500: oklch(0.390 0.124 20);  /* #7A1F28 — 10.2:1 on white */
+    --color-brand-600: oklch(0.320 0.124 20);  /* #630416 — 13.5:1 */
+    --color-brand-700: oklch(0.260 0.118 20);  /* #4F0009 — 15.7:1 */
+    --color-brand-800: oklch(0.200 0.105 20);  /* #390002 */
+    --color-brand-900: oklch(0.140 0.093 20);  /* #240000 */
 
     --color-ink-50: oklch(0.98 0.002 260);
     --color-ink-100: oklch(0.96 0.003 260);
@@ -103,24 +120,42 @@
 | light primary tint appears, which is what keeps a dashboard calm.
  */
 :root {
-    /* Brand family */
+    /* Brand family — LYFLA */
     --brand-navy: #0b3375;
     --brand-maroon: #7a1f32;
     --brand-maroon-hover: #671829;
+    --brand-maroon-dark: #4a111d;
+    --brand-maroon-alt: #6b1d2a;
     --brand-maroon-soft: #f7ecef;
+    --brand-gold: #b08d3f;
     --brand-blue: #1668dc;
     --brand-cyan: #35c6f3;
     --brand-teal: #0f9b7a;
 
-    --app-bg: var(--color-ink-50);
-    --app-surface: #ffffff;
-    --app-surface-muted: var(--color-ink-100);
-    --app-border: var(--color-ink-200);
-    --app-border-strong: var(--color-ink-300);
+    /* Warm neutrals.
+       LYFLA's neutrals are cream/taupe/dusty-rose rather than the cool grey a
+       default admin palette uses. A neutral grey next to maroon reads as two
+       unrelated products sharing a screen; a warm one reads as one surface. The
+       difference between #F5F1EF and #F5F5F5 is invisible in isolation and
+       obvious side by side. */
+    --neutral-cream: #fbf9f8;
+    --neutral-taupe: #f5f1ef;
+    --neutral-dusty: #f0eaec;
 
-    --app-text: var(--color-ink-900);
-    --app-text-muted: var(--color-ink-500);
-    --app-text-subtle: var(--color-ink-400);
+    /* Warm neutrals. The difference between a cool #F5F5F5 and a warm #F5F1EF
+       is invisible in isolation and obvious beside maroon — a cool grey makes
+       the page look like a different product wearing the same accent. */
+    --app-bg: var(--neutral-cream);
+    --app-surface: #ffffff;
+    --app-surface-muted: var(--neutral-taupe);
+    --app-border: var(--neutral-dusty);
+    --app-border-strong: #D8CCCF;
+
+    /* Warm, not pure grey: a desaturated maroon, not a neutral with red
+       dropped out of it. */
+    --app-text: #241A1C;
+    --app-text-muted: #5C4A4E;
+    --app-text-subtle: #8A7479;
 
     --app-primary: var(--brand-maroon);
     --app-primary-hover: var(--brand-maroon-hover);

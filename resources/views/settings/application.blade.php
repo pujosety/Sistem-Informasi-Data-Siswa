@@ -29,7 +29,7 @@
                               :value="old('app.name', $values['app.name']['value'] ?? 'Sistem Informasi Data Siswa')"
                               hint="Tampil di judul browser, manifest, dan halaman masuk." />
                 <x-form-field name="app.short_name" label="Nama Pendek" required maxlength="60"
-                              :value="old('app.short_name', $values['app.short_name']['value'] ?? 'SIDA')"
+                              :value="old('app.short_name', $values['app.short_name']['value'] ?? config('branding.platform.name'))"
                               hint="Dipakai pada menu sisi dan nama ringkas." />
                 <x-form-field name="app.tagline" class="sm:col-span-2"
                               :value="old('app.tagline', $values['app.tagline']['value'] ?? null)"
