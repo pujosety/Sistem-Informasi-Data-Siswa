@@ -39,46 +39,59 @@
     @foreach ($widgets as $widget)
         @php
             $id = $widget['id'];
-            $size = $widget['size'] ?? 'sm';
-            $span = match ($size) {
-                'wide' => 'md:col-span-2',
-                'full' => 'md:col-span-2 lg:col-span-{{ $columns }}',
-                default => '',
-            };
+            $body = $widget['slot'] ?? null;
         @endphp
 
-        <section data-widget-id="{{ $id }}"
-                 class="{{ $span }} surface p-4 relative group"
-                 :class="hidden ? 'hidden' : ''"
-                 draggable="true"
-                 @dragstart="drag($event, '{{ $id }}')"
-                 @dragover.prevent
-                 @drop.prevent="drop($event, '{{ $id }}')"
-                 @dragend="dragId = null">
+        {{-- A widget with nothing to show is omitted entirely rather than
+             rendered as an empty panel: a bordered box with no content reads as
+             something failed to load, which is a different problem. --}}
+        @if ($body !== null && trim((string) $body) !== '')
+            @php
+                $span = match ($widget['size'] ?? 'sm') {
+                    'wide' => 'md:col-span-2',
+                    'full' => 'md:col-span-2 lg:col-span-'.$columns,
+                    default => '',
+                };
+            @endphp
 
-            <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 focus-within:opacity-100
-                        transition-opacity flex items-center gap-1">
-                <button type="button" @click="toggle('{{ $id }}')"
-                        class="w-7 h-7 grid place-items-center rounded-[var(--radius-sm)]
-                               text-[var(--app-text-subtle)] hover:bg-[var(--app-surface-muted)]
-                               hover:text-[var(--app-text)] transition-colors"
-                        :aria-label="hiddenWidgets.includes('{{ $id }}') ? 'Tampilkan widget' : 'Sembunyikan widget'"
-                        :title="hiddenWidgets.includes('{{ $id }}') ? 'Tampilkan' : 'Sembunyikan'">
-                    <x-icon name="eye" class="w-4 h-4" />
-                </button>
+            {{-- Deliberately NOT a .surface: most slots are already an
+                 <x-card>, and a card inside a card is the nested-panel look the
+                 brief rules out. This wrapper only positions the drag handle
+                 and the hide button. --}}
+            <section data-widget-id="{{ $id }}"
+                     class="{{ $span }} relative group"
+                     :class="hidden ? 'hidden' : ''"
+                     draggable="true"
+                     @dragstart="drag($event, '{{ $id }}')"
+                     @dragover.prevent
+                     @drop.prevent="drop($event, '{{ $id }}')"
+                     @dragend="dragId = null">
 
-                <span class="hidden md:grid place-items-center w-7 h-7 cursor-grab
-                             text-[var(--app-text-subtle)]"
-                      title="Geser untuk mengurutkan"
-                      aria-hidden="true">
-                    <x-icon name="grip-vertical" class="w-4 h-4" />
-                </span>
-            </div>
+                <div class="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 focus-within:opacity-100
+                            transition-opacity flex items-center gap-1">
+                    <button type="button" @click="toggle('{{ $id }}')"
+                            class="w-7 h-7 grid place-items-center rounded-[var(--radius-sm)]
+                                   bg-[var(--app-surface)] text-[var(--app-text-subtle)]
+                                   hover:text-[var(--app-text)] transition-colors"
+                            :aria-label="hiddenWidgets.includes('{{ $id }}') ? 'Tampilkan widget' : 'Sembunyikan widget'"
+                            :title="hiddenWidgets.includes('{{ $id }}') ? 'Tampilkan' : 'Sembunyikan'">
+                        <x-icon name="eye" class="w-4 h-4" />
+                    </button>
 
-            <div :style="order ? '' : ''" x-bind:style="`order: ${orderOf('{{ $id }}')}`">
-                {{ $widget['slot'] ?? '' }}
-            </div>
-        </section>
+                    <span class="hidden md:grid place-items-center w-7 h-7 cursor-grab
+                                 bg-[var(--app-surface)] rounded-[var(--radius-sm)]
+                                 text-[var(--app-text-subtle)]"
+                          title="Geser untuk mengurutkan"
+                          aria-hidden="true">
+                        <x-icon name="grip-vertical" class="w-4 h-4" />
+                    </span>
+                </div>
+
+                <div x-bind:style="`order: ${orderOf('{{ $id }}')}`">
+                    {!! $body !!}
+                </div>
+            </section>
+        @endif
     @endforeach
 </div>
 

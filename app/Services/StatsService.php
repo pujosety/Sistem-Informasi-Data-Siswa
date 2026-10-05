@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Employee;
 use App\Models\Registration;
 use App\Models\SchoolClass;
 use App\Models\Student;
@@ -20,6 +21,33 @@ class StatsService
             'pending' => (clone $base)->whereIn('status', [Registration::STATUS_PENDING, Registration::STATUS_SUBMITTED])->count(),
             'revision' => (clone $base)->whereIn('status', [Registration::STATUS_REVISION, Registration::STATUS_REJECTED])->count(),
             'draft' => (clone $base)->where('status', Registration::STATUS_DRAFT)->count(),
+        ];
+    }
+
+    /**
+     * Headline counts for the admin dashboard.
+     *
+     * Each is a COUNT rather than a loaded collection on purpose: the dashboard
+     * only ever renders the number, and a school with 4,000 students would
+     * otherwise hydrate 4,000 models to display one figure.
+     *
+     * `activeClasses` is scoped to the academic year when one is chosen, so the
+     * card answers "how many classes are running now" rather than "how many
+     * class rows have ever existed" — including the archived years, which is a
+     * number no school wants on its dashboard.
+     */
+    public function headlineCounts(?int $academicYearId = null): array
+    {
+        return [
+            'students' => Student::query()
+                ->when($academicYearId, fn ($q) => $q->where('academic_year_id', $academicYearId))
+                ->count(),
+
+            'teachers' => Employee::query()->count(),
+
+            'classes' => SchoolClass::query()
+                ->when($academicYearId, fn ($q) => $q->where('academic_year_id', $academicYearId))
+                ->count(),
         ];
     }
 

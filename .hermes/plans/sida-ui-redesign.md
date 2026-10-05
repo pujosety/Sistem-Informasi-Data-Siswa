@@ -101,6 +101,45 @@ decoration, not function.
 
 ---
 
+## 4b. Phase 5 — the admin dashboard (done)
+
+The brief names seven widgets; three of them did not exist anywhere.
+
+`StatsService` had registration aggregates (`registrationSummary`,
+`dailyRegistrations`, `byStatus`) plus `byGender`/`byClass`/`byDepartment` that
+**nothing was calling**. So the dashboard gained:
+
+- `headlineCounts()` — students, teachers, active classes. Each is a `COUNT()`,
+  not a loaded collection: the dashboard renders one figure, and a school with
+  4,000 students should not hydrate 4,000 models to show a number.
+  `classes` is scoped to the selected academic year, so the card answers "how
+  many are running now" rather than "how many rows have ever existed".
+- **Siswa Aktif / Tenaga Pendidikan / Kelas Aktif** — three stat cards, absent
+  before this change.
+- **Donut chart** of gender distribution, from `byGender()`.
+- **Activity timeline**, read from `ActivityLog` rather than a second log — an
+  activity list that disagrees with the audit log is worse than none.
+
+The four actionable counters stay OUTSIDE the reorderable grid, deliberately.
+The pending-verification count is the reason an admin opens the page, and a
+user who can drag widgets must not be able to push it below the fold.
+
+The right rail became a real `WidgetGrid` (reorder, hide, restore, persisted
+per user in `localStorage`). Each card is built with `Blade::render()` into a
+variable first, so there is exactly one copy of each card in the file — the
+duplicated-block approach drifts, and a card that has silently gone out of sync
+with its twin is the normal way this goes wrong.
+
+`WidgetGrid` refuses to render a widget with an empty slot: a bordered box with
+no content reads as something failed to load, which is a different problem from
+something having nothing to show.
+
+`tests/Feature/AdminDashboardTest.php` — 8 tests. A dashboard is the one page
+nothing links to, so nothing else in the suite exercises it; and it is exactly
+where a controller change breaks quietly.
+
+---
+
 ## 5. Execution order
 
 The 17 phases in the brief collapse into five commits, because a commit that

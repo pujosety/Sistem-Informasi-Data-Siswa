@@ -56,6 +56,18 @@ class AdminController extends BaseController
             'byStatus' => $byStatus,
             'yearId' => $yearId,
             'years' => $this->filterOptions()['years'],
+            'counts' => $this->stats->headlineCounts($yearId),
+            'byGender' => $this->stats->byGender(),
+
+            // The timeline reads the audit trail rather than a second log: an
+            // activity list that disagrees with the audit log is worse than no
+            // activity list. Capped hard, because this is a dashboard widget
+            // and a full history belongs at admin.activity-logs.
+            'activity' => \App\Models\ActivityLog::query()
+                ->with('user')
+                ->latest()
+                ->limit(6)
+                ->get(),
             'pendingQueue' => $pendingQueue,
             'recent' => Student::with('registration')
                 ->whereHas('registration')

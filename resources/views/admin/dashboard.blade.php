@@ -21,7 +21,108 @@
 
 @section('content')
 
+@php
+    // Donut items are built here rather than in the component so the labels are
+    // the ones the school uses. 'L'/'P' are the stored codes; a dashboard that
+    // says "L" and "P" is showing a database value, not a fact.
+    $genderItems = collect($byGender)
+        ->map(fn ($total, $code) => [
+            'label' => $code === 'L' ? 'Laki-laki' : ($code === 'P' ? 'Perempuan' : $code),
+            'value' => (int) $total,
+        ])
+        ->values()
+        ->all();
+
+    $maxDaily = max(1, max($daily ?: [1]));
+    $trendDays = collect(range(29, 0))->map(fn ($i) => now()->subDays($i)->toDateString());
+
+    $timelineItems = $activity->map(fn ($log) => [
+        'title' => $log->description ?: $log->action,
+        'timestamp' => $log->created_at?->diffForHumans(),
+        'description' => $log->user?->name,
+        'tone' => str_contains($log->action, 'delete') || str_contains($log->action, 'reject') ? 'danger' : 'neutral',
+    ])->all();
+
+    // The right rail is reorderable, which means each card has to exist as its
+    // own renderable string BEFORE the grid emits it. They are built here
+    // rather than in an @if(false) block below, so there is exactly one copy of
+    // each card in the file — a duplicated card that drifts from its twin is
+    // the normal way this pattern goes wrong.
+    $statusSlot = Blade::render(<<<'BLADE'
+        <x-card title="Status Pendaftaran" icon="chart-bar">
+            <ul class="space-y-2.5">
+                @forelse ($byStatus as $status => $count)
+                    <li class="flex items-center justify-between gap-3">
+                        <x-status-badge :status="$status" />
+                        <span class="text-small font-bold tabular-nums">{{ $count }}</span>
+                    </li>
+                @empty
+                    <li class="text-small text-[var(--app-text-subtle)]">Belum ada pendaftaran.</li>
+                @endforelse
+            </ul>
+        </x-card>
+    BLADE, ['byStatus' => $byStatus]);
+
+    $genderSlot = count($genderItems) > 0
+        ? Blade::render(<<<'BLADE'
+            <x-chart-card title="Distribusi Jenis Kelamin"
+                          description="Seluruh siswa terdaftar"
+                          height="h-auto">
+                <x-slot:summary>
+                    @foreach ($genderItems as $item)
+                        {{ $item['label'] }}: {{ $item['value'] }} siswa.
+                    @endforeach
+                </x-slot:summary>
+
+                <x-donut-chart :items="$genderItems" :size="180" :stroke="24" center-label="Siswa" />
+            </x-chart-card>
+        BLADE, ['genderItems' => $genderItems])
+        : null;
+
+    $activitySlot = $timelineItems !== []
+        ? Blade::render(<<<'BLADE'
+            <x-card title="Aktivitas Terakhir" icon="activity">
+                <x-slot:actions>
+                    <a href="{{ route('admin.activity-logs') }}" class="text-small font-semibold text-[var(--app-primary)] hover:underline">
+                        Semua
+                    </a>
+                </x-slot:actions>
+
+                <x-timeline :items="$timelineItems" />
+            </x-card>
+        BLADE, ['timelineItems' => $timelineItems])
+        : null;
+
+    $recentSlot = Blade::render(<<<'BLADE'
+        <x-card title="Pendaftar Terbaru" icon="clock">
+            @if ($recent->isEmpty())
+                <x-empty-state icon="inbox" compact title="Belum ada pendaftar" />
+            @else
+                <ul class="space-y-3">
+                    @foreach ($recent as $student)
+                        <li class="flex items-start gap-2.5">
+                            <span class="shrink-0 mt-1 w-1.5 h-1.5 rounded-full bg-brand-400"></span>
+                            <div class="min-w-0 flex-1">
+                                <a href="{{ route('admin.registrations.show', $student) }}"
+                                   class="text-small font-medium text-[var(--app-text)] hover:underline block truncate">
+                                    {{ $student->full_name }}
+                                </a>
+                                <p class="text-caption text-[var(--app-text-muted)]">
+                                    {{ $student->registration?->created_at->diffForHumans() }}
+                                </p>
+                            </div>
+                        </li>
+                    @endforeach
+                </ul>
+            @endif
+        </x-card>
+    BLADE, ['recent' => $recent]);
+@endphp
+
 {{-- ============ Actionable counters ============ --}}
+{{-- Kept OUTSIDE the widget grid on purpose. These four answer "what needs me
+     right now", and a user who reorders their dashboard must not be able to
+     push the pending-verification count below the fold. --}}
 <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
     <x-stat-card label="Perlu Tindakan Anda" icon="alert-circle" tone="brand"
                  :value="$summary['pending']"
@@ -42,7 +143,25 @@
                  hint="Tahun ajaran aktif" />
 </div>
 
-<div class="grid lg:grid-cols-3 gap-4 sm:gap-5 mt-4 sm:mt-5">
+{{-- ============ School at a glance ============ --}}
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mt-4 sm:mt-5">
+    <x-stat-card label="Siswa Aktif" icon="graduation-cap" tone="brand"
+                 :value="$counts['students']"
+                 :hint="$yearId ? 'Tahun ajaran terpilih' : 'Seluruh tahun ajaran'" />
+
+    <x-stat-card label="Tenaga Pendidikan" icon="user-check" tone="info"
+                 :value="$counts['teachers']" />
+
+    <x-stat-card label="Kelas Aktif" icon="layers" tone="neutral"
+                 :value="$counts['classes']"
+                 :hint="$yearId ? 'Tahun ajaran terpilih' : 'Seluruh tahun ajaran'" />
+</div>
+
+{{-- ============ Body ============ --}}
+{{-- The right rail is a WidgetGrid so its four cards can be reordered, hidden
+     and restored per user; the counters above stay outside it, because a count
+     the user can push below the fold stops being a count. --}}
+<div class="grid lg:grid-cols-3 gap-4 sm:gap-5">
 
     {{-- ============ Verification queue ============ --}}
     <div class="lg:col-span-2 space-y-4 sm:space-y-5">
@@ -93,27 +212,28 @@
         </x-card>
 
         {{-- ============ Trend ============ --}}
-        <x-card title="Pendaftaran 30 Hari Terakhir" icon="chart"
-                description="Jumlah pendaftaran per hari">
-            @php
-                $max = max(1, max($daily ?: [1]));
-                $days = collect(range(29, 0))->map(fn ($i) => now()->subDays($i)->toDateString());
-            @endphp
+        <x-chart-card title="Pendaftaran 30 Hari Terakhir"
+                      description="Jumlah pendaftaran per hari"
+                      height="h-40">
+            <x-slot:summary>
+                Total {{ number_format(array_sum($daily ?: []), 0, ',', '.') }} pendaftaran dalam 30 hari terakhir,
+                puncak {{ $maxDaily }} pada satu hari.
+            </x-slot:summary>
 
             @if ($daily === [])
                 <x-empty-state icon="chart" compact title="Belum ada data"
                               description="Grafik muncul setelah ada pendaftaran masuk." />
             @else
-                <div class="flex items-end gap-[3px] h-40" role="img"
+                <div class="flex items-end gap-[3px] h-full" role="img"
                      aria-label="Grafik pendaftaran 30 hari terakhir, total {{ array_sum($daily) }} pendaftaran">
-                    @foreach ($days as $day)
+                    @foreach ($trendDays as $day)
                         @php $count = $daily[$day] ?? 0; @endphp
                         <div class="flex-1 group relative flex flex-col justify-end h-full">
                             <div @class([
                                 'w-full rounded-t transition-colors',
-                                'bg-brand-500' => $count > 0,
+                                'bg-[var(--app-primary)]' => $count > 0,
                                 'bg-[var(--app-surface-muted)]' => $count === 0,
-                            ]) style="height: {{ $count > 0 ? max(6, $count / $max * 100) : 4 }}%"
+                            ]) style="height: {{ $count > 0 ? max(6, $count / $maxDaily * 100) : 4 }}%"
                                  title="{{ \Carbon\Carbon::parse($day)->translatedFormat('d M Y') }}: {{ $count }}"></div>
                         </div>
                     @endforeach
@@ -123,46 +243,15 @@
                     <span>{{ now()->translatedFormat('d M Y') }}</span>
                 </div>
             @endif
-        </x-card>
+        </x-chart-card>
     </div>
 
-    {{-- ============ Right rail ============ --}}
-    <div class="space-y-4 sm:space-y-5">
-        <x-card title="Status Pendaftaran" icon="chart-bar">
-            <ul class="space-y-2.5">
-                @forelse ($byStatus as $status => $count)
-                    <li class="flex items-center justify-between gap-3">
-                        <x-status-badge :status="$status" />
-                        <span class="text-small font-bold tabular-nums">{{ $count }}</span>
-                    </li>
-                @empty
-                    <li class="text-small text-[var(--app-text-subtle)]">Belum ada pendaftaran.</li>
-                @endforelse
-            </ul>
-        </x-card>
+    {{-- ============ Right rail (reorderable) ============ --}}
+    <x-widget-grid class="space-y-4 sm:space-y-5" storage-key="sida.dashboard.admin-rail" :columns="1" :widgets="[
+        ['id' => 'status',  'slot' => $statusSlot],
+        ['id' => 'gender',  'slot' => $genderSlot],
+        ['id' => 'activity','slot' => $activitySlot],
+        ['id' => 'recent',  'slot' => $recentSlot],
+    ]" />
 
-        <x-card title="Pendaftar Terbaru" icon="clock">
-            @if ($recent->isEmpty())
-                <x-empty-state icon="inbox" compact title="Belum ada pendaftar" />
-            @else
-                <ul class="space-y-3">
-                    @foreach ($recent as $student)
-                        <li class="flex items-start gap-2.5">
-                            <span class="shrink-0 mt-1 w-1.5 h-1.5 rounded-full bg-brand-400"></span>
-                            <div class="min-w-0 flex-1">
-                                <a href="{{ route('admin.registrations.show', $student) }}"
-                                   class="text-small font-medium text-[var(--app-text)] hover:underline block truncate">
-                                    {{ $student->full_name }}
-                                </a>
-                                <p class="text-caption text-[var(--app-text-muted)]">
-                                    {{ $student->registration?->created_at->diffForHumans() }}
-                                </p>
-                            </div>
-                        </li>
-                    @endforeach
-                </ul>
-            @endif
-        </x-card>
-    </div>
-</div>
 @endsection
