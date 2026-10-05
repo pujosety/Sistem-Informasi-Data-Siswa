@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
 /**
@@ -42,6 +43,16 @@ class PublicPageRendersTest extends TestCase
     public function the_home_page_renders(): void
     {
         $this->get(route('home'))->assertOk();
+    }
+
+    /** @test */
+    public function the_home_page_degrades_when_landing_schema_is_not_migrated(): void
+    {
+        Schema::dropIfExists('landing_sections');
+
+        $this->get(route('home'))
+            ->assertOk()
+            ->assertSee('LYFLA');
     }
 
     /** @test */

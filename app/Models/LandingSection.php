@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Schema;
 
 /**
  * One block on a landing page.
@@ -120,8 +122,16 @@ class LandingSection extends Model
     /**
      * The blocks of a page, in the order they should render.
      */
-    public static function forPage(string $pageKey = 'home')
+    public static function forPage(string $pageKey = 'home'): Collection
     {
+        // A deploy can briefly run the new code before its migration has been
+        // applied. The public homepage must remain renderable in that window;
+        // an empty collection produces the honest no-sections state while the
+        // deployment health check still reports the missing schema.
+        if (! Schema::hasTable('landing_sections')) {
+            return new Collection;
+        }
+
         return static::query()
             ->forPage($pageKey)
             ->enabled()
