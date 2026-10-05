@@ -118,14 +118,40 @@ return [
     |
     */
 
+    /*
+     * These are the supplied brand renders, not placeholders: PNG with a real
+     * alpha channel, cropped to the artwork and downsampled. The originals
+     * carry 71% fully-transparent pixels, so nothing had to be keyed — an
+     * attempt to alpha-key them against white erased the entire artwork,
+     * because the background is transparent black rather than white pixels.
+     *
+     * `logo` is the horizontal lockup (globe + cap + LYFLA + tagline).
+     */
     'assets' => [
-        'logo' => 'branding/lyfla-logo.svg',
-        'logo_icon' => 'branding/lyfla-icon.svg',
-        'logo_horizontal' => 'branding/lyfla-horizontal.svg',
-        'logo_mono_dark' => 'branding/lyfla-mono-dark.svg',
-        'logo_mono_light' => 'branding/lyfla-mono-light.svg',
+        'logo' => 'branding/lyfla-logo.png',
+        'logo_icon' => 'branding/lyfla-mark-flame.png',
+        'logo_horizontal' => 'branding/lyfla-logo.png',
+
+        // Alternative marks, supplied alongside the primary lockup. Kept as
+        // separate files rather than crops of one image so each can be tuned
+        // for its own optical size later without re-cutting the others.
+        'mark_flame' => 'branding/lyfla-mark-flame.png',
+        'mark_books' => 'branding/lyfla-mark-books.png',
+        'mark_globe' => 'branding/lyfla-mark-globe.png',
+        'mark_laptop' => 'branding/lyfla-mark-laptop.png',
+        'mark_backpack' => 'branding/lyfla-mark-backpack.png',
+        'mark_desk' => 'branding/lyfla-mark-desk.png',
+
+        // Promotional and illustrative. Deliberately NOT used inside data-heavy
+        // pages: a 3D mascot next to a table of students is decoration where
+        // the brief asks for operational clarity.
+        'campus' => 'branding/lyfla-building.png',
+        'mascot_student' => 'branding/lyfla-mascot-student.png',
+        'mascot_staff' => 'branding/lyfla-mascot-staff.png',
+
+        // The icon-only mark, pre-sized for the PWA manifest.
+        'logo_icon' => 'branding/lyfla-mark-flame.png',
         'favicon' => 'branding/favicon.ico',
-        'pwa_icon' => 'branding/lyfla-icon-512.png',
         'apple_touch_icon' => 'branding/apple-touch-icon.png',
     ],
 

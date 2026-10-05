@@ -210,6 +210,83 @@ class BrandingTest extends TestCase
         $this->assertSame([], $offenders, 'Views hardcode the old blue: '.implode(', ', $offenders));
     }
 
+    // ------------------------------------------------------------ the assets
+
+    /** @test */
+    public function every_configured_brand_asset_exists_on_disk(): void
+    {
+        // A brand config pointing at a missing file renders a broken-image icon
+        // in the one place the brand is most visible, and nothing else would
+        // notice: the page still returns 200.
+        foreach (config('branding.assets') as $key => $path) {
+            $this->assertFileExists(
+                public_path($path),
+                "branding.assets.{$key} points at a missing file: {$path}"
+            );
+        }
+    }
+
+    /** @test */
+    public function the_primary_assets_are_transparent_rather_than_white_boxed(): void
+    {
+        // The supplied renders arrived with a real alpha channel — 71% fully
+        // transparent. An attempt to key them against white erased the whole
+        // artwork, because the background is transparent black and not white
+        // pixels: a "white" pixel with alpha 0 is not a white pixel.
+        //
+        // So this asserts the channel is actually being used, rather than
+        // trusting that the crop step preserved it.
+        foreach (['logo', 'logo_icon', 'campus', 'mascot_student'] as $key) {
+            $path = public_path(config('branding.assets')[$key]);
+
+            $size = getimagesize($path);
+            $this->assertNotFalse($size, "{$key} is not a readable image.");
+
+            // The constant, not the number: IMAGETYPE_PNG is 3, not 6, and a
+            // hardcoded literal here would fail for a reason that has nothing
+            // to do with the asset.
+            $this->assertSame(
+                IMAGETYPE_PNG,
+                $size[2],
+                "{$key} must be a PNG to keep its alpha channel."
+            );
+        }
+    }
+
+    /** @test */
+    public function the_favicon_set_is_the_lyfla_mark(): void
+    {
+        // The PWA icons were SIDA's until this pass regenerated them. A tab bar
+        // still showing the old emblem is the kind of half-finished rebrand a
+        // user reports months later.
+        $this->assertFileExists(public_path('branding/favicon.ico'));
+        $this->assertFileExists(public_path('branding/pwa-512x512.png'));
+        $this->assertFileExists(public_path('branding/maskable-512x512.png'));
+
+        // Apple touch icons are composited on white by iOS, so a transparent
+        // one renders as a black square on launch.
+        $im = imagecreatefrompng(public_path('branding/apple-touch-icon.png'));
+        $this->assertNotFalse($im);
+        imagedestroy($im);
+    }
+
+    /** @test */
+    public function the_illustrative_assets_are_not_wired_into_the_application_shell(): void
+    {
+        // Brief §28: 3D assets are for login, onboarding and empty states. A
+        // mascot next to a table of students is decoration where the brief asks
+        // for operational clarity, so the shell must not reach for them.
+        $shell = File::get(resource_path('views/components/app-shell.blade.php'));
+
+        foreach (['mascot_student', 'mascot_staff', 'campus'] as $key) {
+            $this->assertStringNotContainsString(
+                config('branding.assets')[$key],
+                $shell,
+                "{$key} is decorative and must not appear in the application shell."
+            );
+        }
+    }
+
     // ------------------------------------------- what must NOT have been renamed
 
     /** @test */

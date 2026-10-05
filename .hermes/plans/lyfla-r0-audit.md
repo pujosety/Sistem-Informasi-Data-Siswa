@@ -225,6 +225,37 @@ supposed to prevent, and it happened because 105 views were not all searched.
 | `brand-*` utilities | → `--app-primary` | **the real work** |
 | Route URIs | **unchanged** | `/admin/...` stays; only the wordmark changes |
 
+### Brand assets (supplied renders, installed)
+
+`config/branding.php → assets` now points at the supplied renders rather than
+the hand-drawn SVGs that R1 originally shipped. Those two SVGs were deleted:
+two logos in one repository, with nothing saying which ships, is how a rebrand
+ends up half-applied.
+
+| Key | File | Use |
+|---|---|---|
+| `logo` | `lyfla-logo.png` 1200×651 | the horizontal lockup — globe + cap + LYFLA + tagline |
+| `logo_icon` | `lyfla-mark-flame.png` 492×512 | favicons, PWA icons, collapsed rail |
+| `mark_flame` / `mark_books` / `mark_globe` / `mark_laptop` / `mark_backpack` / `mark_desk` | 512px PNGs | alternative marks |
+| `campus` | `lyfla-building.png` 1448×999 | login page / public site only |
+| `mascot_student` / `mascot_staff` | 640px PNGs | empty states and onboarding only |
+
+**Every one keeps its original alpha channel.** The supplied PNGs already carry
+71% fully-transparent pixels, so nothing was keyed. An attempt to alpha-key
+them against white erased the entire artwork — the background is transparent
+*black*, and a white-looking pixel with alpha 0 is not a white pixel. Vision
+analysis described the backgrounds as "pure white", which is what sent that
+down the wrong path; reading the actual pixel values settled it in one command.
+
+Favicons, PWA icons, maskable icons and Apple touch icons were all regenerated
+from the flame mark. Maskable variants pad to a 26% safe zone because a
+launcher may crop to any shape; Apple touch icons are flattened onto white
+because iOS composites them there and a transparent one launches as a black
+square.
+
+A test asserts the decorative assets are NOT referenced by the application
+shell (brief §28) and that every configured asset exists on disk.
+
 ### The LYFLA mark
 
 Brief asks for: connected learning, pathways, growth, book, leaf, subtle L.
