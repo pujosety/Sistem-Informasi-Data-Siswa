@@ -1,6 +1,7 @@
 # Wasmer Edge application configuration.
-# Schema/data preparation is chained into start so a failed migration stops the
-# release instead of leaving an apparently healthy app on an old schema.
+# All database/data commands are idempotent and run non-interactively.
+# The dashboard may retain the after_deploy job, so both scripts.after_deploy
+# and the explicit job below use the same safe command chain.
 kind: wasmer.io/App.v0
 name: SIDA
 
@@ -12,6 +13,20 @@ scripts:
   build: |
     composer run-script post-update-cmd
     npm run build
+
+  after_deploy: |
+    php artisan config:clear \
+      && php artisan migrate --force --no-interaction \
+      && php artisan db:seed --class=PermissionSeeder --force --no-interaction \
+      && php artisan db:seed --class=LandingPageSeeder --force --no-interaction \
+      && php artisan db:seed --class=LandingPhotosSeeder --force --no-interaction \
+      && php artisan showcase:seed --students-per-class=6 \
+      && php artisan showcase:extras \
+      && php artisan showcase:public-site \
+      && php artisan showcase:hris-content \
+      && php artisan lyfla:landing-demo --posts=4 --graduates=5 --force \
+      && php artisan config:cache \
+      && php artisan route:cache
 
   start: |
     php artisan config:clear \
@@ -27,3 +42,10 @@ scripts:
       && php artisan config:cache \
       && php artisan route:cache \
       && php -S 0.0.0.0:8080 -t public
+
+jobs:
+  - name: after_deploy
+    trigger: post-deployment
+    action:
+      execute:
+        command: after_deploy
