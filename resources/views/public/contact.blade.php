@@ -1,6 +1,9 @@
 @extends('public.layout')
 
-@php $title = 'Kontak · ' . ($school['name'] ?: config('branding.platform.name')); @endphp
+@php
+    $title = 'Kontak · ' . ($school['name'] ?: config('branding.platform.name'));
+    $errors = session('errors') ?? new \Illuminate\Support\MessageBag();
+@endphp
 @section('title', $title)
 @php $description = 'Kontak dan lokasi ' . ($school['name'] ?: 'sekolah') . '.'; @endphp
 @section('description', $description)
@@ -90,5 +93,39 @@
             </a>
         </div>
     @endif
-</section>
+
+    <section class="mt-12 grid gap-8 lg:grid-cols-[0.85fr_1.15fr]" aria-labelledby="contact-form-title">
+        <div>
+            <p class="text-small font-semibold text-[var(--public-primary)]">Yuk, ngobrol.</p>
+            <h2 id="contact-form-title" class="mt-2 text-h1 font-bold text-[var(--app-text)]">Ada yang ingin ditanyakan?</h2>
+            <p class="mt-3 max-w-md text-body leading-relaxed text-[var(--app-text-muted)]">Punya pertanyaan soal sekolah, program, atau pendaftaran? Kirim pesan dan tim sekolah akan menindaklanjutinya.</p>
+        </div>
+
+        <form method="POST" action="{{ route('public.contact.submit') }}" class="surface p-6 sm:p-8">
+            @csrf
+            <div class="absolute -left-[9999px]" aria-hidden="true"><label>Website <input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
+            @if (session('success'))
+                <div class="mb-5 rounded-[var(--radius-md)] border border-[var(--app-success)]/30 bg-[var(--app-success-soft)] px-4 py-3 text-small text-[var(--app-success)]" role="status">{{ session('success') }}</div>
+            @endif
+            @if ($errors->any())
+                <div class="mb-5 rounded-[var(--radius-md)] border border-[var(--app-danger)]/30 bg-[var(--app-danger-soft)] px-4 py-3 text-small text-[var(--app-danger)]" role="alert">Periksa kembali isian formulir.</div>
+            @endif
+            <div class="grid gap-4 sm:grid-cols-2">
+                <x-form-field name="name" label="Nama" required :value="old('name')" autocomplete="name" />
+                <x-form-field name="email" type="email" label="Email" required :value="old('email')" autocomplete="email" />
+                <x-form-field name="phone" type="tel" label="Nomor WhatsApp" :value="old('phone')" autocomplete="tel" />
+                <x-form-field name="topic" type="select" label="Topik" required :value="old('topic')">
+                    <option value="">Pilih topik</option>
+                    @foreach (['PPDB', 'Program Akademik', 'Kegiatan Sekolah', 'Informasi Umum'] as $topic)
+                        <option value="{{ $topic }}" @selected(old('topic') === $topic)>{{ $topic }}</option>
+                    @endforeach
+                </x-form-field>
+                <x-form-field name="message" type="textarea" label="Pesan" required :rows="5" class="sm:col-span-2" :value="old('message')" />
+            </div>
+            <button type="submit" class="mt-5 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-[var(--radius-md)] bg-[var(--public-primary)] px-5 text-body font-semibold text-white transition hover:bg-[var(--app-primary-hover)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--public-primary)]">
+                <x-icon name="send" class="size-5" />
+                Kirim Pesan
+            </button>
+        </form>
+    </section>
 @endsection

@@ -168,6 +168,8 @@ class NavigationService
                 // photo — so seeing it is granted with `cms.view` but managing
                 // it is not implied by writing an article.
                 ['route' => 'admin.media.index', 'active' => 'admin.media.*', 'label' => 'Media', 'permission' => 'cms.media.manage', 'module' => 'cms'],
+                ['route' => 'admin.contact-messages', 'active' => 'admin.contact-messages*', 'label' => 'Pesan Masuk', 'permission' => 'cms.view', 'module' => 'cms'],
+                ['route' => 'admin.landing.index', 'active' => 'admin.landing.*', 'label' => 'Landing Page', 'permission' => 'cms.view', 'module' => 'cms'],
             ]],
 
             ['label' => 'Laporan', 'icon' => 'chart-bar', 'children' => [

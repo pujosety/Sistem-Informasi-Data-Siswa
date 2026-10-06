@@ -50,9 +50,7 @@
                             <h3 class="text-body font-semibold text-white">{{ $item['title'] ?? '' }}</h3>
 
                             @if ($item['body'] ?? null)
-                                <p class="mt-1.5 max-h-0 overflow-hidden text-caption leading-relaxed text-white/80 opacity-0 transition-all duration-300
-                                          group-hover:max-h-32 group-hover:opacity-100
-                                          focus-within:max-h-32 focus-within:opacity-100">
+                                <p class="mt-1.5 text-caption leading-relaxed text-white/80">
                                     {{ $item['body'] }}
                                 </p>
                             @endif

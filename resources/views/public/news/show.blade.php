@@ -2,10 +2,13 @@
 
 @php
     $pageTitle = $post->metaTitle();
-    $pageDescription = $post->meta_description ?: $post->excerpt;
+    $pageDescription = $post->meta_description ?: $post->excerpt ?: 'Kabar terbaru dari '.($school['name'] ?: 'sekolah').'.';
+    $pageImage = $post->media->first()?->url() ?: asset(config('branding.assets.logo'));
 @endphp
 @section('title', $pageTitle)
 @section('description', $pageDescription)
+@section('og_type', 'article')
+@section('og_image', $pageImage)
 
 @section('body')
 <article>

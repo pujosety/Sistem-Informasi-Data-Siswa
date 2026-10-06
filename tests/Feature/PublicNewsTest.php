@@ -168,14 +168,69 @@ class PublicNewsTest extends TestCase
      */
     public function test_an_empty_news_page_says_so_rather_than_breaking(): void
     {
+        // The local testing schema may contain showcase rows from a previous
+        // migration run. Hide them explicitly so this test exercises the empty
+        // public state rather than inheriting the operator's seed data.
+        Post::query()->get()->each->delete();
+
         $body = $this->get('/berita')->getContent();
 
         $this->assertStringContainsString('Belum ada berita', $body);
     }
 
-    /**
-     * @test
-     */
+    /** @test */
+    public function test_the_public_search_page_is_reachable_without_a_session(): void
+    {
+        $this->get('/cari')->assertOk()->assertSee('Cari informasi sekolah');
+    }
+
+    /** @test */
+    public function test_public_search_returns_published_posts_but_not_drafts(): void
+    {
+        $this->makePost([
+            'title' => 'Siswa LYFLA Menang Lomba',
+            'slug' => 'siswa-lyfla-menang-lomba',
+            'excerpt' => 'Kabar prestasi siswa.',
+        ]);
+        $this->makePost([
+            'title' => 'Draft Prestasi Internal',
+            'slug' => 'draft-prestasi-internal',
+            'status' => Post::DRAFT,
+        ]);
+
+        $response = $this->get('/cari?q=prestasi');
+
+        $response->assertOk()->assertSee('Siswa LYFLA Menang Lomba');
+        $response->assertDontSee('Draft Prestasi Internal');
+    }
+
+    /** @test */
+    public function test_public_search_handles_an_empty_query_without_breaking(): void
+    {
+        $this->get('/cari?q=')->assertOk()->assertSee('Mulai dari satu kata.');
+    }
+
+    /** @test */
+    public function test_news_can_be_filtered_by_category(): void
+    {
+        $category = Category::create(['name' => 'Prestasi', 'slug' => 'prestasi', 'sort_order' => 1]);
+        $this->makePost([
+            'title' => 'Prestasi Siswa',
+            'slug' => 'prestasi-siswa',
+            'category_id' => $category->id,
+        ]);
+        $this->makePost([
+            'title' => 'Agenda Sekolah',
+            'slug' => 'agenda-sekolah',
+        ]);
+
+        $this->get('/berita?category=prestasi')
+            ->assertOk()
+            ->assertSee('Prestasi Siswa')
+            ->assertDontSee('Agenda Sekolah');
+    }
+
+    /** @test */
     public function test_the_news_page_needs_no_session(): void
     {
         $this->makePost(['slug' => 'tanpa-sesi']);
@@ -183,5 +238,32 @@ class PublicNewsTest extends TestCase
         $this->assertGuest();
         $this->get('/berita')->assertOk();
         $this->get('/berita/tanpa-sesi')->assertOk();
+    }
+
+    /** @test */
+    public function test_a_published_public_page_can_be_read(): void
+    {
+        $page = $this->makePost([
+            'kind' => Post::KIND_PAGE,
+            'title' => 'Tentang Ekosistem LYFLA',
+            'slug' => 'ekosistem-lyfla',
+        ]);
+
+        $this->get($page->url())
+            ->assertOk()
+            ->assertSee('Tentang Ekosistem LYFLA');
+    }
+
+    /** @test */
+    public function test_a_private_public_page_is_not_readable(): void
+    {
+        $page = $this->makePost([
+            'kind' => Post::KIND_PAGE,
+            'title' => 'Halaman Internal',
+            'slug' => 'halaman-internal',
+            'is_public' => false,
+        ]);
+
+        $this->get($page->url())->assertNotFound();
     }
 }

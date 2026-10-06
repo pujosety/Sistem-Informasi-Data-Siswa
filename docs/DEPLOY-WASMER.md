@@ -91,14 +91,21 @@ composer install --no-dev --optimize-autoloader --no-interaction
 
 ## 5. Perintah Start
 
+`app.yaml` menjalankan migration non-interaktif sebelum server start dan memakai
+port `PORT` bila disediakan Wasmer:
+
 ```bash
-php artisan serve --host=0.0.0.0 --port=8000
+php artisan config:clear \
+  && php artisan migrate --force --no-interaction \
+  && php artisan db:seed --class=PermissionSeeder --force --no-interaction \
+  && php artisan config:cache \
+  && php artisan route:cache \
+  && php -S 0.0.0.0:${PORT:-8080} -t public
 ```
 
-> *Environment-dependent*: Wasmer Springfield menentukan port secara otomatis dan
-> menyuntikkannya sebagai `PORT`. Bila container gagal start dengan port tetap,
-> ubah start command menjadi
-> `php artisan serve --host=0.0.0.0 --port=${PORT:-8000}`.
+Showcase/demo seeder **tidak** dijalankan otomatis pada production start. Jika
+memang diperlukan untuk environment demo, jalankan secara eksplisit setelah
+backup dan verifikasi target database.
 
 ## 6. Frontend Build
 

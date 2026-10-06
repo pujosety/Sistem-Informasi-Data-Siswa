@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\AcademicYear;
 use App\Models\Alumni;
+use App\Models\ContactMessage;
 use App\Models\Department;
 use App\Models\LandingSection;
 use App\Models\Post;
@@ -41,16 +42,18 @@ class PublicHomeController extends Controller
 
     public function __invoke(): View
     {
+        $figures = $this->figures();
+
         return view('public.home', [
             'school' => $this->schoolProfile(),
-            'figures' => $this->figures(),
+            'figures' => $figures,
             'portalUrl' => route('login'),
 
             // The landing page is assembled from CMS blocks, in the order and
             // with the enabled flag the administrator set. Nothing here is
             // hardcoded: an empty section table renders an empty page, which is
             // the honest signal that the landing page has not been set up yet.
-            'sections' => $this->sectionsWithLiveData(),
+            'sections' => $this->sectionsWithLiveData($figures),
 
             // Real counts for the hero. The blocks carry their own copy, but a
             // school enrolment figure is a fact about the school and must not
@@ -91,17 +94,28 @@ class PublicHomeController extends Controller
      */
     private function figures(): array
     {
-        $year = $this->activeYear();
+        try {
+            $year = $this->activeYear();
 
-        return [
-            'students'  => Student::query()->count(),
-            'classes'   => SchoolClass::query()
-                ->when($year, fn ($q) => $q->where('academic_year_id', $year->id))
-                ->where('status', SchoolClass::ACTIVE)
-                ->count(),
-            'subjects'  => Subject::query()->count(),
-            'academicYear' => $year?->name,
-        ];
+            return [
+                'students'  => Student::query()->count(),
+                'classes'   => SchoolClass::query()
+                    ->when($year, fn ($q) => $q->where('academic_year_id', $year->id))
+                    ->where('status', SchoolClass::ACTIVE)
+                    ->count(),
+                'subjects'  => Subject::query()->count(),
+                'academicYear' => $year?->name,
+            ];
+        } catch (\Throwable $e) {
+            report($e);
+
+            return [
+                'students' => 0,
+                'classes' => 0,
+                'subjects' => 0,
+                'academicYear' => null,
+            ];
+        }
     }
 
 
@@ -124,13 +138,23 @@ class PublicHomeController extends Controller
      * homepage advertising "Berita & Kegiatan" above the word "Belum ada
      * berita" is worse than a homepage without the section.
      */
-    private function sectionsWithLiveData(): \Illuminate\Support\Collection
+    private function sectionsWithLiveData(array $figures): \Illuminate\Support\Collection
     {
         $sections = LandingSection::forPage('home');
 
         $news = $this->latestNews();
 
         foreach ($sections as $section) {
+            if ($section->type === 'hero') {
+                $liveStats = array_values(array_filter([
+                    $figures['students'] > 0 ? ['value' => (string) $figures['students'], 'label' => 'Siswa Aktif'] : null,
+                    $figures['classes'] > 0 ? ['value' => (string) $figures['classes'], 'label' => 'Kelas Aktif'] : null,
+                    $figures['subjects'] > 0 ? ['value' => (string) $figures['subjects'], 'label' => 'Mata Pelajaran'] : null,
+                    filled($figures['academicYear']) ? ['value' => $figures['academicYear'], 'label' => 'Tahun Ajaran'] : null,
+                ]));
+                $section->content = array_merge($section->content ?? [], ['stats' => $liveStats]);
+            }
+
             if ($section->type === 'news' && $news !== []) {
                 $section->content = array_merge($section->content ?? [], ['items' => $news]);
             }
@@ -140,7 +164,10 @@ class PublicHomeController extends Controller
             // graduates a class should see the number move without an
             // administrator retyping it.
             if ($section->type === 'achievements') {
-                $section->content = array_merge($section->content ?? [], $this->achievementFigures());
+                $achievementFigures = $this->achievementFigures();
+                $section->content = $achievementFigures === []
+                    ? []
+                    : array_merge($section->content ?? [], $achievementFigures);
             }
 
             if ($section->type === 'alumni') {
@@ -182,7 +209,7 @@ class PublicHomeController extends Controller
             'excerpt' => $post->excerpt,
             'category' => $post->category?->name,
             'date' => $post->published_at?->translatedFormat('d M Y'),
-            'image' => $post->media->first()?->url,
+            'image' => $post->media->first()?->url(),
         ])->all();
     }
 
@@ -210,6 +237,10 @@ class PublicHomeController extends Controller
         } catch (\Throwable $e) {
             report($e);
 
+            return [];
+        }
+
+        if ($total === 0) {
             return [];
         }
 
@@ -312,6 +343,26 @@ class PublicHomeController extends Controller
         ]);
     }
 
+    public function submitContact(\Illuminate\Http\Request $request): \Illuminate\Http\RedirectResponse
+    {
+        // Honeypot: bots get the same public response but no database write.
+        if ($request->filled('website')) {
+            return redirect()->route('public.contact')->with('success', 'Pesanmu sudah kami terima.');
+        }
+
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:150'],
+            'email' => ['required', 'email', 'max:190'],
+            'phone' => ['nullable', 'string', 'max:30'],
+            'topic' => ['required', 'string', 'max:80'],
+            'message' => ['required', 'string', 'min:10', 'max:5000'],
+        ]);
+
+        ContactMessage::create($data + ['status' => ContactMessage::NEW]);
+
+        return redirect()->route('public.contact')->with('success', 'Pesanmu sudah kami terima. Tim sekolah akan menindaklanjutinya.');
+    }
+
     /**
      * Admission: the entry point into the existing registration flow.
      *
@@ -337,30 +388,26 @@ class PublicHomeController extends Controller
     private function departmentsWithSubjects(): array
     {
         try {
-            // No eager loading. Department has no relations, and asking for
-            // any throws — which the catch below swallowed into an empty page
-            // that looked like a school with no programmes. The class count is
-            // a COUNT on an explicit relation, not a load of every class.
             $departments = Department::query()->orderBy('name')->get();
+            $subjects = Subject::query()->orderBy('name')->get();
+
+            return $departments->map(fn (Department $department) => [
+                'id' => $department->id,
+                'name' => $department->name,
+                'code' => $department->code,
+                // Counts only. Listing the classes themselves would publish a
+                // roster-shaped page, which is a step further than §10 allows.
+                'classCount' => SchoolClass::query()
+                    ->where('department_id', $department->id)
+                    ->where('status', SchoolClass::ACTIVE)
+                    ->count(),
+                'subjects' => $subjects->values(),
+            ])->all();
         } catch (\Throwable $e) {
             report($e);
 
             return [];
         }
-
-        $subjects = Subject::query()->orderBy('name')->get();
-
-        return $departments->map(fn (Department $department) => [
-            'name' => $department->name,
-            'code' => $department->code,
-            // Counts only. Listing the classes themselves would publish a
-            // roster-shaped page, which is a step further than §10 allows.
-            'classCount' => SchoolClass::query()
-                ->where('department_id', $department->id)
-                ->where('status', SchoolClass::ACTIVE)
-                ->count(),
-            'subjects' => $subjects->values(),
-        ])->all();
     }
 
     /**

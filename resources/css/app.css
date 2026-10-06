@@ -680,6 +680,67 @@
         margin-right: 0;
     }
 
+/* Public LYFLA palette. The authenticated app keeps its operational token ramp;
+   public pages use the requested school-portal palette without changing admin
+   contrast or status semantics. */
+.public-site {
+    --public-primary: #681D2A;
+    --public-accent: #A83C4C;
+    --public-soft: #F7E9EC;
+    --public-cream: #F7F3EF;
+    --public-charcoal: #171717;
+    --public-white: #FFFFFF;
+
+    --app-bg: var(--public-cream);
+    --app-surface: var(--public-white);
+    --app-surface-muted: #F0E7E5;
+    --app-border: #E7D8D9;
+    --app-border-strong: #D4BFC2;
+    --app-text: var(--public-charcoal);
+    --app-text-muted: #5F4B4F;
+    --app-text-subtle: #806D70;
+    --app-primary: var(--public-primary);
+    --app-primary-hover: #4D1520;
+    --app-primary-dark: var(--public-charcoal);
+    --app-primary-soft: var(--public-soft);
+    --app-sidebar-bg: var(--public-charcoal);
+    --brand-gold: var(--public-accent);
+    --color-brand-500: var(--public-soft);
+}
+
+.skip-link {
+    position: fixed;
+    left: 1rem;
+    top: 1rem;
+    z-index: 100;
+    transform: translateY(-200%);
+    border-radius: var(--radius-md);
+    background: var(--app-surface);
+    color: var(--app-text);
+    padding: 0.75rem 1rem;
+    font-weight: 700;
+    box-shadow: var(--shadow-raised);
+}
+
+.skip-link:focus {
+    transform: translateY(0);
+}
+
+.public-site :focus-visible {
+    outline-color: var(--public-soft);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .public-site *,
+    .public-site *::before,
+    .public-site *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
 @layer utilities {
     .stack > * + * { margin-top: var(--stack-gap, 1rem); }
 

@@ -127,6 +127,14 @@ class Media extends Model
      */
     public function isMissingOnDisk(): bool
     {
-        return ! Storage::disk($this->disk)->exists($this->path);
+        if (str_starts_with($this->path ?? '', 'images/') || str_starts_with($this->path ?? '', 'branding/')) {
+            return ! is_file(public_path($this->path));
+        }
+
+        try {
+            return ! Storage::disk($this->disk ?: 'public')->exists($this->path);
+        } catch (\Throwable) {
+            return true;
+        }
     }
 }

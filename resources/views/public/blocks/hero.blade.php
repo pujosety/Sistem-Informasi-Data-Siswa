@@ -35,7 +35,7 @@
     // slug: one upload, two crops.
     $heroWide = $section->media?->url() ?? asset('images/school/students-walking-courtyard.webp');
     $heroSm   = str_replace('.webp', '-sm.webp', $heroWide);
-    $alt      = $section->value('image_alt', 'Siswa SMA berkonsentrasi belajar di kelas. Beberapa siswa mengenakan seragam sekolah dan siswi berhijab di belakangnya.');
+    $alt      = $section->value('image_alt', 'Siswa SMP berkonsentrasi belajar di kelas. Beberapa siswa mengenakan seragam sekolah dan siswi berhijab di belakangnya.');
     $ctaLabel = $section->value('cta_label', 'Daftar Sekarang');
     $ctaUrl   = $section->value('cta_url', route('public.admission'));
     $altLabel = $section->value('secondary_cta_label', 'Jelajahi Sekolah');

@@ -171,8 +171,6 @@ if (env('LOCAL_DEBUG_HELPER') && ! app()->environment('production')) {
         ->name('screenshot.logout');
 }
 
-Route::redirect('/', '/dashboard')->name('home');
-
 /*
 |--------------------------------------------------------------------------
 | Guest
@@ -283,6 +281,20 @@ Route::middleware(['auth', 'can:dashboard.admin.view'])->prefix('admin')->name('
 
     Route::middleware('can:user.delete')->group(function () {
         Route::delete('/pengguna/{user}', [UserManagementController::class, 'destroy'])->name('users.destroy');
+    });
+
+    Route::middleware('can:cms.view')->group(function () {
+        Route::get('/landing', [\App\Http\Controllers\LandingSectionController::class, 'index'])->name('landing.index');
+        Route::get('/landing/{landingSection}/ubah', [\App\Http\Controllers\LandingSectionController::class, 'edit'])->name('landing.edit');
+    });
+
+    Route::middleware('can:cms.posts.edit')->group(function () {
+        Route::put('/landing/{landingSection}', [\App\Http\Controllers\LandingSectionController::class, 'update'])->name('landing.update');
+    });
+
+    Route::middleware('can:cms.view')->group(function () {
+        Route::get('/pesan', [\App\Http\Controllers\ContactMessageController::class, 'index'])->name('contact-messages');
+        Route::put('/pesan/{contactMessage}', [\App\Http\Controllers\ContactMessageController::class, 'update'])->name('contact-messages.update');
     });
 
     // --- Konten / CMS ------------------------------------------------

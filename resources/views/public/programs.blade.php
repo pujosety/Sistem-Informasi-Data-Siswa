@@ -17,7 +17,7 @@
 
 <section class="mx-auto max-w-6xl px-5 sm:px-8 py-12">
     @forelse ($departments as $department)
-        <article class="mb-8 last:mb-0">
+        <article id="program-{{ $department['id'] }}" class="scroll-mt-24 mb-8 last:mb-0">
             <div class="flex flex-wrap items-baseline justify-between gap-3">
                 <h2 class="text-h2 font-semibold">{{ $department['name'] }}</h2>
                 @if ($department['classCount'] > 0)

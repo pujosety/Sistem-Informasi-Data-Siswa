@@ -108,7 +108,7 @@
                         @else
                             {{-- The bytes are served by the brand-asset style route pattern; until
                                  the media file route exists, fall back to the disk URL. --}}
-                            <img src="{{ \Illuminate\Support\Facades\Storage::disk($item->disk)->url($item->path) }}"
+                            <img src="{{ $item->url() }}"
                                  alt="{{ $item->alt_text ?? $item->displayName() }}"
                                  class="w-full h-full object-cover" loading="lazy" />
                         @endif
