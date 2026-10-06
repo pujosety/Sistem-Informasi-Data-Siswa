@@ -6,6 +6,8 @@ use App\Models\AcademicYear;
 use App\Models\ActivityLog;
 use App\Models\Department;
 use App\Models\Employee;
+use App\Models\Enrollment;
+use App\Models\Grade;
 use App\Models\Registration;
 use App\Models\SchoolClass;
 use App\Models\Student;
@@ -107,6 +109,39 @@ class AdminDashboardTest extends TestCase
         $this->assertStringContainsString('Siswa Aktif', $html);
         $this->assertStringContainsString('Tenaga Pendidikan', $html);
         $this->assertStringContainsString('Kelas Aktif', $html);
+    }
+
+    /** @test */
+    public function the_dashboard_explains_school_pulse_and_actionable_analytics(): void
+    {
+        $this->seedSchool();
+
+        $html = $this->actingAs($this->admin)
+            ->get('/admin/dashboard?range=30d&attendance_threshold=75')
+            ->assertOk()
+            ->getContent();
+
+        foreach ([
+            'School Pulse', 'Attendance Analytics', 'Academic Performance',
+            'Student Attention Signals', 'PPDB Funnel', 'LMS Analytics',
+            'Needs Attention', 'Target', 'Review Students',
+        ] as $marker) {
+            $this->assertStringContainsString($marker, $html, "Dashboard marker missing: {$marker}");
+        }
+    }
+
+    /** @test */
+    public function the_dashboard_does_not_invent_metrics_for_unavailable_modules(): void
+    {
+        $this->seedSchool();
+
+        $html = $this->actingAs($this->admin)
+            ->get('/admin/dashboard')
+            ->assertOk()
+            ->getContent();
+
+        $this->assertStringContainsString('Data belum tersedia', $html);
+        $this->assertStringNotContainsString('Rp 1.000.000', $html);
     }
 
     /** @test */

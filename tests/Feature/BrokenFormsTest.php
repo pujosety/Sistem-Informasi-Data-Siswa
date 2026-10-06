@@ -235,6 +235,49 @@ class BrokenFormsTest extends TestCase
         );
     }
 
+    /** @test */
+    public function invalid_personal_identity_data_returns_to_the_wizard_instead_of_a_500(): void
+    {
+        $user = $this->userWithPassword('siswa', 'identity@siswa.test');
+        $this->studentFor($user);
+
+        $this->actingAs($user)
+            ->from(route('siswa.wizard', ['step' => 'pribadi']))
+            ->post(route('siswa.wizard.save'), [
+                'step' => 'pribadi',
+                'full_name' => 'Budi Santoso',
+                'nisn' => '3200123456',
+                // The production screenshot contains a 14-digit NIK. It must
+                // become a field error, not a branded 500 page.
+                'nik' => '35210029183311',
+                'gender' => 'L',
+                'birth_place' => 'Mekah',
+                'birth_date' => '2002-06-04',
+                'religion' => 'Islam',
+                'phone' => '0854658452215',
+                'address' => 'Sasa',
+                'city' => 'Jember',
+            ])
+            ->assertRedirect(route('siswa.wizard', ['step' => 'pribadi']))
+            ->assertSessionHasErrors('nik');
+    }
+
+    /** @test */
+    public function the_personal_step_exposes_identity_constraints_before_submit(): void
+    {
+        $user = $this->userWithPassword('siswa', 'identity-ui@siswa.test');
+        $this->studentFor($user);
+
+        $html = $this->actingAs($user)
+            ->get(route('siswa.wizard', ['step' => 'pribadi']))
+            ->assertOk()
+            ->getContent();
+
+        $this->assertStringContainsString('maxlength="16"', $html);
+        $this->assertStringContainsString('minlength="16"', $html);
+        $this->assertStringContainsString('pattern="[0-9]{16}"', $html);
+    }
+
     // ---------------------------------------------------------------- BUG 3
 
     /** @test */

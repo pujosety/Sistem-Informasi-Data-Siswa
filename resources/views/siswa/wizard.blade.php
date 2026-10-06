@@ -142,7 +142,7 @@
                         <x-form-field name="full_name" label="Nama Lengkap" required :value="$student->full_name" />
                         <x-form-field name="nisn" label="NISN" required maxlength="10" inputmode="numeric"
                                       :value="$student->nisn" />
-                        <x-form-field name="nik" label="NIK" maxlength="16" inputmode="numeric" :value="$student->nik" />
+                        <x-form-field name="nik" label="NIK" maxlength="16" minlength="16" pattern="[0-9]{16}" inputmode="numeric" :value="$student->nik" />
                         <x-form-field name="gender" type="select" label="Jenis Kelamin" required placeholder="-- Pilih --">
                             <option value="L" @selected(old('gender', $student->gender) === 'L')>Laki-laki</option>
                             <option value="P" @selected(old('gender', $student->gender) === 'P')>Perempuan</option>

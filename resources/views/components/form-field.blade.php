@@ -16,6 +16,7 @@
 @php
     $id = $attributes->get('id') ?: ($name ? 'f-'.preg_replace('/[^a-z0-9]+/i', '-', $name) : 'f-'.uniqid());
     $hasError = $errors->has($name);
+    $fieldAttributes = $attributes->except(['class', 'id']);
 @endphp
 
 <div {{ $attributes->only('class')->merge(['class' => 'w-full']) }}>
@@ -37,6 +38,7 @@
             @if ($required) required @endif
             @if ($placeholder) placeholder="{{ $placeholder }}" @endif
             @if ($hasError) aria-invalid="true" aria-describedby="{{ $id }}-error" @endif
+            {{ $fieldAttributes }}
             class="field @if ($hasError) field-error @endif"
         >{{ old($name, $value) }}</textarea>
     @elseif ($type === 'select')
@@ -45,6 +47,7 @@
             name="{{ $name }}"
             @if ($required) required @endif
             @if ($hasError) aria-invalid="true" aria-describedby="{{ $id }}-error" @endif
+            {{ $fieldAttributes }}
             class="field @if ($hasError) field-error @endif"
         >
             @if ($placeholder ?? true)
@@ -65,6 +68,7 @@
             @if ($placeholder) placeholder="{{ $placeholder }}" @endif
             @if ($autocomplete) autocomplete="{{ $autocomplete }}" @endif
             @if ($hasError) aria-invalid="true" aria-describedby="{{ $id }}-error" @endif
+            {{ $fieldAttributes }}
             class="field @if ($hasError) field-error @endif"
         >
     @endif

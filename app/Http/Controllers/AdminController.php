@@ -31,9 +31,12 @@ class AdminController extends BaseController
     public function dashboard(Request $request)
     {
         $yearId = $request->integer('academic_year_id') ?: null;
+        $range = $request->string('range')->value('30d');
+        $attendanceThreshold = $request->integer('attendance_threshold') ?: 75;
         $summary = $this->stats->registrationSummary($yearId);
         $daily = $this->stats->dailyRegistrations(30);
         $byStatus = $this->stats->byStatus();
+        $analytics = $this->stats->dashboardAnalytics($yearId, $range, $attendanceThreshold);
 
         // Oldest submissions first: the queue is a work list, so the student
         // who has waited longest is the one an admin should pick up.
@@ -57,6 +60,9 @@ class AdminController extends BaseController
             'yearId' => $yearId,
             'years' => $this->filterOptions()['years'],
             'counts' => $this->stats->headlineCounts($yearId),
+            'analytics' => $analytics,
+            'range' => $range,
+            'attendanceThreshold' => $attendanceThreshold,
             'byGender' => $this->stats->byGender(),
 
             // The timeline reads the audit trail rather than a second log: an

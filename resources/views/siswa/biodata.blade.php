@@ -20,7 +20,7 @@
         <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <x-form-field name="nisn" label="NISN" required maxlength="10" inputmode="numeric"
                           :value="$student->nisn" />
-            <x-form-field name="nik" label="NIK" maxlength="16" inputmode="numeric"
+            <x-form-field name="nik" label="NIK" maxlength="16" minlength="16" pattern="[0-9]{16}" inputmode="numeric"
                           :value="$student->nik" hint="16 digit sesuai KTP." />
             <x-form-field name="full_name" label="Nama Lengkap" required :value="$student->full_name"
                           class="sm:col-span-2 lg:col-span-1" />
