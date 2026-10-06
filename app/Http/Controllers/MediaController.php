@@ -95,15 +95,20 @@ class MediaController extends BaseController
         $this->authorize('update', $media);
 
         $data = $request->validate([
+            'file' => ['nullable', 'file', 'image', 'max:'.((int) config('cms.media.max_kb'))],
             'alt_text' => ['nullable', 'string', 'max:255'],
             'caption' => ['nullable', 'string', 'max:1000'],
         ]);
 
-        $media->update($data);
+        if ($request->hasFile('file')) {
+            $this->media->replace($media, $request->file('file'));
+        }
 
-        $this->audit->log('cms.media.updated', $media, "Mengubah keterangan gambar: {$media->displayName()}");
+        $media->update(collect($data)->except('file')->all());
 
-        return $this->backWith('Keterangan gambar diperbarui.');
+        $this->audit->log('cms.media.updated', $media, "Mengubah gambar: {$media->displayName()}");
+
+        return $this->backWith('Gambar dan keterangan berhasil diperbarui.');
     }
 
     /**

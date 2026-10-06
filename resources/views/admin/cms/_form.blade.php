@@ -71,7 +71,21 @@
             </div>
         </x-card>
 
-        {{--
+        <div class="flex flex-col sm:flex-row sm:justify-end gap-2">
+            <a href="{{ $isEdit ? route('admin.cms.show', $post) : route('admin.cms.index') }}"
+               class="btn btn-secondary justify-center">Batal</a>
+            <button type="submit" class="btn btn-primary justify-center">
+                <x-icon name="save" class="w-4 h-4" />
+                {{ $isEdit ? 'Simpan Perubahan' : 'Simpan Draft' }}
+            </button>
+        </div>
+
+        <p class="text-caption text-[var(--app-text-subtle)] text-right">
+            Menyimpan tidak menerbitkan. Terbitkan dari halaman detail.
+        </p>
+    </form>
+
+    {{--
             GAMBAR ARTIKEL
 
             A SEPARATE FORM, deliberately, and not a field inside the editor
@@ -140,18 +154,4 @@
                 @endif
             </x-card>
         @endif
-
-        <div class="flex flex-col sm:flex-row sm:justify-end gap-2">
-            <a href="{{ $isEdit ? route('admin.cms.show', $post) : route('admin.cms.index') }}"
-               class="btn btn-secondary justify-center">Batal</a>
-            <button type="submit" class="btn btn-primary justify-center">
-                <x-icon name="save" class="w-4 h-4" />
-                {{ $isEdit ? 'Simpan Perubahan' : 'Simpan Draft' }}
-            </button>
-        </div>
-
-        <p class="text-caption text-[var(--app-text-subtle)] text-right">
-            Menyimpan tidak menerbitkan. Terbitkan dari halaman detail.
-        </p>
-    </form>
 </div>

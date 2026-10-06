@@ -6,6 +6,7 @@ use App\Models\Media;
 use App\Models\Post;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
@@ -109,6 +110,45 @@ class CmsMediaService
             'caption' => $caption !== null && trim($caption) !== '' ? trim($caption) : null,
             'uploaded_by' => $uploader->id,
         ]);
+    }
+
+    /**
+     * Replace the bytes behind a library item while keeping the media id.
+     * Articles and landing references therefore keep working after replacement.
+     */
+    public function replace(Media $media, UploadedFile $file): Media
+    {
+        $this->assertUploadable($file);
+        $mime = $this->sniffedMime($file);
+        $extension = config('cms.media.allowed_mimes')[$mime]
+            ?? throw ValidationException::withMessages(['file' => 'Format gambar tidak didukung.']);
+        $directory = trim((string) config('cms.media.directory'), '/').'/'.now()->format('Y/m');
+        $filename = Str::random(40).'.'.$extension;
+        $dimensions = $this->dimensions($file);
+        $stored = $file->storeAs($directory, $filename, ['disk' => $this->disk()]);
+
+        if ($stored === false) {
+            throw ValidationException::withMessages(['file' => 'Gambar gagal disimpan.']);
+        }
+
+        $stored = $this->safePath($directory, basename($stored));
+        $oldDisk = $media->disk;
+        $oldPath = $media->path;
+        $media->update([
+            'disk' => $this->disk(),
+            'path' => $stored,
+            'original_name' => $this->safeDisplayName($file),
+            'mime' => $mime,
+            'size' => (int) $file->getSize(),
+            'width' => $dimensions[0],
+            'height' => $dimensions[1],
+        ]);
+
+        if ($oldDisk && $oldPath && ($oldDisk !== $media->disk || $oldPath !== $media->path)) {
+            Storage::disk($oldDisk)->delete($oldPath);
+        }
+
+        return $media->refresh();
     }
 
     /**

@@ -36,10 +36,10 @@ class SettingsService
      */
     public const DEFAULTS = [
         // Branding
-        'app.name' => ['Sistem Informasi Data Siswa', 'string', 'branding', 'Nama Aplikasi', 'Ditampilkan di sidebar, judul halaman, dan PDF.', 10],
-        'app.short_name' => ['SIDA', 'string', 'branding', 'Nama Pendek', 'Dipakai pada PWA dan layar sempit.', 20],
+        'app.name' => ['SMP 1 LYFLA', 'string', 'branding', 'Nama Aplikasi', 'Ditampilkan di sidebar, judul halaman, dan PDF.', 10],
+        'app.short_name' => ['LYFLA', 'string', 'branding', 'Nama Pendek', 'Dipakai pada PWA dan layar sempit.', 20],
         'app.tagline' => ['Portal Data Siswa', 'string', 'branding', 'Tagline', 'Kalimat singkat di bawah nama aplikasi.', 30],
-        'branding.logo' => ['', 'image', 'branding', 'Logo', 'PNG/JPG/WebP, maksimal 1 MB,建议 240×60 px.', 40],
+        'branding.logo' => ['', 'image', 'branding', 'Logo', 'PNG/JPG/WebP, maksimal 1 MB, disarankan 240×60 px.', 40],
         'branding.icon' => ['', 'image', 'branding', 'Ikon / Favicon', 'Disimpan sebagai favicon situs.', 50],
         'branding.primary_color' => ['#1D4ED8', 'color', 'branding', 'Warna Utama', 'Dipakai untuk tombol, tautan, dan sorotan.', 60],
         'branding.accent_color' => ['#0891B2', 'color', 'branding', 'Warna Aksen', 'Dipakai untuk detail dan sorotan sekunder.', 70],

@@ -2,7 +2,10 @@
 
 @section('title', 'Pengaturan')
 @section('page-title', 'Pengaturan')
-@section('page-description', 'Konfigurasi aplikasi {{ config('branding.platform.name') }}')
+@php
+    $settingsDescription = 'Konfigurasi aplikasi '.config('branding.platform.name');
+@endphp
+@section('page-description', $settingsDescription)
 
 @section('content')
 
