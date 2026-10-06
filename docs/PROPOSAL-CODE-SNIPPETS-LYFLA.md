@@ -369,6 +369,156 @@ protected function prepareForValidation(): void
 
 ---
 
+## KODE 12A - Model Status dan Relasi Pendaftaran
+
+**File:** `app/Models/Registration.php`
+
+**Fungsi:** Menyimpan status pendaftaran, hubungan dengan siswa, tahun ajaran, dokumen, dan jejak verifikasi. Status ini menjadi dasar kendali alur PPDB.
+
+```php
+public const STATUS_DRAFT = 'draft';
+public const STATUS_SUBMITTED = 'submitted';
+public const STATUS_PENDING = 'pending';
+public const STATUS_REVISION = 'revision';
+public const STATUS_VERIFIED = 'verified';
+public const STATUS_REJECTED = 'rejected';
+
+protected $fillable = [
+    'student_id', 'academic_year_id', 'status', 'completeness',
+    'submitted_at', 'verified_at', 'verified_by', 'admin_note',
+];
+
+public function student(): BelongsTo
+{
+    return $this->belongsTo(Student::class);
+}
+
+public function documents(): HasMany
+{
+    return $this->hasMany(Document::class);
+}
+
+public function verifications(): HasMany
+{
+    return $this->hasMany(Verification::class);
+}
+
+public function isEditableByStudent(): bool
+{
+    return in_array($this->status, [self::STATUS_DRAFT, self::STATUS_REVISION], true);
+}
+```
+
+---
+
+## KODE 12B - Perhitungan Kelengkapan Pendaftaran
+
+**File:** `app/Services/CompletenessService.php`
+
+**Fungsi:** Mengubah kelengkapan biodata, data orang tua, dan dokumen wajib menjadi indikator 0–100 untuk membantu pendaftar serta petugas melihat bagian yang masih kurang.
+
+```php
+public function compute(Student $student, ?Registration $registration = null): int
+{
+    $registration ??= $student->registration;
+
+    $biodata = $this->biodataScore($student);
+    $parents = $this->parentScore($student);
+    $documents = $this->documentScore($registration);
+
+    return (int) round(
+        ($biodata * 0.5) + ($parents * 0.2) + ($documents * 0.3)
+    );
+}
+
+public function refresh(Registration $registration): int
+{
+    $score = $this->compute($registration->student, $registration);
+    $registration->update(['completeness' => $score]);
+
+    return $score;
+}
+```
+
+---
+
+## KODE 12C - Keputusan Verifikasi Pendaftaran
+
+**File:** `app/Services/VerificationService.php`
+
+**Fungsi:** Mencegah pendaftaran diverifikasi ketika masih ada dokumen yang hilang, menunggu, atau ditolak; setelah lengkap, sistem menyimpan keputusan, audit, dan notifikasi.
+
+```php
+public function approveRegistration(
+    Registration $registration,
+    int $adminId,
+    ?string $note = null,
+): Registration {
+    $outstanding = $registration->documents()
+        ->whereIn('status', ['missing', 'pending', 'rejected'])
+        ->exists();
+
+    if ($outstanding) {
+        $registration->update(['status' => Registration::STATUS_REVISION]);
+        $note = $note ?: 'Masih ada dokumen yang belum valid.';
+        $this->documents->recordVerification($registration, 'revise', $adminId, null, $note);
+
+        return $registration->refresh();
+    }
+
+    $registration->update([
+        'status' => Registration::STATUS_VERIFIED,
+        'verified_at' => now(),
+        'verified_by' => $adminId,
+        'admin_note' => $note,
+    ]);
+
+    $this->audit->log('registration.verified', $registration, $note ?: 'Pendaftaran disetujui');
+    $this->notifications->onRegistrationVerified($registration);
+
+    return $registration->refresh();
+}
+```
+
+---
+
+## KODE 12D - Acceptance Test Alur Pendaftaran
+
+**File:** `tests/Feature/AcceptanceJourneyTest.php`
+
+**Fungsi:** Menguji alur nyata dari registrasi akun sampai pendaftaran dikirim untuk diverifikasi. Test tidak hanya memeriksa HTTP status, tetapi juga status dan relasi data.
+
+```php
+$this->post('/daftar', [
+    'name' => 'Nama Pendaftar',
+    'email' => 'pendaftar@sekolah.test',
+    'nisn' => '0099887766',
+    'password' => self::PASSWORD,
+    'password_confirmation' => self::PASSWORD,
+    'terms' => '1',
+])->assertRedirect(route('siswa.wizard', ['step' => 'pribadi']));
+
+$student = Student::where('nisn', '0099887766')->firstOrFail();
+$this->assertSame(Registration::STATUS_DRAFT, $student->registration->status);
+
+$this->actingAs($student->user)
+    ->get(route('siswa.wizard', ['step' => 'review']))
+    ->assertOk()
+    ->assertSee('Kirim untuk diverifikasi');
+
+$this->actingAs($student->user)
+    ->post(route('siswa.submit'))
+    ->assertRedirect(route('siswa.dashboard'));
+
+$this->assertSame(
+    Registration::STATUS_PENDING,
+    $student->registration->refresh()->status,
+);
+$this->assertNotNull($student->registration->submitted_at);
+```
+
+---
+
 ## KODE 12 - Permission Role Administrator
 
 **File:** `app/Services/PermissionCatalog.php`
