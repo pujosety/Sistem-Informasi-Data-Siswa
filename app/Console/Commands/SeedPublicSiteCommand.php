@@ -99,16 +99,16 @@ class SeedPublicSiteCommand extends Command
             'app.name' => 'Sistem Informasi Data Siswa',
             'app.short_name' => 'SIDA',
             'app.tagline' => 'Pendaftaran, akademik, dan informasi sekolah dalam satu portal.',
-            'school.name' => 'SMA Negeri 1',
+            'school.name' => 'SMP 1 LYFLA',
             'school.npsn' => '20219876',
             'school.address' => 'Jl. Pendidikan No. 17',
             'school.city' => 'Bandung',
             'school.district' => 'Coblong',
             'school.postal_code' => '40132',
             'school.province' => 'Jawa Barat',
-            'school.email' => 'info@sman1.sch.id',
+            'school.email' => 'info@smpn1.sch.id',
             'school.phone' => '(022) 720-1234',
-            'school.website' => 'https://sman1.sch.id',
+            'school.website' => 'https://smpn1.sch.id',
             // The fictional headmaster. A setting, not an account — see the
             // class docblock.
             'school.headmaster' => 'Lucky Noor Fadilla',
@@ -276,8 +276,8 @@ class SeedPublicSiteCommand extends Command
 
         $articles = [
             [
-                'title' => 'Selamat Datang di SMA Negeri 1',
-                'body' => '<p>SMA Negeri 1 حصلت operasional mulai tahun ajaran 2026/2027. '
+                'title' => 'Selamat Datang di SMP 1 LYFLA',
+                'body' => '<p>SMP 1 LYFLA mulai beroperasi pada tahun ajaran 2026/2027. '
                     .'Seluruh administrasi — pendaftaran, verifikasi berkas, pencatatan '
                     .'akademik hingga laporan — berjalan pada satu portal.</p>'
                     .'<p>Kepala sekolah, <strong>Lucky Noor Fadilla</strong>, menyampaikan '

@@ -83,7 +83,7 @@
         ? Blade::render(<<<'BLADE'
             <x-card title="Aktivitas Terakhir" icon="activity">
                 <x-slot:actions>
-                    <a href="{{ route('admin.activity-logs') }}" class="text-small font-semibold text-[var(--app-primary)] hover:underline">
+                    <a href="{{ route('admin.activity') }}" class="text-small font-semibold text-[var(--app-primary)] hover:underline">
                         Semua
                     </a>
                 </x-slot:actions>

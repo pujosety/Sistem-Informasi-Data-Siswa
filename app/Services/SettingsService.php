@@ -45,7 +45,7 @@ class SettingsService
         'branding.accent_color' => ['#0891B2', 'color', 'branding', 'Warna Aksen', 'Dipakai untuk detail dan sorotan sekunder.', 70],
 
         // School profile
-        'school.name' => ['SMA Negeri 1', 'string', 'school', 'Nama Sekolah', 'Tercetak di header laporan.', 10],
+        'school.name' => ['SMP 1 LYFLA', 'string', 'school', 'Nama Sekolah', 'Tercetak di header laporan.', 10],
         'school.npsn' => ['', 'string', 'school', 'NPSN', 'Nomor Pokok Sekolah Nasional.', 20],
         'school.address' => ['', 'text', 'school', 'Alamat', 'Tercetak di footer laporan.', 30],
         'school.province' => ['', 'string', 'school', 'Provinsi', '', 40],
