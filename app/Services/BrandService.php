@@ -43,7 +43,7 @@ class BrandService
             $directory = 'branding/'.now()->format('Y/m');
             $name = $key.'-'.Str::random(8).'.'.$file->getClientOriginalExtension();
 
-            $stored[$key] = $file->store($directory, 'public');
+            $stored[$key] = $file->storeAs($directory, $name, 'public');
         }
 
         return $stored;

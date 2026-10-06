@@ -25,11 +25,11 @@
              artwork or applying a filter to it. --}}
         <span class="nav-brand-icon grid place-items-center w-9 h-9 shrink-0
                      rounded-[var(--radius-md)] bg-white">
-            <x-brand.logo variant="icon" height="h-8" :alt="config('branding.platform.name')" />
+            <x-brand.logo variant="icon" height="h-8" :alt="data_get($brand ?? [], 'shortName') ?: config('branding.platform.name')" />
         </span>
 
         <div class="min-w-0 nav-label">
-            <p class="text-body font-bold text-white leading-tight truncate">{{ config('branding.platform.name') }}</p>
+            <p class="text-body font-bold text-white leading-tight truncate">{{ data_get($brand ?? [], 'shortName') ?: config('branding.platform.name') }}</p>
             <p class="text-[11px] text-[var(--app-sidebar-text)] leading-tight truncate">{{ $workspaceLabel }}</p>
         </div>
 

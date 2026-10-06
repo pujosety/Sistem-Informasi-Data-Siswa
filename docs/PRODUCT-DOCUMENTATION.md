@@ -113,10 +113,19 @@ Tiga permukaan, satu sumber data navigasi:
 
 | Viewport | Permukaan |
 |---|---|
-| ≥ 1024px | Sidebar (dapat diciutkan) + topbar + konten |
-| 768–1023px | Drawer + konten |
+| ≥ 1024px | Sidebar sticky setinggi viewport (`top: 0; height: 100vh`) + topbar + konten |
+| 768–1023px | Drawer fixed + konten |
 | < 768px | Topbar + bottom navigation (maks 5 slot) + sheet "Menu Lainnya" |
 
+Pada desktop, area akun dan tombol **Keluar** berada di bagian bawah sidebar yang
+sticky. Hanya daftar navigasi yang melakukan scroll, sehingga identitas pengguna
+dan logout tetap terlihat ketika menu panjang.
+
+Nama aplikasi, nama pendek, profil sekolah, dan logo tidak ditulis langsung pada
+komponen UI. Semua dibaca dari `SettingsService` melalui data `brand` global.
+Logo yang diunggah administrator menjadi sumber utama; asset bawaan repository
+hanya dipakai sebagai fallback jika belum ada asset tersimpan. Perubahan branding
+dihapus dari cache melalui `SettingsService::flush()` setelah berhasil disimpan.
 Bottom navigation **spesifik per peran**. Verifikator melihat Antrean lebih
 dulu; wali kelas melihat Kelas; orang tua melihat Anak.
 

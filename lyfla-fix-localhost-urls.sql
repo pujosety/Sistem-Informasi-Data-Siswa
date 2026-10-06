@@ -7,6 +7,22 @@
 
 START TRANSACTION;
 
+SELECT `key`, `value`
+FROM settings
+WHERE `key` IN ('app.name', 'app.short_name', 'school.name');
+
+UPDATE settings
+SET `value` = 'SMP 1 LYFLA', `updated_at` = CURRENT_TIMESTAMP
+WHERE `key` IN ('app.name', 'school.name');
+
+UPDATE settings
+SET `value` = 'LYFLA', `updated_at` = CURRENT_TIMESTAMP
+WHERE `key` = 'app.short_name';
+
+SELECT `key`, `value`
+FROM settings
+WHERE `key` IN ('app.name', 'app.short_name', 'school.name');
+
 SELECT COUNT(*) AS rows_with_local_urls_before
 FROM landing_sections
 WHERE content LIKE '%http://localhost%'

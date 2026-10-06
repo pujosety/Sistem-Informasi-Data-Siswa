@@ -14,24 +14,27 @@
 @php
     $isIcon = $variant === 'icon';
 
-    // The lockup already contains the product name, so it is described once
-    // rather than announced twice.
-    // Read from config/branding.php: the alt text is what a screen reader
-    // announces, so a stale word here is the one place the old brand survives
-    // where nobody can see it.
+    $brandSettings = $brand ?? [];
+    $configuredSource = $isIcon
+        ? data_get($brandSettings, 'icon')
+        : data_get($brandSettings, 'logo');
+
+    $brandName = data_get($brandSettings, 'shortName')
+        ?: config('branding.platform.name');
+    $brandExpansion = config('branding.platform.expansion');
+
     $altText = $alt ?? ($isIcon
-        ? config('branding.platform.name')
-        : config('branding.platform.name').' — '.config('branding.platform.expansion'));
+        ? $brandName
+        : $brandName.' — '.$brandExpansion);
 
     $heightClass = $height ?? ($isIcon ? 'h-8 w-8' : 'h-9 w-auto');
 
-    // SVG, not PNG: the mark has to stay sharp on a HiDPI phone and recolour
-    // cleanly for the collapsed rail. The old files were raster and are still on
-    // disk, unused.
-    $src = match ($variant) {
-        'icon'      => asset(config('branding.assets.logo_icon')),
-        'horizontal'=> asset(config('branding.assets.logo_horizontal')),
-        default     => asset(config('branding.assets.logo')),
+    // Prefer the administrator-managed asset. Fall back to the repository
+    // default only when no uploaded logo/icon exists.
+    $src = filled($configuredSource) ? $configuredSource : match ($variant) {
+        'icon'       => asset(config('branding.assets.logo_icon')),
+        'horizontal' => asset(config('branding.assets.logo_horizontal')),
+        default      => asset(config('branding.assets.logo')),
     };
 
     // attributes already carries any class passed by the caller, so it is

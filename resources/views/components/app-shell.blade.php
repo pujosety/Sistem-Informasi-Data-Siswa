@@ -28,7 +28,11 @@
     <meta name="description" content="Pengelolaan data siswa, dokumen, dan verifikasi pendaftaran.">
 
     {{-- One naming rule everywhere: "<halaman> · LYFLA". --}}
-    <title>@yield('title', 'Dashboard') · {{ config('branding.platform.name') }}</title>
+    @php
+        $appBrandName = data_get($brand ?? [], 'shortName') ?: config('branding.platform.name');
+        $appBrandFullName = data_get($brand ?? [], 'name') ?: $appBrandName;
+    @endphp
+    <title>@yield('title', 'Dashboard') · {{ $appBrandName }}</title>
 
     <link rel="manifest" href="/manifest.webmanifest">
 
@@ -39,8 +43,8 @@
     <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('branding/favicon-16x16.png') }}">
     <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('branding/apple-touch-icon.png') }}">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-title" content="{{ config('branding.platform.name') }}">
-    <meta name="description" content="{{ config('branding.platform.positioning') }} — {{ config('branding.platform.expansion') }}.">
+    <meta name="apple-mobile-web-app-title" content="{{ $appBrandName }}">
+    <meta name="description" content="{{ $appBrandFullName }} — {{ config('branding.platform.expansion') }}.">
 
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700|manrope:600,700,800&display=swap" rel="stylesheet">
@@ -63,7 +67,7 @@
 <div class="min-h-full flex">
 
     {{-- ============ Desktop sidebar ============ --}}
-    <aside class="hidden lg:flex shrink-0 flex-col bg-[var(--app-sidebar-bg)] transition-[width] duration-200 ease-out"
+    <aside class="hidden lg:sticky lg:top-0 lg:flex lg:h-screen lg:max-h-screen shrink-0 flex-col bg-[var(--app-sidebar-bg)] transition-[width] duration-200 ease-out"
            :data-collapsed="$store.app.sidebarCollapsed ? 'true' : 'false'"
            :class="$store.app.sidebarCollapsed ? 'w-[72px]' : 'w-64'">
         <x-sidebar :navigation="$navigation" :workspaces="$workspaces ?? []" />
