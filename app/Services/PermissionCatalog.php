@@ -125,6 +125,16 @@ class PermissionCatalog
                 ],
             ],
 
+            'lms' => [
+                'label' => 'Pembelajaran (LMS)',
+                'permissions' => [
+                    'lms.course.view' => 'Lihat ruang pembelajaran',
+                    'lms.course.create' => 'Buat course',
+                    'lms.course.update' => 'Ubah course',
+                    'lms.lesson.manage' => 'Kelola materi pelajaran',
+                ],
+            ],
+
             'alumni' => [
                 'label' => 'Alumni',
                 'permissions' => [
@@ -412,6 +422,7 @@ class PermissionCatalog
                 // the same role that already holds settings.view, because both
                 // change what every visitor sees.
                 'cms',
+                'lms',
             ),
 
             // Read + report. No writes to master data, no user management.
@@ -432,6 +443,7 @@ class PermissionCatalog
                 // deliberately absent: a school that wants a teacher to draft
                 // the news and a head to approve it grants exactly this.
                 'cms.view', 'cms.posts.create', 'cms.posts.edit', 'cms.pages.edit',
+                'lms.course.view', 'lms.course.create', 'lms.course.update', 'lms.lesson.manage',
                 'guardian.view', 'announcement.view',
             ),
 
@@ -468,6 +480,7 @@ class PermissionCatalog
                     'classroom.announcement.update', 'classroom.announcement.delete',
                     'classroom.report.view', 'classroom.report.export',
                     'grade.view', 'announcement.view',
+                    'lms.course.view', 'lms.course.create', 'lms.course.update', 'lms.lesson.manage',
                 ),
                 // The prefix match that makes "classroom.view" useful also
                 // swallows "classroom.view.all", which is the school-wide scope

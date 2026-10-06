@@ -83,6 +83,9 @@ require __DIR__.'/fitur-module.php';
 
 /* Batch 2 — seams cut in advance so the next wave starts without contention */
 
+/* Feature: LMS teaching workspace */
+require __DIR__.'/fitur-lms.php';
+
 /* Feature: analytics */
 require __DIR__.'/fitur-analytics.php';
 

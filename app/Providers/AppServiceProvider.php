@@ -155,6 +155,7 @@ class AppServiceProvider extends ServiceProvider
             // never reaches GuardianPolicy at all, and the class name is treated
             // as a plain argument rather than a policy to resolve.
             \App\Models\Grade::class => \App\Policies\GradePolicy::class,
+            \App\Models\Course::class => \App\Policies\CoursePolicy::class,
             \App\Models\Student::class => \App\Policies\GuardianPolicy::class,
             \App\Models\Module::class => \App\Policies\ModulePolicy::class,
             \App\Models\Alumni::class => \App\Policies\AlumniPolicy::class,
