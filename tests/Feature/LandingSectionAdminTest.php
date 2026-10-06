@@ -33,6 +33,24 @@ class LandingSectionAdminTest extends TestCase
             ->assertSee('Hero LYFLA');
     }
 
+    public function test_local_cms_urls_are_normalized_to_relative_paths(): void
+    {
+        $section = LandingSection::create([
+            'page_key' => 'home',
+            'type' => LandingSection::TYPE_HERO,
+            'title' => 'Hero',
+            'content' => [
+                'cta_url' => 'http://localhost:8000/berita',
+                'items' => [['url' => 'http://localhost:8000/program#program-1']],
+            ],
+            'is_enabled' => true,
+            'position' => 1,
+        ]);
+
+        $this->assertSame('/berita', $section->value('cta_url'));
+        $this->assertSame('/program#program-1', $section->items('items')[0]['url']);
+    }
+
     public function test_admin_can_update_and_toggle_landing_section(): void
     {
         $section = LandingSection::create([

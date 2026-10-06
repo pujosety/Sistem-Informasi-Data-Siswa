@@ -150,7 +150,36 @@ class LandingSection extends Model
      */
     public function value(string $key, mixed $default = null): mixed
     {
-        return data_get($this->content, $key, $default);
+        return $this->normalizePublicUrls(data_get($this->content, $key, $default));
+    }
+
+    /**
+     * CMS rows may have been authored or imported from a local environment.
+     * Keep local absolute URLs from leaking into production by converting only
+     * localhost/loopback origins to relative paths. Real external URLs remain
+     * untouched, and browser-relative links automatically use the current host.
+     */
+    private function normalizePublicUrls(mixed $value): mixed
+    {
+        if (is_array($value)) {
+            return array_map(fn ($item) => $this->normalizePublicUrls($item), $value);
+        }
+
+        if (! is_string($value)) {
+            return $value;
+        }
+
+        if (! preg_match(
+            '~^https?://(?:localhost|127\\.0\\.0\\.1|0\\.0\\.0\\.0)(?::\\d+)?(?<path>/[^?#]*)?(?<query>\\?[^#]*)?(?<fragment>\\#.*)?$~i',
+            $value,
+            $matches,
+        )) {
+            return $value;
+        }
+
+        return ($matches['path'] ?? '/')
+            .($matches['query'] ?? '')
+            .($matches['fragment'] ?? '');
     }
 
     /**

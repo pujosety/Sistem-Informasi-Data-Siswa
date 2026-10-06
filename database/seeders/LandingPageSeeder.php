@@ -80,9 +80,9 @@ class LandingPageSeeder extends Seeder
                 'body' => 'Lingkungan belajar yang mendukung siswa berkembang secara akademik, kreatif, dan berkarakter — dengan pendampingan yang individual dan berkelanjutan.',
                 'content' => [
                     'cta_label' => 'Daftar Sekarang',
-                    'cta_url' => route('public.admission'),
+                    'cta_url' => '/ppdb',
                     'secondary_cta_label' => 'Jelajahi Sekolah',
-                    'secondary_cta_url' => route('public.about'),
+                    'secondary_cta_url' => '/tentang',
                     'stats' => [
                         ['value' => (string) $d['student_count'], 'label' => 'Siswa Aktif'],
                         ['value' => (string) $d['teacher_count'], 'suffix' => '+', 'label' => 'Guru & Tenaga Pendidik'],
@@ -110,7 +110,7 @@ class LandingPageSeeder extends Seeder
                 'body' => "Kami percaya pendidikan yang baik tidak hanyaidet excellently nilai. Setiap siswa dikenal secara pribadi, dibimbing sesuai kekuatannya, dan diberi ruang untuk tumbuh.\n\nSekolah kami menggabungkan kurikulum nasional dengan program unggulan yang relevan dengan kebutuhan abad ke-21.",
                 'content' => [
                     'cta_label' => 'Kenali Sekolah Kami',
-                    'cta_url' => route('public.about'),
+                    'cta_url' => '/tentang',
                     'highlight_value' => (string) $d['achievement_count'].'+',
                     'highlight_label' => 'Prestasi sekolah',
                 ],
@@ -136,7 +136,7 @@ class LandingPageSeeder extends Seeder
                 'subtitle' => 'Pilihan Program',
                 'content' => [
                     'cta_label' => 'Lihat Semua Program',
-                    'cta_url' => route('public.programs'),
+                    'cta_url' => '/program',
                     'items' => [
                         [
                             'eyebrow' => 'Program Unggulan',
@@ -144,7 +144,7 @@ class LandingPageSeeder extends Seeder
                             'title' => 'Science & Research',
                             'body' => 'Pembelajaran berbasis riset sejak kelas SMP, dengan pembimbing dari praktisi dan Akademi.',
                             'cta_label' => 'Pelajari Program',
-                            'cta_url' => route('public.programs'),
+                            'cta_url' => '/program',
                         ],
                         ['icon' => 'monitor', 'title' => 'Digital Learning', 'body' => 'Literasi digital dan pemrograman sebagai keterampilan dasar.'],
                         ['icon' => 'languages', 'title' => 'Language Program', 'body' => 'Penguatan bahasa Inggris melalui pendekatan imersif dan communicative.'],
@@ -221,7 +221,7 @@ class LandingPageSeeder extends Seeder
                 'subtitle' => 'Kabar Terbaru',
                 'content' => [
                     'cta_label' => 'Lihat Semua Berita',
-                    'cta_url' => route('public.news'),
+                    'cta_url' => '/berita',
                     'items' => [],
                 ],
             ],
@@ -246,9 +246,9 @@ class LandingPageSeeder extends Seeder
                 'body' => 'Penerimaan Peserta Didik Baru kini dibuka. Ini tempat belajar anak yang supportif dan berkarakter.',
                 'content' => [
                     'cta_label' => 'Daftar Sekarang',
-                    'cta_url' => route('public.admission'),
+                    'cta_url' => '/ppdb',
                     'secondary_cta_label' => 'Lihat Informasi PPDB',
-                    'secondary_cta_url' => route('public.admission'),
+                    'secondary_cta_url' => '/ppdb',
                     'period' => 'Periode pendaftaran: 1 November – 31 Desember 2026',
                     'highlights' => [
                         ['icon' => 'clipboard-list', 'label' => 'Syarat utama: ijazah SKL, akta kelahiran, dan rapor'],
@@ -277,9 +277,9 @@ class LandingPageSeeder extends Seeder
                 'body' => 'Banyak keluarga sudah mempercayakan tempat belajar anak mereka di sini. Giliran Anda.',
                 'content' => [
                     'cta_label' => 'Daftar Sekarang',
-                    'cta_url' => route('public.admission'),
+                    'cta_url' => '/ppdb',
                     'secondary_cta_label' => 'Hubungi Kami',
-                    'secondary_cta_url' => route('public.contact'),
+                    'secondary_cta_url' => '/kontak',
                 ],
             ],
         ];

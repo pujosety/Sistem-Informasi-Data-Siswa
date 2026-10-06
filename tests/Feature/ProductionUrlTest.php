@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Media;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
@@ -80,6 +81,18 @@ class ProductionUrlTest extends TestCase
         $this->assertStringNotContainsString('localhost', $url);
         $this->assertStringNotContainsString('127.0.0.1', $url);
         $this->assertStringStartsWith('/storage/', $url);
+    }
+
+    public function test_static_media_urls_are_host_relative(): void
+    {
+        $this->asProduction();
+
+        $media = new Media([
+            'disk' => 'public',
+            'path' => 'images/school/students-walking-courtyard.webp',
+        ]);
+
+        $this->assertSame('/images/school/students-walking-courtyard.webp', $media->url());
     }
 
     public function test_password_change_urls_never_target_localhost(): void

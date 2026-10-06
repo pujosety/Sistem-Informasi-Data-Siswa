@@ -75,7 +75,7 @@ class Media extends Model
         // image, which is exactly the placeholder look this replaces.
         if (str_starts_with($this->path, 'images/') || str_starts_with($this->path, 'branding/')) {
             if (is_file(public_path($this->path))) {
-                return asset($this->path);
+                return '/'.ltrim($this->path, '/');
             }
         }
 

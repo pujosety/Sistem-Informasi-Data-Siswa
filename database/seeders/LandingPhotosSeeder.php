@@ -191,7 +191,7 @@ class LandingPhotosSeeder extends Seeder
                 continue;
             }
 
-            $items[$index]['image'] = asset('images/school/'.$slug.'.webp');
+            $items[$index]['image'] = '/images/school/'.$slug.'.webp';
             $items[$index]['image_alt'] = self::PHOTOS[$slug]['alt'];
         }
 
@@ -231,7 +231,7 @@ class LandingPhotosSeeder extends Seeder
 
             foreach ($rules as $keyword => $slug) {
                 if (str_contains($title, $keyword)) {
-                    $items[$index]['image'] = asset('images/school/'.$slug.'.webp');
+                    $items[$index]['image'] = '/images/school/'.$slug.'.webp';
                     $items[$index]['image_alt'] = self::PHOTOS[$slug]['alt'];
                     break;
                 }
