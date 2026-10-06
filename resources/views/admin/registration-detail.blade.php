@@ -275,12 +275,13 @@
                     <form method="POST" action="{{ route('admin.decide', $student) }}"
                           x-data="{ busy: false }" @submit="busy = true" class="space-y-2">
                         @csrf
+                        <input type="hidden" name="action" value="approve">
 
                         <label for="admin-note" class="label">Catatan untuk siswa <span class="text-[var(--app-text-subtle)] font-normal">(opsional)</span></label>
                         <textarea id="admin-note" name="note" rows="2" class="field mb-1"
                                   placeholder="Contoh: Data sudah lengkap, terima kasih."></textarea>
 
-                        <button type="submit" name="action" value="approve" class="btn btn-success w-full justify-center"
+                        <button type="submit" class="btn btn-success w-full justify-center"
                                 :disabled="busy">
                             <x-icon name="check-circle" class="w-4 h-4" />
                             <span x-text="busy ? 'Memproses…' : 'Setujui Pendaftaran'"></span>
