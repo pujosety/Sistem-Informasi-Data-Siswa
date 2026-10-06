@@ -1,33 +1,8 @@
 # Wasmer Edge application configuration.
-#
-# WHY THIS FILE EXISTS
-#
-# The deployment ran `php artisan migrate` WITHOUT `--force`. In production that
-# command prompts for confirmation:
-#
-#     Are you sure you want to run this command? (yes/no)
-#
-# A container has no TTY, so `stty` is missing, the prompt cannot be answered,
-# and the answer defaults to [no]. The migration is cancelled, the `sessions`,
-# `cache` and `settings` tables are never created, and every request fails inside
-# StartSession before a controller runs. That was the HTTP 500 on every route
-# while /up answered 200.
-#
-# --force is the flag Laravel intends for automation. `stty` is not installed
-# and `yes` is not piped into the prompt: the prompt is avoided, not answered.
-#
-# If the dashboard defines the install/build/start commands, those win and
-# this file is ignored. In that case set the same values there — they are
-# listed below so both paths stay in sync.
+# All database/data commands are idempotent and run non-interactively.
+# The dashboard may retain the after_deploy job, so both scripts.after_deploy
+# and the explicit job below use the same safe command chain.
 kind: wasmer.io/App.v0
-
-# The project is created in the Wasmer dashboard; this must match its name or
-# the build is rejected.
-#
-# Wasmer matches this field against the APP name, and `wasmer app create` takes
-# the name from here when --use-local-manifest is passed. It is therefore the
-# single place the name is declared: changing it here changes the target, and a
-# mismatch with an existing app is rejected at build time rather than ignored.
 name: SIDA
 
 scripts:
@@ -39,16 +14,21 @@ scripts:
     composer run-script post-update-cmd
     npm run build
 
+  after_deploy: |
+    php artisan config:clear \
+      && php artisan migrate --force --no-interaction \
+      && php artisan db:seed --class=PermissionSeeder --force --no-interaction \
+      && php artisan db:seed --class=LandingPageSeeder --force --no-interaction \
+      && php artisan db:seed --class=LandingPhotosSeeder --force --no-interaction \
+      && php artisan showcase:seed --students-per-class=6 \
+      && php artisan showcase:extras \
+      && php artisan showcase:public-site \
+      && php artisan showcase:hris-content \
+      && php artisan lyfla:landing-demo --posts=4 --graduates=5 --force \
+      && php artisan config:cache \
+      && php artisan route:cache
+
   start: |
-    # The migration runs HERE, not in after_deploy, because the dashboard's
-    # Build Settings replace after_deploy when they define install/build/start.
-    # A container has no TTY, so `php artisan migrate` without --force prompts,
-    # cannot be answered, defaults to [no], and is cancelled — which is how the
-    # sessions table came to be missing and every route returned 500.
-    #
-    # `&&` means a failed migration stops the container instead of serving an
-    # application whose tables do not exist. A loud failure is recoverable; a
-    # silently broken app is not.
     php artisan config:clear \
       && php artisan migrate --force --no-interaction \
       && php artisan db:seed --class=PermissionSeeder --force --no-interaction \
@@ -63,24 +43,9 @@ scripts:
       && php artisan route:cache \
       && php -S 0.0.0.0:8080 -t public
 
-# Override the dashboard's legacy post-deployment job as well. The old job ran
-# `php artisan migrate` without --force, which cancelled in the non-interactive
-# container and left landing_sections absent.
 jobs:
   - name: after_deploy
     trigger: post-deployment
     action:
       execute:
-        command: |
-          php artisan config:clear \
-            && php artisan migrate --force --no-interaction \
-            && php artisan db:seed --class=PermissionSeeder --force --no-interaction \
-            && php artisan db:seed --class=LandingPageSeeder --force --no-interaction \
-            && php artisan db:seed --class=LandingPhotosSeeder --force --no-interaction \
-            && php artisan showcase:seed --students-per-class=6 \
-            && php artisan showcase:extras \
-            && php artisan showcase:public-site \
-            && php artisan showcase:hris-content \
-            && php artisan lyfla:landing-demo --posts=4 --graduates=5 --force \
-            && php artisan config:cache \
-            && php artisan route:cache
+        command: after_deploy
