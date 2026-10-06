@@ -46,6 +46,15 @@ class SettingsFormTest extends TestCase
     }
 
     /** @test */
+    public function the_settings_landing_page_renders_without_a_blade_error(): void
+    {
+        $this->actingAs($this->admin)
+            ->get(route('settings.index'))
+            ->assertOk()
+            ->assertSee('Pengaturan');
+    }
+
+    /** @test */
     public function a_filled_in_branding_form_is_accepted(): void
     {
         $this->actingAs($this->admin)

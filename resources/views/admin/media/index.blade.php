@@ -129,9 +129,15 @@
                         <details>
                             <summary class="text-caption cursor-pointer text-brand-700">Keterangan</summary>
                             <form method="POST" action="{{ route('admin.media.update', $item) }}"
+                                  enctype="multipart/form-data"
                                   class="mt-2 space-y-2">
                                 @csrf
                                 @method('PUT')
+                                <label class="label" for="replace-{{ $item->id }}">Ganti file gambar</label>
+                                <input id="replace-{{ $item->id }}" type="file" name="file"
+                                       accept=".jpg,.jpeg,.png,.webp,.gif,image/jpeg,image/png,image/webp,image/gif"
+                                       class="field" />
+                                <p class="text-caption text-[var(--app-text-subtle)]">Kosongkan jika hanya mengubah keterangan.</p>
                                 <x-form-field name="alt_text" :value="old('alt_text', $item->alt_text)" />
                                 <x-form-field name="caption" type="textarea" :rows="2"
                                               :value="old('caption', $item->caption)" />

@@ -95,6 +95,26 @@ class CmsAdminTest extends TestCase
     }
 
     /** @test */
+    public function a_writer_can_open_the_editor_without_nested_forms(): void
+    {
+        $post = $this->aPost();
+
+        $response = $this->actingAs($this->editor())
+            ->get(route('admin.cms.edit', $post))
+            ->assertOk();
+
+        preg_match_all('/<form\\b|<\\/form>/i', $response->getContent(), $matches);
+        $depth = 0;
+        $maxDepth = 0;
+        foreach ($matches[0] as $tag) {
+            $depth += str_starts_with(strtolower($tag), '</') ? -1 : 1;
+            $maxDepth = max($maxDepth, $depth);
+        }
+
+        $this->assertSame(1, $maxDepth, 'CMS editor must not render nested forms.');
+    }
+
+    /** @test */
     public function a_writer_can_create_a_draft(): void
     {
         $this->actingAs($this->editor())
