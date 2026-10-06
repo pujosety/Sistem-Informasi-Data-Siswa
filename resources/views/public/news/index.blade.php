@@ -18,16 +18,29 @@
 </section>
 
 <section class="mx-auto max-w-6xl px-5 sm:px-8 py-12">
-    @if ($categories->isNotEmpty())
-        <nav aria-label="Kategori" class="flex flex-wrap gap-2 mb-8">
-            <span class="text-caption text-[var(--app-text-muted)] self-center mr-1">Kategori:</span>
+        <nav aria-label="Filter kategori" class="mb-8 flex flex-wrap items-center gap-2">
+            <span class="mr-1 self-center text-caption text-[var(--app-text-muted)]">Kategori:</span>
+            <a href="{{ route('public.news') }}"
+               @class([
+                   'rounded-full px-3 py-1 text-caption transition-colors',
+                   'bg-[var(--app-primary)] text-white' => $categorySlug === '',
+                   'bg-[var(--app-surface-muted)] hover:bg-[var(--public-soft)]' => $categorySlug !== '',
+               ])
+               @if ($categorySlug === '') aria-current="page" @endif>
+                Semua
+            </a>
             @foreach ($categories as $category)
-                <span class="text-caption px-3 py-1 rounded-full bg-[var(--app-surface-muted)]">
+                <a href="{{ route('public.news', ['category' => $category->slug]) }}"
+                   @class([
+                       'rounded-full px-3 py-1 text-caption transition-colors',
+                       'bg-[var(--app-primary)] text-white' => $categorySlug === $category->slug,
+                       'bg-[var(--app-surface-muted)] hover:bg-[var(--public-soft)]' => $categorySlug !== $category->slug,
+                   ])
+                   @if ($categorySlug === $category->slug) aria-current="page" @endif>
                     {{ $category->name }}
-                </span>
+                </a>
             @endforeach
         </nav>
-    @endif
 
     @forelse ($posts as $post)
         {{--

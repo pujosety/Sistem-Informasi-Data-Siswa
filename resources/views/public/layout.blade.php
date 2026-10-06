@@ -5,7 +5,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>@yield('title', $school['name'] ?: config('branding.platform.name'))</title>
     <meta name="description" content="@yield('description', 'Portal informasi dan administrasi ' . ($school['name'] ?: 'sekolah') . '.')">
-    <link rel="icon" href="{{ asset('branding/favicon.ico') }}" sizes="any">
+    <link rel="canonical" href="{{ url()->current() }}">
+    <meta property="og:type" content="@yield('og_type', 'website')">
+    <meta property="og:site_name" content="{{ $school['name'] ?: config('branding.platform.name') }}">
+    <meta property="og:title" content="@yield('title', $school['name'] ?: config('branding.platform.name'))">
+    <meta property="og:description" content="@yield('description', 'Portal informasi dan administrasi ' . ($school['name'] ?: 'sekolah') . '.')">
+    <meta property="og:url" content="{{ url()->current() }}">
+    <meta property="og:image" content="@yield('og_image', asset(config('branding.assets.logo')))" />
+    <meta name="twitter:card" content="summary_large_image">
+    @php
+        $structuredData = [
+            '@context' => 'https://schema.org',
+            '@type' => 'EducationalOrganization',
+            'name' => $school['name'] ?: config('branding.platform.name'),
+            'url' => url('/'),
+            'email' => $school['email'] ?: null,
+            'telephone' => $school['phone'] ?: null,
+            'address' => filled($school['address']) || filled($school['city']) ? [
+                '@type' => 'PostalAddress',
+                'streetAddress' => $school['address'] ?: null,
+                'addressLocality' => $school['city'] ?: null,
+                'addressRegion' => $school['province'] ?: null,
+            ] : null,
+        ];
+        $structuredJson = json_encode($structuredData, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);
+    @endphp
+    <script type="application/ld+json">{{ $structuredJson }}</script>
     <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('branding/favicon-32x32.png') }}">
     <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('branding/apple-touch-icon.png') }}">
     <meta name="theme-color" content="{{ config('branding.theme_color') }}">
@@ -13,9 +38,14 @@
     <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700|manrope:600,700,800&display=swap" rel="stylesheet">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="h-full bg-[var(--app-bg)]">
+<body class="public-site h-full bg-[var(--app-bg)]">
 <div class="min-h-full flex flex-col">
-<header class="sticky top-0 z-40 bg-[var(--app-sidebar-bg)] text-white">
+<a href="#main-content" class="skip-link">Lewati ke konten utama</a>
+<header x-data="{
+    open: false,
+    openMenu() { this.open = true; document.body.classList.add('overflow-hidden'); this.$nextTick(() => this.$refs.closeButton?.focus()); },
+    closeMenu() { this.open = false; document.body.classList.remove('overflow-hidden'); this.$nextTick(() => this.$refs.menuButton?.focus()); },
+}" class="sticky top-0 z-40 bg-[var(--app-sidebar-bg)] text-white">
     <div class="shell-wide">
         <div class="flex items-center justify-between gap-4 h-16">
 
@@ -84,6 +114,13 @@
 
             {{-- ============ Actions ============ --}}
             <div class="flex shrink-0 items-center gap-2">
+                @if (Route::has('public.search'))
+                    <a href="{{ route('public.search') }}"
+                       class="grid size-11 place-items-center rounded-[var(--radius-md)] text-white/80 transition hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                       aria-label="Cari informasi sekolah" title="Cari informasi sekolah">
+                        <x-icon name="search" class="size-5" />
+                    </a>
+                @endif
 
                 {{-- The registration CTA is the dominant one for a public
                      visitor; the portal link is present but secondary. --}}
@@ -112,8 +149,10 @@
                 {{-- Mobile: the drawer trigger. 44px tall, because a 40px target
                      is under the comfortable minimum on a phone. --}}
                 <button type="button"
-                        x-data
-                        @click="$store.app.openMobileNav()"
+                        x-ref="menuButton"
+                        @click="openMenu()"
+                        :aria-expanded="open.toString()"
+                        aria-controls="mobile-navigation"
                         class="lg:hidden grid place-items-center w-11 h-11 -mr-2 rounded-[var(--radius-md)]
                                text-white/80 hover:bg-white/10 transition-colors"
                         aria-label="Buka menu navigasi">
@@ -129,15 +168,17 @@
         items plus two actions, and a dropdown that ends above the fold on a
         667px phone leaves the last items unreachable.
     --}}
-    <div x-data="{ open: false }"
+    <div
+         id="mobile-navigation"
          x-show="open" x-cloak
-         @keydown.escape.window="open = false"
+         x-bind:aria-hidden="(!open).toString()"
+         @keydown.escape.window="closeMenu()"
          class="lg:hidden">
 
         <div x-show="open"
              x-transition.opacity.duration.200ms
              class="fixed inset-0 z-50 bg-black/60"
-             @click="open = false"
+             @click="closeMenu()"
              aria-hidden="true"></div>
 
         <nav x-show="open"
@@ -155,7 +196,7 @@
 
             <div class="flex items-center justify-between gap-3 h-16 px-4 border-b border-white/10 shrink-0">
                 <span class="text-small font-semibold text-white">Menu</span>
-                <button type="button" @click="open = false"
+                <button type="button" x-ref="closeButton" @click="closeMenu()"
                         class="grid place-items-center w-11 h-11 -mr-2 rounded-[var(--radius-md)]
                                text-white/80 hover:bg-white/10 transition-colors"
                         aria-label="Tutup menu">
@@ -217,7 +258,7 @@
     </div>
 </header>
 
-    <main class="flex-1">
+    <main id="main-content" class="flex-1">
         @yield('body')
     </main>
 

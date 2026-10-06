@@ -45,7 +45,8 @@
         rather than presenting a blank grid of labels.
     --}}
     @if (blank($school['npsn']) && blank($school['address']) && blank($school['city'])
-        && blank($school['email']) && blank($school['phone']) && blank($school['website']))
+        && blank($school['province']) && blank($school['email']) && blank($school['phone'])
+        && blank($school['website']) && blank($school['headmaster']))
         <p class="mt-8 text-body text-[var(--app-text-muted)]">
             Detail profil belum dilengkapi. Administrator sekolah dapat mengisinya
             melalui <span class="font-mono text-[13px]">Pengaturan → Sekolah</span>.

@@ -135,7 +135,7 @@
                                     <input type="checkbox" name="media_ids[]" value="{{ $item->id }}"
                                            class="mr-1"
                                            @checked(in_array($item->id, $attachedIds, true)) />
-                                    <img src="{{ \Illuminate\Support\Facades\Storage::disk($item->disk)->url($item->path) }}"
+                                    <img src="{{ $item->url() }}"
                                          alt="{{ $item->alt_text ?? $item->displayName() }}"
                                          class="w-full h-16 object-cover rounded mt-1" loading="lazy" />
                                     <span class="block text-caption truncate mt-1" title="{{ $item->displayName() }}">

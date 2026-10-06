@@ -38,8 +38,12 @@
                 @foreach ($items as $index => $item)
                     @php $tall = $index < 2; @endphp
 
-                    <a href="{{ $item['url'] ?? '#' }}"
-                       class="group relative overflow-hidden rounded-[var(--radius-md)] {{ $tall ? 'col-span-2 lg:row-span-2' : '' }}">
+                    @if (filled($item['url'] ?? null))
+                        <a href="{{ $item['url'] }}"
+                           class="group relative overflow-hidden rounded-[var(--radius-md)] {{ $tall ? 'col-span-2 lg:row-span-2' : '' }}">
+                    @else
+                        <article class="group relative overflow-hidden rounded-[var(--radius-md)] {{ $tall ? 'col-span-2 lg:row-span-2' : '' }}">
+                    @endif
 
                         @if ($item['image'] ?? null)
                             <img src="{{ $item['image'] }}"
@@ -60,7 +64,11 @@
                                 <p class="mt-1 line-clamp-2 text-caption text-white/70">{{ $item['body'] }}</p>
                             @endif
                         </div>
-                    </a>
+                    @if (filled($item['url'] ?? null))
+                        </a>
+                    @else
+                        </article>
+                    @endif
                 @endforeach
             </div>
         </div>

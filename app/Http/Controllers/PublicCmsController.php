@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Category;
+use App\Models\Department;
 use App\Models\Post;
 use App\Services\SettingsService;
 use Illuminate\Contracts\View\View;
@@ -43,19 +44,25 @@ class PublicCmsController extends Controller
      */
     public function news(Request $request): View
     {
+        $categorySlug = trim($request->string('category')->toString());
+
         $posts = Post::query()
             ->posts()
             ->publishedAndPublic()
+            ->when($categorySlug !== '', fn ($query) => $query->whereHas(
+                'category',
+                fn ($category) => $category->where('slug', $categorySlug)
+            ))
             ->with(['category', 'author'])
             ->orderByDesc('published_at')
-            ->paginate(self::PER_PAGE);
+            ->paginate(self::PER_PAGE)
+            ->withQueryString();
 
         return view('public.news.index', [
             'school' => $this->school(),
             'posts' => $posts,
-            // Only categories that actually have something visible, so the
-            // filter bar does not offer a category that leads to an empty page.
             'categories' => $this->categoriesWithContent(),
+            'categorySlug' => $categorySlug,
         ]);
     }
 
@@ -81,6 +88,60 @@ class PublicCmsController extends Controller
                 ->orderByDesc('published_at')
                 ->limit(3)
                 ->get(),
+        ]);
+    }
+
+    public function search(Request $request): View
+    {
+        $query = trim($request->string('q')->toString());
+        $posts = collect();
+        $programs = collect();
+
+        if (mb_strlen($query) >= 2) {
+            $like = '%'.str_replace(['%', '_'], ['\\%', '\\_'], $query).'%';
+            $posts = Post::query()
+                ->posts()
+                ->publishedAndPublic()
+                ->with('category')
+                ->where(function ($builder) use ($like) {
+                    $builder->where('title', 'like', $like)
+                        ->orWhere('excerpt', 'like', $like)
+                        ->orWhere('body', 'like', $like);
+                })
+                ->orderByDesc('published_at')
+                ->limit(12)
+                ->get();
+
+            $programs = Department::query()
+                ->where(function ($builder) use ($like) {
+                    $builder->where('name', 'like', $like)
+                        ->orWhere('code', 'like', $like);
+                })
+                ->orderBy('name')
+                ->limit(8)
+                ->get();
+        }
+
+        return view('public.search', [
+            'school' => $this->school(),
+            'query' => $query,
+            'posts' => $posts,
+            'programs' => $programs,
+        ]);
+    }
+
+    public function page(Request $request, string $slug): View
+    {
+        $page = Post::query()
+            ->pages()
+            ->publishedAndPublic()
+            ->with(['author', 'media'])
+            ->where('slug', $slug)
+            ->firstOrFail();
+
+        return view('public.page', [
+            'school' => $this->school(),
+            'page' => $page,
         ]);
     }
 

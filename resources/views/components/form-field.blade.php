@@ -14,6 +14,7 @@
 ])
 
 @php
+    $errors = $errors ?? new \Illuminate\Support\MessageBag();
     $id = $attributes->get('id') ?: ($name ? 'f-'.preg_replace('/[^a-z0-9]+/i', '-', $name) : 'f-'.uniqid());
     $hasError = $errors->has($name);
     $fieldAttributes = $attributes->except(['class', 'id']);

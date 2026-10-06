@@ -45,12 +45,19 @@ return Application::configure(basePath: dirname(__DIR__))
             // The public page needed a name that was actually free.
             Route::get('/tentang', [\App\Http\Controllers\PublicHomeController::class, 'profile'])
                 ->name('public.about');
+            Route::get('/tentang/{slug}', [\App\Http\Controllers\PublicCmsController::class, 'page'])
+                ->where('slug', '[a-z0-9-]+')
+                ->name('public.page');
+
             Route::get('/program', [\App\Http\Controllers\PublicHomeController::class, 'programs'])
                 ->name('public.programs');
             Route::get('/ppdb', [\App\Http\Controllers\PublicHomeController::class, 'admission'])
                 ->name('public.admission');
             Route::get('/kontak', [\App\Http\Controllers\PublicHomeController::class, 'contact'])
                 ->name('public.contact');
+            Route::post('/kontak', [\App\Http\Controllers\PublicHomeController::class, 'submitContact'])
+                ->middleware('throttle:5,1')
+                ->name('public.contact.submit');
 
             // News, read from the CMS. Both routes go through
             // publishedAndPublic(), so a draft, an unpublished post, a future
@@ -58,6 +65,8 @@ return Application::configure(basePath: dirname(__DIR__))
             // rather than by a check a caller has to remember.
             Route::get('/berita', [\App\Http\Controllers\PublicCmsController::class, 'news'])
                 ->name('public.news');
+            Route::get('/cari', [\App\Http\Controllers\PublicCmsController::class, 'search'])
+                ->name('public.search');
             Route::get('/berita/{slug}', [\App\Http\Controllers\PublicCmsController::class, 'post'])
                 ->name('public.news.show');
 

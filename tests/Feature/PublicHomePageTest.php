@@ -39,6 +39,8 @@ class PublicHomePageTest extends TestCase
         parent::setUp();
 
         $this->seedRoles();
+        AcademicYear::query()->delete();
+        Subject::query()->delete();
         $this->seedSettings();
     }
 
@@ -162,9 +164,45 @@ class PublicHomePageTest extends TestCase
         $this->assertStringContainsString('SMA Negeri 1 Bogor', $response->getContent());
     }
 
-    /**
-     * @test
-     */
+    /** @test */
+    public function the_contact_form_stores_a_message_and_redirects_back(): void
+    {
+        $response = $this->post(route('public.contact.submit'), [
+            'name' => 'Alya Pratama',
+            'email' => 'alya@example.test',
+            'phone' => '081234567890',
+            'topic' => 'PPDB',
+            'message' => 'Saya ingin mengetahui jadwal pendaftaran.',
+            'website' => '',
+        ]);
+
+        $response->assertRedirect(route('public.contact'))
+            ->assertSessionHas('success');
+        $this->assertDatabaseHas('contact_messages', [
+            'email' => 'alya@example.test',
+            'topic' => 'PPDB',
+            'status' => 'new',
+        ]);
+    }
+
+    /** @test */
+    public function the_contact_form_rejects_an_invalid_email_without_writing(): void
+    {
+        $this->from(route('public.contact'))
+            ->post(route('public.contact.submit'), [
+                'name' => 'Alya Pratama',
+                'email' => 'not-an-email',
+                'topic' => 'Umum',
+                'message' => 'Pesan.',
+                'website' => '',
+            ])
+            ->assertRedirect(route('public.contact'))
+            ->assertSessionHasErrors('email');
+
+        $this->assertDatabaseCount('contact_messages', 0);
+    }
+
+    /** @test */
     public function test_a_logged_in_user_still_sees_the_public_page_at_root(): void
     {
         // The root is public, so authentication must not change what it serves.
@@ -282,8 +320,11 @@ class PublicHomePageTest extends TestCase
             'school.npsn' => '',
             'school.address' => '',
             'school.city' => '',
+            'school.province' => '',
             'school.email' => '',
             'school.phone' => '',
+            'school.website' => '',
+            'school.headmaster' => '',
         ]);
 
         $body = $this->get('/tentang')->getContent();

@@ -55,6 +55,7 @@ class CmsMediaTest extends TestCase
         parent::setUp();
 
         Storage::fake('public');
+        Media::query()->delete();
 
         $this->seedRoles();
         $this->media = app(CmsMediaService::class);
