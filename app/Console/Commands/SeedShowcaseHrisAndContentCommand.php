@@ -90,27 +90,27 @@ class SeedShowcaseHrisAndContentCommand extends Command
      */
     private function recordEmployment(): void
     {
-        $number = 0;
-
         foreach (self::STAFF as $role => [$position, $department, $type]) {
             $user = User::where('email', 'like', '%@demo.test')
                 ->whereHas('roles', fn ($q) => $q->where('name', $role))
                 ->first();
 
-            if (! $user || Employee::where('user_id', $user->id)->exists()) {
+            if (! $user) {
                 continue;
             }
 
-            Employee::create([
-                'user_id' => $user->id,
-                'employee_number' => 'PG-'.(2026).'-'.str_pad((string) ++$number, 3, '0', STR_PAD_LEFT),
-                'department_id' => $this->department($department)->id,
-                'position' => $position,
-                'employment_status' => Employee::ACTIVE,
-                'employment_type' => $type,
-                'hire_date' => now()->subYears(2)->toDateString(),
-                'created_by' => $user->id,
-            ]);
+            Employee::updateOrCreate(
+                ['user_id' => $user->id],
+                [
+                    'employee_number' => 'PG-2026-'.str_pad((string) $user->id, 3, '0', STR_PAD_LEFT),
+                    'department_id' => $this->department($department)->id,
+                    'position' => $position,
+                    'employment_status' => Employee::ACTIVE,
+                    'employment_type' => $type,
+                    'hire_date' => now()->subYears(2)->toDateString(),
+                    'created_by' => $user->id,
+                ],
+            );
         }
     }
 

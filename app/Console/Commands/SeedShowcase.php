@@ -41,12 +41,12 @@ class SeedShowcase extends Command
 
     /** The six classes the documentation refers to. */
     private const CLASSES = [
-        ['name' => 'X RPL 1',     'code' => 'RPL-10-1', 'level' => 'X',   'dept' => 'RPL', 'room' => 'R-201', 'capacity' => 32],
-        ['name' => 'X RPL 2',     'code' => 'RPL-10-2', 'level' => 'X',   'dept' => 'RPL', 'room' => 'R-202', 'capacity' => 32],
-        ['name' => 'XI RPL 1',    'code' => 'RPL-11-1', 'level' => 'XI',  'dept' => 'RPL', 'room' => 'R-203', 'capacity' => 32],
-        ['name' => 'XII RPL 1',   'code' => 'RPL-12-1', 'level' => 'XII', 'dept' => 'RPL', 'room' => 'R-204', 'capacity' => 32],
-        ['name' => 'X TKJ 1',     'code' => 'TKJ-10-1', 'level' => 'X',   'dept' => 'TKJ', 'room' => 'L-101', 'capacity' => 28],
-        ['name' => 'X DKV 1',     'code' => 'DKV-10-1', 'level' => 'X',   'dept' => 'DKV', 'room' => 'D-102', 'capacity' => 24],
+        ['name' => 'VII RPL 1',    'code' => 'RPL-7-1',  'level' => 'VII',  'dept' => 'RPL', 'room' => 'R-201', 'capacity' => 32],
+        ['name' => 'VII RPL 2',    'code' => 'RPL-7-2',  'level' => 'VII',  'dept' => 'RPL', 'room' => 'R-202', 'capacity' => 32],
+        ['name' => 'VIII RPL 1',   'code' => 'RPL-8-1',  'level' => 'VIII', 'dept' => 'RPL', 'room' => 'R-203', 'capacity' => 32],
+        ['name' => 'IX RPL 1',     'code' => 'RPL-9-1',  'level' => 'IX',   'dept' => 'RPL', 'room' => 'R-204', 'capacity' => 32],
+        ['name' => 'VII TKJ 1',    'code' => 'TKJ-7-1',  'level' => 'VII',  'dept' => 'TKJ', 'room' => 'L-101', 'capacity' => 28],
+        ['name' => 'VII DKV 1',    'code' => 'DKV-7-1',  'level' => 'VII',  'dept' => 'DKV', 'room' => 'D-102', 'capacity' => 24],
     ];
 
     /** Fictional first names, combined with fictional surnames. */
