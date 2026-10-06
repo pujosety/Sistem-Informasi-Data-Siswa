@@ -80,6 +80,8 @@
             :items="$notificationItems ?? []"
             :unread-count="$unreadNotifications ?? 0" />
 
+        <x-theme-switcher compact />
+
         {{-- User menu (desktop) --}}
         <div x-data="{ open: false }" class="relative hidden sm:block">
             <button type="button" @click="open = !open" @click.outside="open = false"

@@ -228,7 +228,10 @@ class SettingsController extends BaseController
     public function application(): View
     {
         return view('settings.application', [
-            'values' => $this->settings->group('general'),
+            'values' => array_merge(
+                $this->settings->group('branding'),
+                $this->settings->group('general'),
+            ),
         ]);
     }
 

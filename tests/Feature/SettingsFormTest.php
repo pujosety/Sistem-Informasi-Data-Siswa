@@ -170,6 +170,51 @@ class SettingsFormTest extends TestCase
     }
 
     /** @test */
+    public function application_preferences_persist_after_a_new_request(): void
+    {
+        $this->actingAs($this->admin)
+            ->from(route('settings.application'))
+            ->put(route('settings.application.update'), [
+                'app.name' => 'LYFLA Platform',
+                'app.short_name' => 'LYFLA',
+                'app.tagline' => 'Belajar dan bertumbuh bersama',
+                'app.timezone' => 'Asia/Jakarta',
+                'app.date_format' => 'd M Y',
+                'app.per_page' => 25,
+            ])
+            ->assertRedirect(route('settings.application'))
+            ->assertSessionHasNoErrors();
+
+        $this->get(route('settings.application'))
+            ->assertOk()
+            ->assertSee('LYFLA Platform')
+            ->assertSee('Belajar dan bertumbuh bersama');
+
+        $this->assertSame('LYFLA Platform', app(\App\Services\SettingsService::class)->get('app.name'));
+        $this->assertSame('25', (string) app(\App\Services\SettingsService::class)->get('app.per_page'));
+    }
+
+    /** @test */
+    public function school_profile_persists_after_a_new_request(): void
+    {
+        $this->actingAs($this->admin)
+            ->from(route('settings.school'))
+            ->put(route('settings.school.update'), [
+                'school.name' => 'SMP 1 LYFLA',
+                'school.city' => 'Bandung',
+                'school.province' => 'Jawa Barat',
+                'school.email' => 'info@example.sch.id',
+            ])
+            ->assertRedirect(route('settings.school'))
+            ->assertSessionHasNoErrors();
+
+        $this->get(route('settings.school'))
+            ->assertOk()
+            ->assertSee('SMP 1 LYFLA')
+            ->assertSee('Bandung');
+    }
+
+    /** @test */
     public function a_settings_form_is_not_reachable_by_a_student(): void
     {
         $student = User::factory()->create();

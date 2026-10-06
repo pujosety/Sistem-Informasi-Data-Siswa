@@ -19,6 +19,17 @@
 </section>
 
 <section class="mx-auto max-w-6xl px-5 sm:px-8 py-12">
+    <div class="grid items-center gap-8 lg:grid-cols-[0.9fr_1.1fr]">
+        <x-image-placeholder type="contact" aspect="4/3" alt="Guru SMP 1 LYFLA berdiskusi dengan siswa" />
+        <div>
+            <p class="text-small font-semibold text-[var(--app-primary)]">Yuk, ngobrol.</p>
+            <h2 class="mt-2 text-h1 font-bold tracking-tight">Punya pertanyaan? Kami siap membantu.</h2>
+            <p class="mt-4 max-w-2xl text-body leading-relaxed text-[var(--app-text-muted)]">
+                Temukan kanal kontak sekolah atau kirim pesan melalui formulir yang tersedia.
+            </p>
+        </div>
+    </div>
+
     @if (filled($school['address']) || filled($school['city']) || filled($school['email']) || filled($school['phone']))
         <div class="grid gap-6 sm:grid-cols-2">
             @if (filled($school['address']) || filled($school['city']))

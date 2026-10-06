@@ -177,13 +177,13 @@ class SettingsService
     {
         return $this->all()
             ->where('group', $group)
-            ->map(fn (Setting $s) => [
+            ->mapWithKeys(fn (Setting $s) => [$s->key => [
                 'key' => $s->key,
                 'value' => $s->typedValue(),
                 'type' => $s->type,
                 'label' => $s->label ?: str_replace(['app.', 'school.', 'branding.', 'registration.'], '', $s->key),
                 'hint' => $s->hint,
-            ])
+            ]])
             ->all();
     }
 

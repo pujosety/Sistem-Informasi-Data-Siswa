@@ -239,9 +239,8 @@
 | values sit too close to the dark background to read. Soft variants become
 | translucent fills instead of near-white tints, which a light tint cannot be.
  */
-@media (prefers-color-scheme: dark) {
-    :root {
-        --app-bg: #0b1220;
+:root[data-theme='dark'] {
+    --app-bg: #0b1220;
         --app-surface: #131c2e;
         --app-surface-muted: #1b2740;
         --app-border: #22304d;
@@ -273,9 +272,8 @@
 
         --app-sidebar-bg: #080e1a;
         --app-sidebar-text: #97a5c0;
-        --app-sidebar-text-active: #ffffff;
-        --app-sidebar-active-bg: rgb(255 255 255 / 0.10);
-    }
+    --app-sidebar-text-active: #ffffff;
+    --app-sidebar-active-bg: rgb(255 255 255 / 0.10);
 }
 
 /* Expose the semantic tokens as Tailwind color utilities (bg-surface, text-muted…) */
@@ -706,6 +704,25 @@
     --app-sidebar-bg: var(--public-charcoal);
     --brand-gold: var(--public-accent);
     --color-brand-500: var(--public-soft);
+}
+
+:root[data-theme='dark'] .public-site {
+    --app-bg: #111111;
+    --app-surface: #1F1F1F;
+    --app-surface-muted: #262626;
+    --app-border: #3A3032;
+    --app-border-strong: #5B474B;
+    --app-text: #F5F1F2;
+    --app-text-muted: #C7B9BC;
+    --app-text-subtle: #A89499;
+    --app-primary: #C85A6A;
+    --app-primary-hover: #E07A89;
+    --app-primary-dark: #0F0F10;
+    --app-primary-soft: rgb(200 90 106 / 0.18);
+    --public-soft: rgb(200 90 106 / 0.18);
+    --public-cream: #111111;
+    --public-white: #1F1F1F;
+    --public-charcoal: #F5F1F2;
 }
 
 .skip-link {

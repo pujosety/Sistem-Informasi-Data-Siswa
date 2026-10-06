@@ -18,6 +18,18 @@
 </section>
 
 <section class="mx-auto max-w-6xl px-5 sm:px-8 py-12">
+    <div class="grid items-center gap-8 lg:grid-cols-[1.1fr_0.9fr]">
+        <div>
+            <p class="text-small font-semibold text-[var(--app-primary)]">Ada cerita apa hari ini?</p>
+            <h2 class="mt-2 text-h1 font-bold tracking-tight">Kabar terbaru dari sekolah.</h2>
+            <p class="mt-4 max-w-2xl text-body leading-relaxed text-[var(--app-text-muted)]">
+                Baca informasi, kegiatan, dan cerita yang sudah dipublikasikan oleh tim sekolah.
+            </p>
+        </div>
+        <x-image-placeholder type="news" aspect="16/10" alt="Siswa SMP 1 LYFLA mengikuti kegiatan belajar" />
+    </div>
+
+    <div class="mt-12">
         <nav aria-label="Filter kategori" class="mb-8 flex flex-wrap items-center gap-2">
             <span class="mr-1 self-center text-caption text-[var(--app-text-muted)]">Kategori:</span>
             <a href="{{ route('public.news') }}"
@@ -86,5 +98,6 @@
             {{ $posts->links() }}
         </nav>
     @endif
+    </div>
 </section>
 @endsection

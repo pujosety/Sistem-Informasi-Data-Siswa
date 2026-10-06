@@ -34,6 +34,19 @@
     <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('branding/favicon-32x32.png') }}">
     <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('branding/apple-touch-icon.png') }}">
     <meta name="theme-color" content="{{ config('branding.theme_color') }}">
+    <script>
+        (() => {
+            const key = 'lyfla.theme';
+            const stored = localStorage.getItem(key);
+            const preference = ['light', 'dark', 'system'].includes(stored) ? stored : 'system';
+            const effective = preference === 'system'
+                ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+                : preference;
+            document.documentElement.dataset.themePreference = preference;
+            document.documentElement.dataset.theme = effective;
+            document.documentElement.style.colorScheme = effective;
+        })();
+    </script>
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700|manrope:600,700,800&display=swap" rel="stylesheet">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -114,6 +127,7 @@
 
             {{-- ============ Actions ============ --}}
             <div class="flex shrink-0 items-center gap-2">
+                <x-theme-switcher compact inverse />
                 @if (Route::has('public.search'))
                     <a href="{{ route('public.search') }}"
                        class="grid size-11 place-items-center rounded-[var(--radius-md)] text-white/80 transition hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"

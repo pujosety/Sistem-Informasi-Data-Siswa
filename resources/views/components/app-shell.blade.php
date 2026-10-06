@@ -12,6 +12,19 @@
          #0b3375 while --app-primary was maroon, so an Android status bar showed
          one brand above a page in another; two literals cannot stay in step. --}}
     <meta name="theme-color" content="{{ config('branding.theme_color') }}">
+    <script>
+        (() => {
+            const key = 'lyfla.theme';
+            const stored = localStorage.getItem(key);
+            const preference = ['light', 'dark', 'system'].includes(stored) ? stored : 'system';
+            const effective = preference === 'system'
+                ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+                : preference;
+            document.documentElement.dataset.themePreference = preference;
+            document.documentElement.dataset.theme = effective;
+            document.documentElement.style.colorScheme = effective;
+        })();
+    </script>
     <meta name="description" content="Pengelolaan data siswa, dokumen, dan verifikasi pendaftaran.">
 
     {{-- One naming rule everywhere: "<halaman> · LYFLA". --}}

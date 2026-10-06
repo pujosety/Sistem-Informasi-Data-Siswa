@@ -2,14 +2,79 @@ import './bootstrap';
 import Alpine from 'alpinejs';
 import { registerSW } from './pwa.js';
 
+const THEME_KEY = 'lyfla.theme';
+const themeOptions = [
+    { value: 'light', label: 'Terang' },
+    { value: 'dark', label: 'Gelap' },
+    { value: 'system', label: 'Sistem' },
+];
+
+function systemTheme() {
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+
+function storedTheme() {
+    const value = window.localStorage.getItem(THEME_KEY);
+    return ['light', 'dark', 'system'].includes(value) ? value : 'system';
+}
+
+function applyTheme(preference) {
+    const effective = preference === 'system' ? systemTheme() : preference;
+    const root = document.documentElement;
+    root.dataset.themePreference = preference;
+    root.dataset.theme = effective;
+    root.style.colorScheme = effective;
+    window.localStorage.setItem(THEME_KEY, preference);
+}
+
+// The inline head script applies the first paint before CSS is parsed. This
+// second call keeps Alpine and the document state synchronized after boot.
+if (typeof window !== 'undefined') {
+    applyTheme(storedTheme());
+}
+
 /**
- * Root Alpine store: sidebar, toasts, and global UI flags.
+ * Root Alpine store: sidebar, toasts, theme, and global UI flags.
  * Registered once, available to every view via x-data.
  */
 document.addEventListener('alpine:init', () => {
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     const stored = localStorage.getItem('sida.sidebar.collapsed');
     const storedMobile = localStorage.getItem('sida.sidebar.mobile');
+
+    window.Alpine.store('theme', {
+        preference: storedTheme(),
+        effective: document.documentElement.dataset.theme || systemTheme(),
+        options: themeOptions,
+
+        setTheme(preference) {
+            applyTheme(preference);
+            this.preference = preference;
+            this.effective = document.documentElement.dataset.theme;
+        },
+
+        label() {
+            return this.options.find((option) => option.value === this.preference)?.label || 'Sistem';
+        },
+    });
+
+    Alpine.data('themeSwitcher', () => ({
+        open: false,
+        options: themeOptions,
+        get preference() { return this.$store.theme.preference; },
+        get label() { return this.$store.theme.label(); },
+        choose(value) {
+            this.$store.theme.setTheme(value);
+            this.open = false;
+        },
+    }));
+
+    const prefersColorScheme = window.matchMedia('(prefers-color-scheme: dark)');
+    prefersColorScheme.addEventListener?.('change', () => {
+        if (window.localStorage.getItem(THEME_KEY) === 'system') {
+            applyTheme('system');
+            window.Alpine.store('theme').effective = document.documentElement.dataset.theme;
+        }
+    });
 
     window.Alpine.store('app', {
         // Desktop: collapsed rail. Mobile: off-canvas drawer.

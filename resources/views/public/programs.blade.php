@@ -16,8 +16,20 @@
 </section>
 
 <section class="mx-auto max-w-6xl px-5 sm:px-8 py-12">
-    @forelse ($departments as $department)
-        <article id="program-{{ $department['id'] }}" class="scroll-mt-24 mb-8 last:mb-0">
+    <div class="grid items-center gap-8 lg:grid-cols-[1.05fr_0.95fr]">
+        <div>
+            <p class="text-small font-semibold text-[var(--app-primary)]">Temukan bidang yang bikin kamu penasaran.</p>
+            <h2 class="mt-2 text-h1 font-bold tracking-tight">Belajar bukan cuma soal teori.</h2>
+            <p class="mt-4 max-w-2xl text-body leading-relaxed text-[var(--app-text-muted)]">
+                Kenali mata pelajaran dan bidang belajar yang tersedia. Informasi program ditampilkan dari data kurikulum yang dipublikasikan sekolah.
+            </p>
+        </div>
+        <x-image-placeholder type="program" aspect="16/10" alt="Siswa SMP 1 LYFLA belajar di laboratorium komputer" />
+    </div>
+
+    <div class="mt-12">
+        @forelse ($departments as $department)
+            <article id="program-{{ $department['id'] }}" class="scroll-mt-24 mb-8 last:mb-0">
             <div class="flex flex-wrap items-baseline justify-between gap-3">
                 <h2 class="text-h2 font-semibold">{{ $department['name'] }}</h2>
                 @if ($department['classCount'] > 0)
@@ -54,5 +66,6 @@
             </p>
         </div>
     @endforelse
+    </div>
 </section>
 @endsection
