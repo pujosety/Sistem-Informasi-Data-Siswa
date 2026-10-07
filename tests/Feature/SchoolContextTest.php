@@ -90,7 +90,7 @@ class SchoolContextTest extends TestCase
     }
 
     /** @test */
-    public function public_school_query_selector_is_recomputed_for_each_request(): void
+    public function public_school_query_selector_does_not_change_the_primary_school(): void
     {
         $second = School::create([
             'slug' => 'smp-negeri-4-metro',
@@ -108,8 +108,9 @@ class SchoolContextTest extends TestCase
 
         $response = $this->get('/?school=smp-negeri-4-metro');
 
-        $this->assertSame('smp-negeri-4-metro', app(SchoolContext::class)->slug());
-        $response->assertOk()->assertSee('SMP Negeri 4 Metro');
+        $this->assertSame('smp-negeri-1-metro', app(SchoolContext::class)->slug());
+        $response->assertOk()->assertSee('SMP 1 LYFLA');
+        $response->assertDontSee('SMP Negeri 4 Metro');
 
         $this->get('/?school=smp-negeri-1-metro')
             ->assertOk()

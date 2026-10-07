@@ -12,17 +12,7 @@ class ResolveSchoolContext
 {
     public function handle(Request $request, Closure $next): Response
     {
-        $context = app(SchoolContext::class);
-        $context->reset();
-
-        $slug = $request->query('school');
-        if (! $slug && $request->hasSession()) {
-            $slug = $request->session()->get('active_school_slug');
-        }
-
-        if (filled($slug)) {
-            $context->use((string) $slug);
-        }
+        app(SchoolContext::class)->reset();
 
         return $next($request);
     }

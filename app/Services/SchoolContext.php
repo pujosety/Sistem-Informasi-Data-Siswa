@@ -10,15 +10,18 @@ class SchoolContext
 {
     private ?School $school = null;
     private ?string $requestSelector = null;
+    private bool $manualOverride = false;
     private static ?bool $tableExists = null;
     private static ?int $consoleSchoolId = null;
 
     public function current(): ?School
     {
+        if ($this->manualOverride && $this->school) {
+            return $this->school;
+        }
+
         if (app()->bound('request')) {
-            $selector = request()->query('school')
-                ?: (function_exists('session') ? session('active_school_slug') : null);
-            $selectorKey = $selector ?: '__default__';
+            $selectorKey = '__primary__';
 
             if ($this->requestSelector !== $selectorKey) {
                 $this->requestSelector = $selectorKey;
@@ -42,18 +45,8 @@ class SchoolContext
             return $this->school = School::query()->find(static::$consoleSchoolId);
         }
 
-        $slug = null;
-        if (function_exists('request') && app()->bound('request')) {
-            $slug = request()->query('school') ?: (function_exists('session') ? session('active_school_slug') : null);
-            if ($slug && function_exists('session')) {
-                session(['active_school_slug' => $slug]);
-            }
-        }
-
         $query = School::query()->where('is_active', true);
-        $this->school = $slug
-            ? $query->where('slug', $slug)->first()
-            : $query->where('is_default', true)->first();
+        $this->school = $query->where('is_default', true)->first();
 
         return $this->school ?: $query->orderBy('id')->first();
     }
@@ -70,6 +63,7 @@ class SchoolContext
 
     public function use(School|int|string|null $school): ?School
     {
+        $this->manualOverride = true;
         $this->school = match (true) {
             $school instanceof School => $school,
             is_int($school) => School::query()->find($school),
@@ -92,6 +86,9 @@ class SchoolContext
     public function reset(): void
     {
         $this->school = null;
+        $this->manualOverride = false;
+        $this->requestSelector = null;
+        static::$consoleSchoolId = null;
     }
 
     public function allActive()
