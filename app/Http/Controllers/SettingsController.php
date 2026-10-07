@@ -140,11 +140,27 @@ class SettingsController extends BaseController
         }
     }
 
+    /** @return array<string, mixed> */
+    private function normalizedSettingPayload(Request $request): array
+    {
+        $input = $request->all();
+
+        foreach (array_keys(SettingsService::DEFAULTS) as $key) {
+            $wireKey = str_replace('.', '_', $key);
+
+            if (array_key_exists($wireKey, $input)) {
+                $input[$key] = $input[$wireKey];
+            }
+        }
+
+        return $input;
+    }
+
     public function updateSchool(Request $request): RedirectResponse
     {
         $this->normalizeSettingRequest($request);
 
-        $data = $request->validate($this->settingRules([
+        $data = validator($this->normalizedSettingPayload($request), $this->settingRules([
             'school.name' => ['required', 'string', 'max:190'],
             'school.npsn' => ['nullable', 'string', 'max:20'],
             'school.address' => ['nullable', 'string', 'max:500'],
@@ -156,7 +172,7 @@ class SettingsController extends BaseController
             'school.phone' => ['nullable', 'string', 'max:40'],
             'school.website' => ['nullable', 'string', 'max:190'],
             'school.headmaster' => ['nullable', 'string', 'max:150'],
-        ]));
+        ]))->validate();
 
         $this->settings->setMany($data);
         $this->audit->log('settings.school_updated', null, 'Mengubah profil sekolah');
@@ -179,7 +195,7 @@ class SettingsController extends BaseController
     {
         $this->normalizeSettingRequest($request);
 
-        $data = $request->validate($this->settingRules([
+        $data = validator($this->normalizedSettingPayload($request), $this->settingRules([
             'app.name' => ['required', 'string', 'max:120'],
             'app.short_name' => ['required', 'string', 'max:20'],
             'app.tagline' => ['nullable', 'string', 'max:120'],
@@ -191,7 +207,7 @@ class SettingsController extends BaseController
             // the validator never looked at.
             'branding\\.primary_color.regex' => 'Format warna harus hex, contoh #1D4ED8.',
             'branding\\.accent_color.regex' => 'Format warna harus hex, contoh #1D4ED8.',
-        ]);
+        ])->validate();
 
         // Uploads are validated as real images before they ever reach disk.
         $data = array_merge($data, $this->brand->handleUploads($request, ['branding.logo', 'branding.icon']));
@@ -241,12 +257,12 @@ class SettingsController extends BaseController
     {
         $this->normalizeSettingRequest($request);
 
-        $data = $request->validate($this->settingRules([
+        $data = validator($this->normalizedSettingPayload($request), $this->settingRules([
             'registration.open' => ['nullable', 'boolean'],
             'registration.start_at' => ['nullable', 'date'],
             'registration.end_at' => ['nullable', 'date', 'after_or_equal:registration\\.start_at'],
             'registration.default_academic_year_id' => ['nullable', 'exists:academic_years,id'],
-        ]));
+        ]))->validate();
 
         $this->settings->setMany([
             'registration.open' => $request->boolean('registration.open'),
@@ -278,7 +294,7 @@ class SettingsController extends BaseController
     {
         $this->normalizeSettingRequest($request);
 
-        $data = $request->validate($this->settingRules([
+        $data = validator($this->normalizedSettingPayload($request), $this->settingRules([
             /*
              * These three are HERE and were not before.
              *
@@ -294,7 +310,7 @@ class SettingsController extends BaseController
             'app.timezone' => ['required', 'string', 'max:60', Rule::in(timezone_identifiers_list())],
             'app.date_format' => ['required', 'string', 'max:20'],
             'app.per_page' => ['required', 'integer', 'min:5', 'max:100'],
-        ]));
+        ]))->validate();
 
         $this->settings->setMany($data);
         $this->audit->log('settings.application_updated', null, 'Memperbarui nama dan preferensi aplikasi');

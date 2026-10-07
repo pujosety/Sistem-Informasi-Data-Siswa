@@ -21,6 +21,8 @@ scripts:
       && php -S 0.0.0.0:${PORT:-8080} -t public
 annotations:
   anybuild.run/config:
+    commands:
+      after_deploy: php artisan migrate --force --no-interaction
     composer_build_script: post-update-cmd
     composer_enable: true
     name: out
@@ -32,8 +34,6 @@ annotations:
     php_framework: laravel
     php_public_dir: public
     phpix: true
-    commands:
-      after_deploy: php artisan migrate --force --no-interaction
   anybuild.run/provider: laravel
   anybuild.run/version: 0.33.0
   wasmer.io/version: 7.5.0

@@ -11,6 +11,7 @@ config = laravel_config(
     },
     node_package_manager = "npm",
     node_build_command = "npm run build",
+
     node_version = "24",
     php_framework = "laravel",
     composer_enable = True,
@@ -21,4 +22,9 @@ config = laravel_config(
 )
 
 build = laravel_build(config)
-laravel_serve(config, build, name = "Lyfla")
+laravel_serve(
+    config,
+    build,
+    name = "Lyfla",
+    build_post = [run("rm -rf node_modules", group = "prune")],
+)
