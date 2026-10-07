@@ -18,7 +18,7 @@
     {{-- Read from config/branding.php rather than written here. It used to be
          #0b3375 while --app-primary was maroon, so an Android status bar showed
          one brand above a page in another; two literals cannot stay in step. --}}
-    <meta name="theme-color" content="{{ config('branding.theme_color') }}">
+    <meta name="theme-color" content="{{ data_get($brand ?? [], 'primary') ?: config('branding.theme_color') }}">
     <script>
         (() => {
             const key = 'lyfla.theme';

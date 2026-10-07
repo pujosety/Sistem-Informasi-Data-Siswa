@@ -182,8 +182,8 @@
     /* A translucent maroon for washes that need to sit over either surface:
        selected table rows, the sidebar's active item, chart fills. One value
        serves both themes because it composites rather than paints. */
-    --app-primary-a10: rgb(122 31 50 / 0.10);
-    --app-primary-a16: rgb(122 31 50 / 0.16);
+    --app-primary-a10: var(--brand-config-primary-a10, rgb(122 31 50 / 0.10));
+    --app-primary-a16: var(--brand-config-primary-a16, rgb(122 31 50 / 0.16));
 
     /* Focus must stay visible on the maroon fill, so the ring inverts: a
        surface-coloured gap plus a light accent, rather than the dark accent
@@ -207,7 +207,7 @@
 
     /* The rail carries the deep-navy anchor. A near-black rail fought with the
        navy in the emblem; navy is the brand's own darkest value. */
-    --app-sidebar-bg: var(--brand-navy);
+    --app-sidebar-bg: var(--brand-config-rail, var(--brand-navy));
     --app-sidebar-text: #b8c6e0;
     --app-sidebar-text-active: #ffffff;
     --app-sidebar-active-bg: rgb(255 255 255 / 0.08);
@@ -253,8 +253,8 @@
         --app-primary: var(--brand-config-primary-dark, #c2556b);
         --app-primary-hover: var(--brand-config-primary-dark-hover, #d4707f);
         --app-primary-soft: rgb(194 85 107 / 0.16);
-        --app-primary-a10: rgb(194 85 107 / 0.12);
-        --app-primary-a16: rgb(194 85 107 / 0.20);
+        --app-primary-a10: var(--brand-config-primary-dark-a10, rgb(194 85 107 / 0.12));
+        --app-primary-a16: var(--brand-config-primary-dark-a16, rgb(194 85 107 / 0.20));
         --app-on-primary: #ffffff;
 
         --app-progress: #34c9a4;
@@ -270,7 +270,7 @@
         --app-info: #5aa9f0;
         --app-info-soft: rgb(90 169 240 / 0.16);
 
-        --app-sidebar-bg: #080e1a;
+        --app-sidebar-bg: var(--brand-config-rail-dark, #080e1a);
         --app-sidebar-text: #97a5c0;
     --app-sidebar-text-active: #ffffff;
     --app-sidebar-active-bg: rgb(255 255 255 / 0.10);

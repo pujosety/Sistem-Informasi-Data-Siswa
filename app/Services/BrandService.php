@@ -147,7 +147,24 @@ class BrandService
             ."--brand-config-primary-soft:{$this->shade($primary, 92)};"
             ."--brand-config-primary-dark:{$this->shade($primary, 35)};"
             ."--brand-config-primary-dark-hover:{$this->shade($primary, 48)};"
-            ."--brand-config-accent:{$accent};";
+            ."--brand-config-primary-a10:color-mix(in srgb, {$primary} 10%, transparent);"
+            ."--brand-config-primary-a16:color-mix(in srgb, {$primary} 16%, transparent);"
+            ."--brand-config-primary-dark-a10:color-mix(in srgb, {$this->shade($primary, 35)} 12%, transparent);"
+            ."--brand-config-primary-dark-a16:color-mix(in srgb, {$this->shade($primary, 35)} 20%, transparent);"
+            ."--brand-config-rail:{$this->shade($primary, -32)};"
+            ."--brand-config-rail-dark:{$this->shade($primary, -55)};"
+            ."--brand-config-accent:{$accent};"
+            // Keep legacy Tailwind brand-* utilities on the same runtime ramp.
+            ."--color-brand-50:{$this->shade($primary, 95)};"
+            ."--color-brand-100:{$this->shade($primary, 88)};"
+            ."--color-brand-200:{$this->shade($primary, 76)};"
+            ."--color-brand-300:{$this->shade($primary, 60)};"
+            ."--color-brand-400:{$this->shade($primary, 38)};"
+            ."--color-brand-500:{$primary};"
+            ."--color-brand-600:{$this->shade($primary, -12)};"
+            ."--color-brand-700:{$this->shade($primary, -24)};"
+            ."--color-brand-800:{$this->shade($primary, -36)};"
+            ."--color-brand-900:{$this->shade($primary, -48)};";
     }
 
     private function normalize(?string $hex): string

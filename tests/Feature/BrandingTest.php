@@ -148,6 +148,23 @@ class BrandingTest extends TestCase
 
         $this->assertStringContainsString('--brand-config-primary:#681D2A', $html);
         $this->assertStringContainsString('--brand-config-accent:#A83C4C', $html);
+        $this->assertStringContainsString('--brand-config-rail:', $html);
+        $this->assertStringContainsString('--color-brand-600:', $html);
+    }
+
+    /** @test */
+    public function admin_sidebar_uses_runtime_branding_instead_of_static_navy(): void
+    {
+        $css = File::get(resource_path('css/app.css'));
+
+        $this->assertStringContainsString(
+            '--app-sidebar-bg: var(--brand-config-rail',
+            $css
+        );
+        $this->assertStringContainsString(
+            '--app-primary-a10: var(--brand-config-primary-a10)',
+            $css
+        );
     }
 
     /** @test */
