@@ -3,6 +3,11 @@ name: Lyfla
 app_id: da_R9EIBt1U5YxN
 owner: pujosety
 package: .
+env:
+  STORAGE_PUBLIC_PATH: /data/lyfla-public
+volumes:
+  - name: lyfla-public
+    mount: /data/lyfla-public
 jobs: []
 scripts:
   build: |
