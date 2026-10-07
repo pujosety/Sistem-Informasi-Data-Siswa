@@ -25,6 +25,7 @@ scripts:
     php artisan config:clear \
       && php artisan cache:clear \
       && php artisan migrate --force --no-interaction \
+      && php artisan lyfla:normalize-identity \
       && php artisan cache:clear \
       && php artisan db:seed --class=PermissionSeeder --force --no-interaction \
       && php artisan config:cache \
