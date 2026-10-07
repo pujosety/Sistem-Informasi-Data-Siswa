@@ -214,7 +214,7 @@
                 </div>
                 <div :style="themeVars" class="preview-frame device-desktop">
                     {{-- Mini sidebar --}}
-                    <div class="flex" style="height:280px">
+                    <div class="flex" style="height:280px" x-show="previewMode === 'dashboard'">
                         <div class="w-16 shrink-0 p-2 space-y-1.5" :style="`background:${darken(primary, 55)}`">
                             <template x-for="i in 4" :key="i">
                                 <div class="h-7 rounded-md"
@@ -249,6 +249,10 @@
                             </div>
                         </div>
                     </div>
+                    <div x-show="previewMode === 'form'" class="preview-form"><strong>Form Pengaturan</strong><label>Nama Aplikasi<input :value="values['app.name']" readonly></label><label>Tagline<input :value="values['app.tagline']" readonly></label><button class="preview-button" type="button">Simpan Perubahan</button></div>
+                    <div x-show="previewMode === 'table'" class="preview-table"><strong>Data Siswa</strong><div class="preview-row head"><span>Nama</span><span>Status</span></div><div class="preview-row"><span>Ahmad Fauzan</span><b class="preview-badge">Aktif</b></div><div class="preview-row"><span>Siti Rahma</span><b class="preview-badge pending">Menunggu</b></div></div>
+                    <div x-show="previewMode === 'login'" class="preview-login"><span class="preview-logo" x-text="values['app.short_name']"></span><strong x-text="values['app.portal_label']"></strong><p x-text="values['app.tagline']"></p><input placeholder="Email"><input placeholder="Password"><button class="preview-button" type="button">Masuk</button></div>
+                    <div x-show="previewMode === 'mobile'" class="preview-mobile"><div class="preview-mobile-head"><span x-text="values['app.short_name']"></span><x-icon name="menu" class="size-4" /></div><div class="preview-card"><strong x-text="values['app.name']"></strong><p x-text="values['app.description']"></p><button class="preview-button" type="button">Buka Dashboard</button></div><div class="preview-dock"><span>Beranda</span><span>Data</span><span>Menu</span></div></div>
                 </div>
 
                 <div class="mt-4 space-y-1.5 text-caption">

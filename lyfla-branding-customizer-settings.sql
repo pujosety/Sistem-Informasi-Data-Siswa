@@ -1,0 +1,56 @@
+-- LYFLA branding customizer bootstrap
+-- Safe to import repeatedly. Existing setting values are preserved.
+-- Requires the `settings` table created by Laravel migrations.
+
+INSERT INTO settings (`key`, `value`, `type`, `group`, `label`, `hint`, `sort_order`, `created_at`, `updated_at`) VALUES
+('app.description', 'Pengelolaan data siswa, pendaftaran, pembelajaran, dan informasi sekolah dalam satu portal.', 'text', 'branding', 'Deskripsi Aplikasi', 'Ringkasan singkat untuk halaman masuk dan metadata.', 80, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('app.portal_label', 'Portal Akademik', 'string', 'branding', 'Label Portal', 'Label pendek yang tampil di preview dan halaman autentikasi.', 90, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('app.copyright', '© 2026 SMP 1 LYFLA', 'string', 'branding', 'Teks Copyright', 'Teks footer aplikasi.', 100, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('branding.logo_dark', '', 'image', 'branding', 'Logo Dark Mode', 'Logo untuk permukaan gelap.', 110, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('branding.logo_compact', '', 'image', 'branding', 'Logo Compact', 'Logo untuk sidebar collapsed.', 120, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('branding.favicon', '', 'image', 'branding', 'Favicon', 'Ikon browser.', 130, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('branding.app_icon', '', 'image', 'branding', 'App Icon', 'Ikon PWA dan homescreen.', 140, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('branding.login_logo', '', 'image', 'branding', 'Logo Login', 'Opsional, jika halaman login memakai logo berbeda.', 150, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('branding.primary_hover', '', 'color', 'branding', 'Primary Hover', 'Otomatis dari primary jika kosong.', 160, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('branding.background', '', 'color', 'branding', 'Background', 'Latar utama aplikasi.', 170, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('branding.surface', '', 'color', 'branding', 'Surface', 'Latar card dan panel.', 180, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('branding.sidebar', '', 'color', 'branding', 'Sidebar', 'Latar sidebar.', 190, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('branding.sidebar_active', '', 'color', 'branding', 'Sidebar Active', 'Gaya item menu aktif.', 200, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('branding.text_primary', '', 'color', 'branding', 'Text Primary', 'Teks utama.', 210, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('branding.text_secondary', '', 'color', 'branding', 'Text Secondary', 'Teks pendukung.', 220, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('branding.border', '', 'color', 'branding', 'Border', 'Garis dan pemisah.', 230, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('branding.success', '', 'color', 'branding', 'Success', 'Status berhasil.', 240, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('branding.warning', '', 'color', 'branding', 'Warning', 'Status peringatan.', 250, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('branding.error', '', 'color', 'branding', 'Error', 'Status error.', 260, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('theme.font_family', 'System Default', 'string', 'branding', 'Font Utama', 'Font global aplikasi.', 270, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('theme.heading_weight', '700', 'int', 'branding', 'Font Weight Heading', 'Bobot judul.', 280, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('theme.font_scale', 'default', 'string', 'branding', 'Skala Font', 'Compact, Default, atau Large.', 290, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('theme.radius', 'rounded', 'string', 'branding', 'Radius Sudut', 'Gaya sudut komponen.', 300, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('theme.shadow', 'soft', 'string', 'branding', 'Bayangan', 'Gaya bayangan card.', 310, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('theme.density', 'comfortable', 'string', 'branding', 'Kepadatan Tampilan', 'Jarak dan tinggi kontrol.', 320, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('sidebar.active_style', 'soft', 'string', 'branding', 'Sidebar Active Style', 'Filled, Pill, Left Border, atau Soft Highlight.', 330, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('sidebar.logo_position', 'left', 'string', 'branding', 'Posisi Logo', 'Kiri atau center.', 340, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('sidebar.width', 'default', 'string', 'branding', 'Lebar Sidebar', 'Compact, Default, atau Wide.', 350, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('header.background', 'surface', 'string', 'branding', 'Background Header', 'White, Surface, atau Primary.', 360, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('header.border', '1', 'bool', 'branding', 'Border Header', 'Tampilkan garis header.', 370, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('header.shadow', '0', 'bool', 'branding', 'Shadow Header', 'Tampilkan bayangan header.', 380, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('header.search', '1', 'bool', 'branding', 'Search Bar', 'Tampilkan pencarian global.', 390, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('header.breadcrumb', '1', 'bool', 'branding', 'Breadcrumb', 'Tampilkan breadcrumb.', 400, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('header.sticky', '1', 'bool', 'branding', 'Header Sticky', 'Header tetap di atas saat scroll.', 410, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('component.button_style', 'solid', 'string', 'branding', 'Gaya Tombol', 'Solid, Soft, Outline, atau Minimal.', 420, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('component.table_style', 'clean', 'string', 'branding', 'Gaya Tabel', 'Clean, Bordered, Striped, atau Compact.', 430, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('component.card_style', 'soft-shadow', 'string', 'branding', 'Gaya Card', 'Flat, Bordered, Soft Shadow, atau Elevated.', 440, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('component.badge_style', 'soft', 'string', 'branding', 'Gaya Badge', 'Solid, Soft, atau Outline.', 450, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('component.badge_radius', 'pill', 'string', 'branding', 'Radius Badge', 'Pill atau Rounded.', 460, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('theme.mode', 'user', 'string', 'branding', 'Mode Tampilan', 'Light, Dark, System, atau User.', 470, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('login.layout', 'split', 'string', 'branding', 'Layout Login', 'Centered, Split, atau Brand Panel.', 480, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('login.background', 'gradient', 'string', 'branding', 'Background Login', 'Solid, Gradient, atau Image.', 490, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('theme.background_style', 'warm', 'string', 'branding', 'Gaya Background', 'Pure White, Warm Gray, Soft Tint, atau Custom.', 500, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('theme.background_intensity', '35', 'int', 'branding', 'Intensitas Background', '0 sampai 100.', 510, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('theme.decorative', 'subtle-gradient', 'string', 'branding', 'Elemen Dekoratif', 'None, Subtle Gradient, Soft Grid, atau Very Light Noise.', 520, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('theme.icon_style', 'outline', 'string', 'branding', 'Gaya Ikon', 'Outline, Rounded, Filled, atau Duotone.', 530, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('advanced.custom_css', '', 'text', 'branding', 'Custom CSS', 'Khusus Super Admin.', 540, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+ON DUPLICATE KEY UPDATE `id` = `id`;
+
+-- Clear the Laravel settings cache after import:
+-- php artisan cache:clear
