@@ -5,6 +5,11 @@ owner: pujosety
 package: .
 env:
   STORAGE_PUBLIC_PATH: /data/lyfla-public
+  AWS_BUCKET: 5e54f0a4c6de4192a6c354051568a2d7
+  AWS_ENDPOINT: https://y0h0izjt9qp6.s3.wasmer.app
+  AWS_DEFAULT_REGION: us-east-1
+  AWS_USE_PATH_STYLE_ENDPOINT: "true"
+  AWS_CA_BUNDLE: /app/resources/certs/cacert.pem
 volumes:
   - name: lyfla-public
     mount: /data/lyfla-public
