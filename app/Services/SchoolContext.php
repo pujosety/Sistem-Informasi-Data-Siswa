@@ -30,7 +30,11 @@ class SchoolContext
             return $this->school;
         }
 
-        if (! (static::$tableExists ??= Schema::hasTable('schools'))) {
+        if (static::$tableExists !== true && Schema::hasTable('schools')) {
+            static::$tableExists = true;
+        }
+
+        if (static::$tableExists !== true) {
             return null;
         }
 

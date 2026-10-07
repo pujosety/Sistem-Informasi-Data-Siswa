@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\AcademicYear;
 use App\Models\Department;
 use App\Models\SchoolClass;
+use App\Models\School;
 use App\Models\Student;
 use App\Models\Subject;
 use App\Models\User;
@@ -75,6 +76,35 @@ class PublicHomePageTest extends TestCase
         $this->assertStringContainsString('data-landing-crowd', $html);
         $this->assertStringContainsString('hero-crowd-canvas', $html);
         $this->assertStringContainsString('aria-hidden="true"', $html);
+    }
+
+    /** @test */
+    public function the_public_site_uses_smpn4_metro_as_the_primary_school_when_promoted(): void
+    {
+        School::query()->update(['is_default' => false]);
+        $primary = School::create([
+            'slug' => 'smp-negeri-4-metro',
+            'name' => 'SMP Negeri 4 Metro',
+            'short_name' => 'SMPN 4 Metro',
+            'contact' => [
+                'address' => 'Jl. Kemiri 15 A, Iringmulyo, Kota Metro, Lampung',
+                'city' => 'Kota Metro',
+                'province' => 'Lampung',
+            ],
+            'is_active' => true,
+            'is_default' => true,
+        ]);
+
+        $this->assertTrue($primary->fresh()->is_default);
+        app(\App\Services\SchoolContext::class)->reset();
+        $this->assertSame($primary->id, app(\App\Services\SchoolContext::class)->id());
+
+        $html = $this->get('/')->assertOk()->getContent();
+
+        $this->assertStringContainsString('SMP Negeri 4 Metro', $html);
+        $this->assertStringContainsString('Jl. Kemiri 15 A', $html);
+        $this->assertStringNotContainsString('SMP 1 LYFLA', $html);
+        $this->assertSame($primary->id, app(\App\Services\SchoolContext::class)->id());
     }
 
     /** @test */
@@ -339,10 +369,10 @@ class PublicHomePageTest extends TestCase
     /**
      * @test
      */
-    public function test_the_profile_says_so_when_nothing_is_published(): void
+    public function test_the_profile_uses_tenant_identity_when_settings_are_empty(): void
     {
-        // No school.* values beyond the default, so the page must not render a
-        // grid of empty labels.
+        // Settings can be empty while the tenant record still carries the
+        // school's canonical identity.
         app(SettingsService::class)->setMany([
             'school.name' => 'SMP 1 LYFLA',
             'school.npsn' => '',
@@ -357,6 +387,7 @@ class PublicHomePageTest extends TestCase
 
         $body = $this->get('/tentang')->getContent();
 
-        $this->assertStringContainsString('Detail profil belum dilengkapi', $body);
+        $this->assertStringContainsString('SMP 1 LYFLA', $body);
+        $this->assertStringContainsString('20219876', $body);
     }
 }
