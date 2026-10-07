@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Services\SettingsService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class AuthBrandingViewTest extends TestCase
@@ -67,5 +68,20 @@ class AuthBrandingViewTest extends TestCase
         $this->assertStringContainsString('Tagline dari database', $html);
         $this->assertStringContainsString('--brand-config-primary:#123456', $html);
         $this->assertStringContainsString('--brand-config-accent:#654321', $html);
+    }
+
+    /** @test */
+    public function login_uses_the_database_login_logo_asset_when_configured(): void
+    {
+        Storage::fake('public');
+        Storage::disk('public')->put('branding/2026/login-logo.png', 'login-logo-bytes');
+
+        app(SettingsService::class)->setMany([
+            'branding.login_logo' => 'branding/2026/login-logo.png',
+        ]);
+
+        $html = $this->get(route('login'))->assertOk()->getContent();
+
+        $this->assertStringContainsString('/branding/login-logo?v=', $html);
     }
 }

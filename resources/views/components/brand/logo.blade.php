@@ -7,6 +7,7 @@
     // that then collided with the real one.
     'height' => null,
     'alt' => null,
+    'src' => null,
     // Inline SVG would be crisper, but the official asset is a PNG and the
     // mark must not be redrawn, so the source is used as authored.
 ])
@@ -18,9 +19,9 @@
     $configuredIcon = data_get($brandSettings, 'icon');
     $configuredLogo = data_get($brandSettings, 'logo');
     $usingLogoAsIconFallback = $isIcon && blank($configuredIcon) && filled($configuredLogo);
-    $configuredSource = $isIcon
+    $configuredSource = $src ?: ($isIcon
         ? ($configuredIcon ?: $configuredLogo)
-        : $configuredLogo;
+        : $configuredLogo);
 
     $brandName = data_get($brandSettings, 'shortName')
         ?: config('branding.platform.name');

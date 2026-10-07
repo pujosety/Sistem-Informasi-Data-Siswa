@@ -46,10 +46,8 @@
 
     {{-- Favicons. The multi-resolution .ico covers older browsers; the
          explicit PNGs keep the mark sharp on modern ones. --}}
-    <link rel="icon" href="{{ asset('branding/favicon.ico') }}" sizes="any">
-    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('branding/favicon-32x32.png') }}">
-    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('branding/favicon-16x16.png') }}">
-    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('branding/apple-touch-icon.png') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ data_get($brand ?? [], 'assets.favicon') ?: asset('branding/favicon-32x32.png') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ data_get($brand ?? [], 'assets.appIcon') ?: asset('branding/apple-touch-icon.png') }}">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-title" content="{{ $appBrandName }}">
     <meta name="description" content="{{ $appBrandFullName }} — {{ config('branding.platform.expansion') }}.">

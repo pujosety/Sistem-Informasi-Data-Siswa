@@ -7,6 +7,11 @@
     $brandName = data_get($brand ?? [], 'name') ?: config('branding.platform.name');
     $brandShortName = data_get($brand ?? [], 'shortName') ?: config('branding.platform.name');
     $brandTagline = data_get($brand ?? [], 'tagline') ?: 'Pendaftaran, akademik, dan informasi sekolah dalam satu portal.';
+    $authLogo = data_get($brand ?? [], 'assets.loginLogo')
+        ?: data_get($brand ?? [], 'icon')
+        ?: data_get($brand ?? [], 'logo');
+    $brandFavicon = data_get($brand ?? [], 'assets.favicon') ?: asset('branding/favicon-32x32.png');
+    $brandAppIcon = data_get($brand ?? [], 'assets.appIcon') ?: asset('branding/apple-touch-icon.png');
 @endphp
 <!DOCTYPE html>
 <html lang="id" class="h-full" style="{{ $runtimeBrandCss }}">
@@ -15,9 +20,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="theme-color" content="{{ data_get($brand ?? [], 'primary') ?: config('branding.theme_color') }}">
     <title>@yield('title') · {{ $brandShortName }}</title>
-    <link rel="icon" href="{{ asset('branding/favicon.ico') }}" sizes="any">
-    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('branding/favicon-32x32.png') }}">
-    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('branding/apple-touch-icon.png') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ $brandFavicon }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ $brandAppIcon }}">
     <script>
         (() => {
             const key = 'lyfla.theme';
@@ -52,7 +56,7 @@
 
                 <div class="auth-visual-top">
                     <div class="auth-logo-plate">
-                        <x-brand.logo variant="icon" height="h-12 w-12" :alt="$brandShortName" />
+                        <x-brand.logo variant="icon" height="h-12 w-12" :alt="$brandShortName" :src="$authLogo" />
                     </div>
                     <div class="min-w-0">
                         <p class="auth-brand-name">{{ $brandShortName }}</p>
@@ -78,7 +82,7 @@
             <main class="auth-main" id="auth-content">
                 <div class="auth-mobile-brand">
                     <div class="auth-logo-plate auth-logo-plate-small">
-                        <x-brand.logo variant="icon" height="h-9 w-9" :alt="$brandShortName" />
+                        <x-brand.logo variant="icon" height="h-9 w-9" :alt="$brandShortName" :src="$authLogo" />
                     </div>
                     <div>
                         <p class="auth-brand-name">{{ $brandShortName }}</p>

@@ -3,7 +3,7 @@
 @php
     $pageTitle = $post->metaTitle();
     $pageDescription = $post->meta_description ?: $post->excerpt ?: 'Kabar terbaru dari '.($school['name'] ?: 'sekolah').'.';
-    $pageImage = $post->media->first()?->url() ?: asset(config('branding.assets.logo'));
+    $pageImage = $post->media->first()?->url() ?: (data_get($brand ?? [], 'logo') ?: asset(config('branding.assets.logo')));
 @endphp
 @section('title', $pageTitle)
 @section('description', $pageDescription)

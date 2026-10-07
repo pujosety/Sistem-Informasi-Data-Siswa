@@ -4,6 +4,10 @@
         data_get($brand ?? [], 'accent'),
         data_get($brand ?? [], 'tokens', []),
     );
+    $brandLogo = data_get($brand ?? [], 'logo') ?: asset(config('branding.assets.logo'));
+    $brandIcon = data_get($brand ?? [], 'icon') ?: $brandLogo;
+    $brandFavicon = data_get($brand ?? [], 'assets.favicon') ?: asset('branding/favicon-32x32.png');
+    $brandAppIcon = data_get($brand ?? [], 'assets.appIcon') ?: asset('branding/apple-touch-icon.png');
 @endphp
 
 <!DOCTYPE html>
@@ -19,7 +23,7 @@
     <meta property="og:title" content="@yield('title', $school['name'] ?: config('branding.platform.name'))">
     <meta property="og:description" content="@yield('description', 'Portal informasi dan administrasi ' . ($school['name'] ?: 'sekolah') . '.')">
     <meta property="og:url" content="{{ url()->current() }}">
-    <meta property="og:image" content="@yield('og_image', asset(config('branding.assets.logo')))" />
+    <meta property="og:image" content="@yield('og_image', $brandLogo)" />
     <meta name="twitter:card" content="summary_large_image">
     @php
         $structuredData = [
@@ -39,9 +43,9 @@
         $structuredJson = json_encode($structuredData, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);
     @endphp
     <script type="application/ld+json">{{ $structuredJson }}</script>
-    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('branding/favicon-32x32.png') }}">
-    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('branding/apple-touch-icon.png') }}">
-    <meta name="theme-color" content="{{ config('branding.theme_color') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ $brandFavicon }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ $brandAppIcon }}">
+    <meta name="theme-color" content="{{ data_get($brand ?? [], 'primary') ?: config('branding.theme_color') }}">
     <script>
         (() => {
             const key = 'lyfla.theme';

@@ -11,6 +11,7 @@ use App\Models\User;
 use App\Services\RoleSeeder;
 use App\Services\SettingsService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 /**
@@ -64,6 +65,23 @@ class PublicHomePageTest extends TestCase
         $response->assertOk();
         $response->assertViewIs('public.home');
         $this->assertStringContainsString('SMP 1 LYFLA', $response->getContent());
+    }
+
+    /** @test */
+    public function an_uploaded_brand_logo_is_used_by_the_public_page_instead_of_the_repository_fallback(): void
+    {
+        Storage::fake('public');
+        Storage::disk('public')->put('branding/2026/test-logo.png', 'logo-bytes');
+
+        app(SettingsService::class)->setMany([
+            'branding.logo' => 'branding/2026/test-logo.png',
+            'branding.icon' => '',
+        ]);
+
+        $html = $this->get('/')->assertOk()->getContent();
+
+        $this->assertStringContainsString('/branding/logo?v=', $html);
+        $this->assertStringNotContainsString('/branding/lyfla-logo.png', $html);
     }
 
     /**

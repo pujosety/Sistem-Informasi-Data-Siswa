@@ -137,7 +137,7 @@
                      placeholder pill next to real photography looks like a
                      template. --}}
                 <div class="absolute -right-4 -top-5 flex items-center gap-3 rounded-[var(--radius-md)] border border-white/20 bg-white/95 px-4 py-3 shadow-xl backdrop-blur xl:-right-8">
-                    <img src="{{ asset(config('branding.assets.logo_icon')) }}"
+                    <img src="{{ data_get($brand ?? [], 'icon') ?: data_get($brand ?? [], 'logo') ?: asset(config('branding.assets.logo_icon')) }}"
                          alt=""
                          class="size-10 shrink-0">
                     <div class="min-w-0">
