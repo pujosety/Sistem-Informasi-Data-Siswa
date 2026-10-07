@@ -26,6 +26,7 @@ class SettingsService
      * shares a single attempt instead of one per view composer call.
      */
     private static ?bool $dbUsable = null;
+    private static ?bool $hasSchoolColumn = null;
 
     /**
      * key => [value, type, group, label, hint, sort]
@@ -140,8 +141,12 @@ class SettingsService
         }
 
         try {
-            $rows = Cache::rememberForever(self::CACHE_KEY, function () {
-                return Setting::orderBy('group')->orderBy('sort_order')->get()
+            $cacheKey = $this->cacheKey();
+            $rows = Cache::rememberForever($cacheKey, function () {
+                $query = Setting::query();
+                $this->applySchoolScope($query);
+
+                return $query->orderBy('group')->orderBy('sort_order')->get()
                     ->mapWithKeys(fn (Setting $s) => [$s->key => $s]);
             });
         } catch (\Illuminate\Database\QueryException $e) {
@@ -214,7 +219,9 @@ class SettingsService
         // login show a stale identity after an admin or migration update.
         if (($definition = self::DEFAULTS[$key] ?? null) && $definition[2] === 'branding' && $this->databaseUsable()) {
             try {
-                $fresh = Setting::where('key', $key)->first();
+                $query = Setting::where('key', $key);
+                $this->applySchoolScope($query);
+                $fresh = $query->first();
                 if ($fresh) {
                     return $fresh->typedValue();
                 }
@@ -244,7 +251,9 @@ class SettingsService
 
         if ($group === 'branding' && $this->databaseUsable()) {
             try {
-                $rows = Setting::where('group', $group)
+                $query = Setting::where('group', $group);
+                $this->applySchoolScope($query);
+                $rows = $query
                     ->orderBy('sort_order')
                     ->get()
                     ->mapWithKeys(fn (Setting $setting) => [$setting->key => $setting]);
@@ -278,8 +287,13 @@ class SettingsService
     {
         [$default, $type, $group, $label, $hint, $sort] = self::DEFAULTS[$key] ?? [$value, 'string', 'general', $key, null, 99];
 
+        $identity = ['key' => $key];
+        if (($schoolId = $this->schoolId()) !== null) {
+            $identity['school_id'] = $schoolId;
+        }
+
         Setting::updateOrCreate(
-            ['key' => $key],
+            $identity,
             [
                 'value' => $value === null ? null : (is_bool($value) ? ($value ? '1' : '0') : (is_array($value) ? json_encode($value) : (string) $value)),
                 'type' => $type,
@@ -304,15 +318,20 @@ class SettingsService
 
     public function flush(): void
     {
-        Cache::forget(self::CACHE_KEY);
+        Cache::forget($this->cacheKey());
     }
 
     /** Fill in any key that has never been set. Never overwrites. */
     public function seedDefaults(): void
     {
         foreach (self::DEFAULTS as $key => [$value, $type, $group, $label, $hint, $sort]) {
+            $identity = ['key' => $key];
+            if (($schoolId = $this->schoolId()) !== null) {
+                $identity['school_id'] = $schoolId;
+            }
+
             Setting::firstOrCreate(
-                ['key' => $key],
+                $identity,
                 [
                     'value' => (string) $value,
                     'type' => $type,
@@ -359,7 +378,9 @@ class SettingsService
 
         if (in_array($key, ['branding.logo', 'branding.icon', 'branding.logo_dark', 'branding.logo_compact', 'branding.favicon', 'branding.app_icon', 'branding.login_logo'], true)) {
             try {
-                $fresh = Setting::where('key', $key)->first();
+                $query = Setting::where('key', $key);
+                $this->applySchoolScope($query);
+                $fresh = $query->first();
                 $path = $fresh?->typedValue() ?? $path;
             } catch (\Throwable $e) {
                 report($e);
@@ -368,6 +389,17 @@ class SettingsService
 
         if (! filled($path)) {
             return null;
+        }
+
+        $setting = $this->all()->get($key);
+        $version = $setting?->updated_at?->timestamp
+            ?? substr(sha1((string) $path), 0, 12);
+
+        // Seeded school assets are committed as local public files. They remain
+        // editable because the setting row can be replaced by an uploaded path,
+        // while the initial demo asset does not depend on an ephemeral volume.
+        if (str_starts_with((string) $path, 'images/') && is_file(public_path((string) $path))) {
+            return asset(ltrim((string) $path, '/')).'?v='.$version;
         }
 
         // A database row can outlive its uploaded object (failed upload,
@@ -387,10 +419,6 @@ class SettingsService
         // The route is intentionally versioned. Browser caches otherwise keep
         // the previous logo/icon for up to an hour after an administrator
         // uploads a replacement because the public asset URL is stable.
-        $setting = $this->all()->get($key);
-        $version = $setting?->updated_at?->timestamp
-            ?? substr(sha1((string) $path), 0, 12);
-
         $asset = match ($key) {
             'branding.logo' => 'logo',
             'branding.icon' => 'icon',
@@ -404,6 +432,28 @@ class SettingsService
 
         return $asset === null
             ? null
-            : route('brand.asset', ['asset' => $asset, 'v' => $version]);
+            : route('brand.asset', ['asset' => $asset, 'v' => $version, 'school' => app(SchoolContext::class)->slug()]);
+    }
+
+    private function schoolId(): ?int
+    {
+        return app()->bound(SchoolContext::class) ? app(SchoolContext::class)->id() : null;
+    }
+
+    private function cacheKey(): string
+    {
+        return self::CACHE_KEY.'.'.($this->schoolId() ?? 'legacy');
+    }
+
+    private function applySchoolScope($query): void
+    {
+        if ($this->schoolId() !== null && $this->settingsHaveSchoolColumn()) {
+            $query->where('school_id', $this->schoolId());
+        }
+    }
+
+    private function settingsHaveSchoolColumn(): bool
+    {
+        return static::$hasSchoolColumn ??= Schema::hasColumn('settings', 'school_id');
     }
 }

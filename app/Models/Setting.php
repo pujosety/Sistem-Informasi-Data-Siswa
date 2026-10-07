@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Setting extends Model
 {
-    protected $fillable = ['key', 'value', 'type', 'group', 'label', 'hint', 'sort_order'];
+    protected $fillable = ['school_id', 'key', 'value', 'type', 'group', 'label', 'hint', 'sort_order'];
 
     protected function casts(): array
     {

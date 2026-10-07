@@ -4,15 +4,18 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use App\Models\Concerns\BelongsToSchool;
 
 /**
  * A free-form label on a post.
  */
 class Tag extends Model
 {
+    use BelongsToSchool;
+
     protected $table = 'cms_tags';
 
-    protected $fillable = ['name', 'slug'];
+    protected $fillable = ['school_id', 'name', 'slug'];
 
     public function posts(): BelongsToMany
     {

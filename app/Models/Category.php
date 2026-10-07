@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\Concerns\BelongsToSchool;
 
 /**
  * A post category, and a page section.
@@ -15,9 +16,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class Category extends Model
 {
+    use BelongsToSchool;
+
     protected $table = 'cms_categories';
 
-    protected $fillable = ['name', 'slug', 'description', 'sort_order'];
+    protected $fillable = ['school_id', 'name', 'slug', 'description', 'sort_order'];
 
     protected $casts = ['sort_order' => 'integer'];
 

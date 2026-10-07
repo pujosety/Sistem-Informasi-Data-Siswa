@@ -6,6 +6,7 @@ use App\Services\AuditService;
 use App\Services\BrandService;
 use App\Services\CompletenessService;
 use App\Services\SettingsService;
+use App\Services\SchoolContext;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -27,6 +28,7 @@ class SettingsController extends BaseController
         CompletenessService $completeness,
         private readonly SettingsService $settings,
         private readonly BrandService $brand,
+        private readonly SchoolContext $schoolContext,
     ) {
         parent::__construct($audit, $completeness);
     }
@@ -38,6 +40,8 @@ class SettingsController extends BaseController
     public function index(): View
     {
         return view('settings.index', [
+            'schools' => $this->schoolContext->allActive(),
+            'activeSchool' => $this->schoolContext->current(),
             'cards' => [
                 ['route' => 'settings.school', 'icon' => 'school', 'title' => 'Profil Sekolah',
                  'desc' => 'Identitas sekolah pada header laporan', 'permission' => 'school.view',

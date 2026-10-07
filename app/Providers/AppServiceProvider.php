@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Models\ActivityLog;
 use App\Models\User;
 use App\Services\NavigationService;
+use App\Services\SchoolContext;
 use App\Services\SettingsService;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\View;
@@ -79,7 +80,7 @@ class AppServiceProvider extends ServiceProvider
 
     public function register(): void
     {
-        //
+        $this->app->singleton(SchoolContext::class, fn () => new SchoolContext);
     }
 
     /**

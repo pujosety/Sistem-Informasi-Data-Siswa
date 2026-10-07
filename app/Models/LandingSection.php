@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Schema;
+use App\Models\Concerns\BelongsToSchool;
 
 /**
  * One block on a landing page.
@@ -27,6 +28,8 @@ use Illuminate\Support\Facades\Schema;
  */
 class LandingSection extends Model
 {
+    use BelongsToSchool;
+
     public const TYPE_HERO = 'hero';
     public const TYPE_TRUST = 'trust';
     public const TYPE_STATS = 'stats';
@@ -72,6 +75,7 @@ class LandingSection extends Model
     ];
 
     protected $fillable = [
+        'school_id',
         'page_key',
         'type',
         'title',

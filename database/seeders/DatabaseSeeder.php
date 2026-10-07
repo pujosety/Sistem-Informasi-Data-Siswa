@@ -15,6 +15,7 @@ class DatabaseSeeder extends Seeder
             SettingsSeeder::class,
             UserSeeder::class,
             StudentSeeder::class,
+            Smpn4MetroSeeder::class,
         ]);
     }
 }

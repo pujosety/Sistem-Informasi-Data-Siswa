@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Models\Concerns\BelongsToSchool;
 
 /**
  * A post or a page.
@@ -22,7 +23,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  */
 class Post extends Model
 {
-    use SoftDeletes;
+    use BelongsToSchool, SoftDeletes;
 
     public const KIND_POST = 'post';
 
@@ -53,10 +54,12 @@ class Post extends Model
     protected $table = 'cms_posts';
 
     protected $fillable = [
+        'school_id',
         'kind', 'title', 'slug', 'body', 'excerpt', 'status',
         'author_id', 'category_id', 'published_at', 'scheduled_for',
         'parent_id', 'sort_order', 'blocks',
         'meta_title', 'meta_description', 'meta_image',
+        'source_url', 'source_name',
         'is_public', 'public_from', 'public_until',
     ];
 

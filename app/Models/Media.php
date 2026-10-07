@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Storage;
+use App\Models\Concerns\BelongsToSchool;
 
 /**
  * One image in the CMS media library.
@@ -16,14 +17,15 @@ use Illuminate\Support\Facades\Storage;
  */
 class Media extends Model
 {
-    use SoftDeletes;
+    use BelongsToSchool, SoftDeletes;
 
     protected $table = 'cms_media';
 
     protected $fillable = [
+        'school_id',
         'disk', 'path', 'original_name', 'mime',
         'size', 'width', 'height',
-        'alt_text', 'caption', 'uploaded_by',
+        'alt_text', 'caption', 'source_name', 'source_url', 'uploaded_by',
     ];
 
     protected $casts = [

@@ -9,6 +9,28 @@
 
 @section('content')
 
+@if (auth()->user()->hasRole('super_admin') && ($schools ?? collect())->count() > 1)
+    <x-card class="mb-5" title="Sekolah Aktif" icon="school"
+            description="Pilih sekolah yang sedang dikelola. Data CMS, settings, media, dan branding terisolasi per sekolah.">
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+                <p class="text-small font-semibold text-[var(--app-text)]">{{ $activeSchool?->name }}</p>
+                <p class="text-caption text-[var(--app-text-muted)]">Slug: {{ $activeSchool?->slug }}</p>
+            </div>
+            <div class="flex flex-wrap gap-2">
+                @foreach ($schools as $school)
+                    <form method="POST" action="{{ route('settings.school.switch', $school) }}">
+                        @csrf
+                        <button type="submit" class="btn {{ $activeSchool?->id === $school->id ? 'btn-primary' : 'btn-secondary' }}">
+                            {{ $school->name }}
+                        </button>
+                    </form>
+                @endforeach
+            </div>
+        </div>
+    </x-card>
+@endif
+
 <div class="grid sm:grid-cols-2 xl:grid-cols-3 gap-4">
     @foreach ($cards as $card)
         @continue(! auth()->user()->can($card['permission']))

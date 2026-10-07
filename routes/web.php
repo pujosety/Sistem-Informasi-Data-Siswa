@@ -605,6 +605,8 @@ Route::middleware(['auth', 'can:classroom.view'])
     // --- Settings (ADMIN → PENGATURAN) ------------------------------
     Route::middleware('can:settings.view')->group(function () {
         Route::get('/pengaturan', [SettingsController::class, 'index'])->name('settings.index');
+        Route::post('/pengaturan/sekolah/{school}/aktif', [\App\Http\Controllers\SchoolContextController::class, 'switch'])
+            ->name('settings.school.switch');
     });
 
     Route::middleware('can:school.view')->group(function () {
