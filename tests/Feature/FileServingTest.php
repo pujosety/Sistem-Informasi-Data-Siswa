@@ -233,6 +233,9 @@ class FileServingTest extends TestCase
         // symlink. On a bucket it exposes every document in the prefix, so the
         // settings service must hand out an application route instead.
         $this->assertStringNotContainsString('/storage/', $url);
-        $this->assertSame(route('brand.asset', ['key' => 'branding.logo']), $url);
+        $this->assertStringStartsWith(
+            route('brand.asset', ['key' => 'branding.logo']).'?v=',
+            $url
+        );
     }
 }

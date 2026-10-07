@@ -130,6 +130,39 @@ class BrandingTest extends TestCase
         );
     }
 
+    /** @test */
+    public function runtime_branding_values_are_emitted_as_css_variables(): void
+    {
+        $admin = User::factory()->create();
+        $admin->assignRole('admin');
+
+        app(\App\Services\SettingsService::class)->setMany([
+            'branding.primary_color' => '#681D2A',
+            'branding.accent_color' => '#A83C4C',
+        ]);
+
+        $html = $this->actingAs($admin)
+            ->get('/admin/dashboard')
+            ->assertOk()
+            ->getContent();
+
+        $this->assertStringContainsString('--brand-config-primary:#681D2A', $html);
+        $this->assertStringContainsString('--brand-config-accent:#A83C4C', $html);
+    }
+
+    /** @test */
+    public function public_dark_mode_keeps_the_header_background_dark(): void
+    {
+        $css = File::get(resource_path('css/app.css'));
+
+        $this->assertStringContainsString(":root[data-theme='dark'] .public-site", $css);
+        $this->assertStringContainsString(
+            '--app-sidebar-bg: #171717',
+            $css,
+            'Dark public headers must not use white text on a light surface.'
+        );
+    }
+
     /**
      * @test
      */

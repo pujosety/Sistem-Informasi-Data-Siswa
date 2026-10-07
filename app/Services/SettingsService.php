@@ -288,6 +288,17 @@ class SettingsService
     {
         $path = $this->get($key);
 
-        return filled($path) ? route('brand.asset', ['key' => $key]) : null;
+        if (! filled($path)) {
+            return null;
+        }
+
+        // The route is intentionally versioned. Browser caches otherwise keep
+        // the previous logo/icon for up to an hour after an administrator
+        // uploads a replacement because the public asset URL is stable.
+        $setting = $this->all()->get($key);
+        $version = $setting?->updated_at?->timestamp
+            ?? substr(sha1((string) $path), 0, 12);
+
+        return route('brand.asset', ['key' => $key, 'v' => $version]);
     }
 }

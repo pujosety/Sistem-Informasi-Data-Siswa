@@ -1,5 +1,12 @@
+@php
+    $runtimeBrandCss = app(\App\Services\BrandService::class)->cssVariables(
+        data_get($brand ?? [], 'primary'),
+        data_get($brand ?? [], 'accent'),
+    );
+@endphp
+
 <!DOCTYPE html>
-<html lang="id" class="h-full">
+<html lang="id" class="h-full" style="{{ $runtimeBrandCss }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">

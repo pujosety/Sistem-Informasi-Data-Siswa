@@ -32,11 +32,12 @@ class BrandService
         $stored = [];
 
         foreach ($keys as $key) {
-            if (! $request->hasFile($key)) {
+            $wireKey = str_replace('.', '_', $key);
+            $file = $request->file($key) ?? $request->file($wireKey);
+
+            if (! $file instanceof UploadedFile) {
                 continue;
             }
-
-            $file = $request->file($key);
 
             $this->assertIsSafeImage($file);
 
@@ -141,8 +142,12 @@ class BrandService
         $primary = $this->normalize($primary);
         $accent = $this->normalize($accent);
 
-        return "--app-primary:{$primary};--app-primary-hover:{$this->shade($primary, -12)};"
-            ."--app-primary-soft:{$this->shade($primary, 92)};--app-accent:{$accent};";
+        return "--brand-config-primary:{$primary};"
+            ."--brand-config-primary-hover:{$this->shade($primary, -12)};"
+            ."--brand-config-primary-soft:{$this->shade($primary, 92)};"
+            ."--brand-config-primary-dark:{$this->shade($primary, 35)};"
+            ."--brand-config-primary-dark-hover:{$this->shade($primary, 48)};"
+            ."--brand-config-accent:{$accent};";
     }
 
     private function normalize(?string $hex): string

@@ -174,9 +174,9 @@
     --app-text-muted: #5C4A4E;
     --app-text-subtle: #8A7479;
 
-    --app-primary: var(--brand-maroon);
-    --app-primary-hover: var(--brand-maroon-hover);
-    --app-primary-soft: var(--brand-maroon-soft);
+    --app-primary: var(--brand-config-primary, var(--brand-maroon));
+    --app-primary-hover: var(--brand-config-primary-hover, var(--brand-maroon-hover));
+    --app-primary-soft: var(--brand-config-primary-soft, var(--brand-maroon-soft));
     --app-on-primary: #ffffff;
 
     /* A translucent maroon for washes that need to sit over either surface:
@@ -250,8 +250,8 @@
         --app-text-muted: #9aa8c2;
         --app-text-subtle: #6f7f9c;
 
-        --app-primary: #c2556b;
-        --app-primary-hover: #d4707f;
+        --app-primary: var(--brand-config-primary-dark, #c2556b);
+        --app-primary-hover: var(--brand-config-primary-dark-hover, #d4707f);
         --app-primary-soft: rgb(194 85 107 / 0.16);
         --app-primary-a10: rgb(194 85 107 / 0.12);
         --app-primary-a16: rgb(194 85 107 / 0.20);
@@ -682,9 +682,9 @@
    public pages use the requested school-portal palette without changing admin
    contrast or status semantics. */
 .public-site {
-    --public-primary: #681D2A;
-    --public-accent: #A83C4C;
-    --public-soft: #F7E9EC;
+    --public-primary: var(--brand-config-primary, #681D2A);
+    --public-accent: var(--brand-config-accent, #A83C4C);
+    --public-soft: var(--brand-config-primary-soft, #F7E9EC);
     --public-cream: #F7F3EF;
     --public-charcoal: #171717;
     --public-white: #FFFFFF;
@@ -715,14 +715,16 @@
     --app-text: #F5F1F2;
     --app-text-muted: #C7B9BC;
     --app-text-subtle: #A89499;
-    --app-primary: #C85A6A;
-    --app-primary-hover: #E07A89;
+    --public-primary: var(--brand-config-primary-dark, #C85A6A);
+    --app-primary: var(--brand-config-primary-dark, #C85A6A);
+    --app-primary-hover: var(--brand-config-primary-dark-hover, #E07A89);
     --app-primary-dark: #0F0F10;
     --app-primary-soft: rgb(200 90 106 / 0.18);
     --public-soft: rgb(200 90 106 / 0.18);
     --public-cream: #111111;
     --public-white: #1F1F1F;
     --public-charcoal: #F5F1F2;
+    --app-sidebar-bg: #171717;
 }
 
 .skip-link {
