@@ -784,6 +784,35 @@
     --color-brand-500: var(--public-soft);
 }
 
+/* Landing hero signature interaction: a restrained canvas procession of
+   abstract student figures. It stays in the existing Blade/Vite stack and does
+   not add React, an external sprite URL, or another animation runtime. */
+.hero-crowd-canvas {
+    position: absolute;
+    z-index: 2;
+    display: block;
+    width: 100%;
+    pointer-events: auto;
+    touch-action: pan-y;
+    opacity: .9;
+}
+
+.hero-crowd-canvas-mobile {
+    inset: auto 0 0;
+    height: 58%;
+}
+
+.hero-crowd-canvas-desktop {
+    inset: auto 0 0;
+    height: 48%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .hero-crowd-canvas {
+        opacity: .55;
+    }
+}
+
 :root[data-theme='dark'] .public-site {
     --app-bg: #111111;
     --app-surface: #1F1F1F;

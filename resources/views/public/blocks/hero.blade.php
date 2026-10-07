@@ -58,6 +58,9 @@
                  loading="eager" fetchpriority="high">
         </picture>
         <div class="absolute inset-0 bg-gradient-to-b from-[var(--app-primary-dark)]/55 via-[var(--app-primary-dark)]/35 to-[var(--app-primary-dark)]"></div>
+        <canvas data-landing-crowd data-seed="39"
+                class="hero-crowd-canvas hero-crowd-canvas-mobile"
+                aria-hidden="true"></canvas>
     </div>
 
     <div class="relative shell-wide pb-14 pt-12 sm:pb-20 sm:pt-16 lg:pb-24 lg:pt-20">
@@ -118,6 +121,9 @@
                     {{-- Bottom gradient so the overlaid stat card has a dark
                          plate to sit on rather than floating over a face. --}}
                     <div class="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
+                    <canvas data-landing-crowd data-seed="39"
+                            class="hero-crowd-canvas hero-crowd-canvas-desktop"
+                            aria-hidden="true"></canvas>
                 </div>
 
                 @if ($lead)

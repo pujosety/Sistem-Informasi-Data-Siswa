@@ -68,6 +68,16 @@ class PublicHomePageTest extends TestCase
     }
 
     /** @test */
+    public function the_hero_exposes_the_accessible_interactive_crowd_canvas(): void
+    {
+        $html = $this->get('/')->assertOk()->getContent();
+
+        $this->assertStringContainsString('data-landing-crowd', $html);
+        $this->assertStringContainsString('hero-crowd-canvas', $html);
+        $this->assertStringContainsString('aria-hidden="true"', $html);
+    }
+
+    /** @test */
     public function an_uploaded_brand_logo_is_used_by_the_public_page_instead_of_the_repository_fallback(): void
     {
         Storage::fake('public');
