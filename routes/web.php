@@ -143,8 +143,8 @@ Route::get('/health', HealthController::class)->name('health');
 | database must not stop the login page rendering its logo.
 |
 */
-Route::get('/branding/{key}', [BrandAssetController::class, 'show'])
-    ->where('key', 'branding\.(?:logo|icon)')
+Route::get('/branding/{asset}', [BrandAssetController::class, 'show'])
+    ->whereIn('asset', ['logo', 'icon'])
     ->name('brand.asset');
 
 /*

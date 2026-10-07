@@ -42,8 +42,14 @@ class BrandAssetController extends Controller
 
     public function __construct(private readonly SettingsService $settings) {}
 
-    public function show(Request $request, string $key): StreamedResponse
+    public function show(Request $request, string $asset): StreamedResponse
     {
+        $key = match ($asset) {
+            'logo' => 'branding.logo',
+            'icon' => 'branding.icon',
+            default => abort(404),
+        };
+
         abort_unless(in_array($key, self::ALLOWED, true), 404);
 
         $path = $this->settings->get($key);

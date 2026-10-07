@@ -327,6 +327,14 @@ class SettingsService
         $version = $setting?->updated_at?->timestamp
             ?? substr(sha1((string) $path), 0, 12);
 
-        return route('brand.asset', ['key' => $key, 'v' => $version]);
+        $asset = match ($key) {
+            'branding.logo' => 'logo',
+            'branding.icon' => 'icon',
+            default => null,
+        };
+
+        return $asset === null
+            ? null
+            : route('brand.asset', ['asset' => $asset, 'v' => $version]);
     }
 }

@@ -181,7 +181,7 @@ class FileServingTest extends TestCase
 
         Storage::disk('public')->put('branding/2026/09/logo.png', 'LOGO-BYTES');
 
-        $response = $this->get(route('brand.asset', ['key' => 'branding.logo']));
+        $response = $this->get(route('brand.asset', ['asset' => 'logo']));
 
         // The login screen renders before anyone is authenticated, so this
         // route has to work for a guest. If it ever moves behind auth the
@@ -204,7 +204,7 @@ class FileServingTest extends TestCase
         // The setting is empty, so there is no path to resolve.
         $this->app->make(SettingsService::class)->setMany(['branding.icon' => '']);
 
-        $this->get(route('brand.asset', ['key' => 'branding.icon']))->assertNotFound();
+        $this->get(route('brand.asset', ['asset' => 'icon']))->assertNotFound();
     }
 
     public function test_a_missing_stored_brand_asset_is_not_emitted_as_a_broken_url(): void
@@ -224,7 +224,7 @@ class FileServingTest extends TestCase
 
         Storage::disk('public')->put('branding/icon.svg', '<svg onload="alert(1)"></svg>');
 
-        $response = $this->get(route('brand.asset', ['key' => 'branding.icon']));
+        $response = $this->get(route('brand.asset', ['asset' => 'icon']));
 
         $response->assertOk();
 
@@ -237,6 +237,7 @@ class FileServingTest extends TestCase
     public function test_the_asset_url_never_points_at_a_raw_storage_path(): void
     {
         $this->app->make(SettingsService::class)->setMany(['branding.logo' => 'branding/logo.png']);
+        Storage::disk('public')->put('branding/logo.png', 'LOGO-BYTES');
 
         $url = $this->app->make(SettingsService::class)->asset('branding.logo');
 
@@ -245,8 +246,27 @@ class FileServingTest extends TestCase
         // settings service must hand out an application route instead.
         $this->assertStringNotContainsString('/storage/', $url);
         $this->assertStringStartsWith(
-            route('brand.asset', ['key' => 'branding.logo']).'?v=',
+            route('brand.asset', ['asset' => 'logo']).'?v=',
             $url
         );
+    }
+
+    public function test_brand_asset_urls_use_dotless_route_segments_for_phpix_hosts(): void
+    {
+        $this->app->make(SettingsService::class)->setMany([
+            'branding.logo' => 'branding/logo.png',
+        ]);
+
+        Storage::disk('public')->put('branding/logo.png', 'LOGO-BYTES');
+
+        $url = $this->app->make(SettingsService::class)->asset('branding.logo');
+
+        // Wasmer/PHPix treats a dotted path segment as a static-file request
+        // before Laravel can dispatch it. The canonical route must therefore
+        // use /branding/logo, while the bucket remains private behind Laravel.
+        $this->assertStringContainsString('/branding/logo?v=', $url);
+        $this->get($url)
+            ->assertOk()
+            ->assertHeader('Content-Type', 'image/png');
     }
 }
