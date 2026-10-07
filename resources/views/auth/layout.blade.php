@@ -56,7 +56,7 @@
 
                 <div class="auth-visual-top">
                     <div class="auth-logo-plate">
-                        <x-brand.logo variant="icon" height="h-12 w-12" :alt="$brandShortName" :src="$authLogo" />
+                        <x-brand.logo variant="lockup" height="h-12 w-auto max-w-full object-contain" :alt="$brandShortName" :src="$authLogo" />
                     </div>
                     <div class="min-w-0">
                         <p class="auth-brand-name">{{ $brandShortName }}</p>
@@ -82,7 +82,7 @@
             <main class="auth-main" id="auth-content">
                 <div class="auth-mobile-brand">
                     <div class="auth-logo-plate auth-logo-plate-small">
-                        <x-brand.logo variant="icon" height="h-9 w-9" :alt="$brandShortName" :src="$authLogo" />
+                        <x-brand.logo variant="lockup" height="h-9 w-auto max-w-[9rem] object-contain" :alt="$brandShortName" :src="$authLogo" />
                     </div>
                     <div>
                         <p class="auth-brand-name">{{ $brandShortName }}</p>

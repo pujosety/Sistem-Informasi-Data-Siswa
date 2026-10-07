@@ -82,15 +82,19 @@
 
             {{-- ============ Brand ============ --}}
             <a href="{{ route('home') }}" class="flex items-center gap-3 min-w-0 group">
-                <span class="grid place-items-center w-10 h-10 shrink-0 rounded-[var(--radius-lg)] bg-white">
-                    <x-brand.logo variant="icon" height="h-8" alt="{{ config('branding.platform.name') }}" />
-                </span>
-                <div class="min-w-0">
-                    <p class="text-body font-bold leading-tight truncate group-hover:underline">
-                        {{ $school['name'] ?: config('branding.platform.name') }}
-                    </p>
-                    <p class="text-[11px] text-white/55 leading-tight truncate hidden sm:block">{{ config('branding.platform.expansion') }}</p>
-                </div>
+                @if (filled(data_get($brand ?? [], 'logo')))
+                    <x-brand.logo variant="lockup" height="h-9 w-auto max-w-[11rem] object-contain" alt="{{ $school['name'] ?: config('branding.platform.name') }}" />
+                @else
+                    <span class="grid place-items-center w-10 h-10 shrink-0 rounded-[var(--radius-lg)] bg-white">
+                        <x-brand.logo variant="icon" height="h-8" alt="{{ config('branding.platform.name') }}" />
+                    </span>
+                    <div class="min-w-0">
+                        <p class="text-body font-bold leading-tight truncate group-hover:underline">
+                            {{ $school['name'] ?: config('branding.platform.name') }}
+                        </p>
+                        <p class="text-[11px] text-white/55 leading-tight truncate hidden sm:block">{{ config('branding.platform.expansion') }}</p>
+                    </div>
+                @endif
             </a>
 
             {{-- ============ Desktop navigation ============ --}}
