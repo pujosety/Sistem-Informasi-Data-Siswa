@@ -171,7 +171,7 @@ class BrandService
     {
         $hex = trim((string) $hex);
 
-        return preg_match('/^#[0-9a-fA-F]{6}$/', $hex) ? $hex : '#1D4ED8';
+        return preg_match('/^#[0-9a-fA-F]{6}$/', $hex) ? $hex : '#681D2A';
     }
 
     /** Lighten (+) or darken (-) a hex colour by a percentage. */
