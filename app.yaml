@@ -34,7 +34,7 @@ scripts:
 annotations:
   anybuild.run/config:
     commands:
-      after_deploy: php artisan migrate --force --no-interaction
+      after_deploy: php artisan migrate --force --no-interaction && php artisan lyfla:normalize-identity --no-interaction
     composer_build_script: post-update-cmd
     composer_enable: true
     name: out

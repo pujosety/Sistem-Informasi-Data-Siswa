@@ -15,7 +15,7 @@ WHERE `key` = 'app.short_name'
 UPDATE settings
 SET value = 'Pendaftaran, akademik, dan informasi sekolah dalam satu portal.', updated_at = CURRENT_TIMESTAMP
 WHERE `key` = 'app.tagline'
-  AND TRIM(BOTH '"' FROM TRIM(value)) IN ('Sistem Informasi Managemen Siswa', 'Portal Data Siswa', 'Data siswa, satu tempat');
+  AND TRIM(BOTH '"' FROM TRIM(value)) IN ('Sistem Informasi Managemen Siswa', 'Sistem Informasi Managemen Sekolah', 'Portal Data Siswa', 'Data siswa, satu tempat');
 
 -- Clear Laravel cache after import:
 -- php artisan cache:clear

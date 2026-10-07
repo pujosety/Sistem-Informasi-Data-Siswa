@@ -17,7 +17,7 @@ class NormalizeLyflaIdentity extends Command
         $updates = [
             'app.name' => ['SMP 1 LYFLA', ['SIMS', 'SIDA', 'Sistem Informasi Data Siswa', 'Sistem Informasi Data Siswa — SIDA']],
             'app.short_name' => ['LYFLA', ['SIMS', 'SIDA', 'SMA']],
-            'app.tagline' => ['Pendaftaran, akademik, dan informasi sekolah dalam satu portal.', ['Sistem Informasi Managemen Siswa', 'Portal Data Siswa', 'Data siswa, satu tempat']],
+            'app.tagline' => ['Pendaftaran, akademik, dan informasi sekolah dalam satu portal.', ['Sistem Informasi Managemen Siswa', 'Sistem Informasi Managemen Sekolah', 'Portal Data Siswa', 'Data siswa, satu tempat']],
         ];
 
         $changed = 0;
