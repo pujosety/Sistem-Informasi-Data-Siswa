@@ -122,6 +122,11 @@ return [
                 // exists()/readStream() call fail with cURL error 60.
                 'verify' => env('AWS_CA_BUNDLE', true),
             ],
+            'options' => [
+                'http' => [
+                    'verify' => env('AWS_CA_BUNDLE', true),
+                ],
+            ],
             'throw' => false,
             'report' => false,
         ],
