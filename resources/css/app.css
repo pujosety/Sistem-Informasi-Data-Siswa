@@ -1471,6 +1471,7 @@
 .lyfla-ai-mascot img { position: relative; z-index: 2; width: 100%; height: 100%; object-fit: contain; user-select: none; }
 .lyfla-ai-ground { position: absolute; z-index: 1; left: 18%; right: 18%; bottom: 1%; height: 12%; border-radius: 50%; background: rgb(15 23 42 / .20); filter: blur(7px); }
 .lyfla-ai-mascot.is-thinking img { animation: lyfla-ai-float 1.4s ease-in-out infinite; }
+.lyfla-ai-mascot.is-switching img { animation: lyfla-ai-gaze-shift .24s ease-out; }
 .lyfla-ai-mascot.is-open img { animation: lyfla-ai-pop .28s ease-out; }
 .lyfla-ai-bubble { position: fixed; right: 1.5rem; bottom: 8.6rem; z-index: 81; max-width: 14rem; padding: .65rem .85rem; border: 1px solid var(--app-border); border-radius: 1rem 1rem .25rem 1rem; background: var(--app-surface); color: var(--app-text); box-shadow: var(--shadow-raised); font-size: var(--text-small); font-weight: 700; }
 .lyfla-ai-panel { position: fixed; right: 1.5rem; bottom: 8rem; z-index: 81; display: flex; width: min(28rem, calc(100vw - 2rem)); height: min(42rem, 80vh); flex-direction: column; overflow: hidden; border: 1px solid var(--app-border); border-radius: 1.25rem; background: var(--app-surface); box-shadow: 0 1.5rem 4rem rgb(15 23 42 / .24); }
@@ -1499,6 +1500,7 @@
 .lyfla-ai-send { width:2.75rem; height:2.75rem; flex:0 0 auto; border:0; border-radius:.75rem; background:var(--app-primary); color:var(--app-on-primary); cursor:pointer; }
 .lyfla-ai-send:disabled { opacity:.45; cursor:not-allowed; }
 @keyframes lyfla-ai-float { 50% { transform:translateY(-5px); } }
+@keyframes lyfla-ai-gaze-shift { 0% { opacity:.72; transform:scale(.98) translateY(2px); } 55% { opacity:1; transform:scale(1.015) translateY(-1px); } 100% { opacity:1; transform:scale(1) translateY(0); } }
 @keyframes lyfla-ai-pop { 50% { transform:scale(1.06) translateY(-3px); } }
 @keyframes lyfla-ai-dot { 0%, 80%, 100% { transform:scale(.7); opacity:.45; } 40% { transform:scale(1); opacity:1; } }
 @media (max-width: 640px) {

@@ -20,20 +20,20 @@
         x-transition:leave-end="opacity-0 translate-y-3 scale-[.98]"
         class="lyfla-ai-panel"
         role="dialog"
-        aria-label="LYFLA AI School Assistant"
+        aria-label="Lala School Assistant"
         aria-modal="false"
     >
         <header class="lyfla-ai-header">
             <div class="flex min-w-0 items-center gap-3">
                 <img src="{{ asset('assets/lyfla-ai/mascot/source-6.png') }}" alt="" class="lyfla-ai-header-mascot">
                 <div class="min-w-0">
-                    <p class="truncate text-small font-bold text-[var(--app-text)]">LYFLA AI</p>
+                    <p class="truncate text-small font-bold text-[var(--app-text)]">Lala</p>
                     <p class="truncate text-caption text-[var(--app-text-muted)]">Asisten Informasi Sekolah · {{ $assistantSchool }}</p>
                 </div>
             </div>
             <div class="flex items-center gap-1">
                 <button type="button" class="lyfla-ai-icon-button" @click="reset()" aria-label="Mulai chat baru" title="Chat baru">↻</button>
-                <button type="button" class="lyfla-ai-icon-button" @click="close()" aria-label="Tutup LYFLA AI" title="Tutup">×</button>
+                <button type="button" class="lyfla-ai-icon-button" @click="close()" aria-label="Tutup Lala" title="Tutup">×</button>
             </div>
         </header>
 
@@ -75,14 +75,12 @@
     <button
         type="button"
         class="lyfla-ai-mascot"
-        :class="{ 'is-open': open, 'is-thinking': loading }"
         @click="toggle()"
-        @pointermove="trackPointer($event)"
-        @pointerleave="setDirection('center')"
-        :aria-label="open ? 'Tutup LYFLA AI School Assistant' : 'Buka LYFLA AI School Assistant'"
+        :class="{ 'is-open': open, 'is-thinking': loading, 'is-switching': switching }"
+        :aria-label="open ? 'Tutup Lala School Assistant' : 'Buka Lala School Assistant'"
         :aria-expanded="open.toString()"
     >
         <span class="lyfla-ai-ground" aria-hidden="true"></span>
-        <img :src="mascotSrc" alt="LYFLA AI" draggable="false">
+        <img :src="mascotSrc" alt="Lala" draggable="false">
     </button>
 </div>

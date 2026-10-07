@@ -11,7 +11,7 @@ const mascotMap = {
     'bottom-right': 'source-7.png',
 };
 
-function directionFor(dx, dy, deadZone = 34) {
+function directionFor(dx, dy, deadZone = 44) {
     if (Math.hypot(dx, dy) < deadZone) return 'center';
     const angle = Math.atan2(dy, dx) * (180 / Math.PI);
     if (angle >= -22.5 && angle < 22.5) return 'right';
@@ -32,16 +32,27 @@ document.addEventListener('alpine:init', () => {
     draft: '',
     conversationId: null,
     direction: 'center',
+    switching: false,
+    pointerFrame: 0,
+    pendingPointer: null,
+    pointerHandler: null,
+    switchTimer: null,
 
     messages: [{
         role: 'assistant',
-        content: `Halo! 👋\nSaya asisten virtual ${schoolName}.\nAda informasi sekolah yang ingin kamu cari?`,
+        content: `Halo! 👋\nSaya Lala, asisten virtual ${schoolName}.\nAda informasi sekolah yang ingin kamu cari?`,
         sources: [],
     }],
     get mascotSrc() {
         return mascotBase + (mascotMap[this.direction] || mascotMap.center);
     },
     init() {
+        Object.values(mascotMap).forEach((file) => {
+            const image = new Image();
+            image.src = mascotBase + file;
+        });
+        this.pointerHandler = (event) => this.queuePointer(event);
+        window.addEventListener('pointermove', this.pointerHandler, { passive: true });
     },
     toggle() {
         this.open = !this.open;
@@ -50,14 +61,32 @@ document.addEventListener('alpine:init', () => {
     close() { this.open = false; },
     reset() {
         this.conversationId = null;
-        this.messages = [{ role: 'assistant', content: `Halo! 👋\nSaya asisten virtual ${this.schoolName}.\nAda informasi sekolah yang ingin kamu cari?`, sources: [] }];
+        this.messages = [{ role: 'assistant', content: `Halo! 👋\nSaya Lala, asisten virtual ${this.schoolName}.\nAda informasi sekolah yang ingin kamu cari?`, sources: [] }];
         this.draft = '';
     },
-    setDirection(direction) { this.direction = direction; },
-    trackPointer(event) {
+    setDirection(direction) {
+        if (direction === this.direction) return;
+        this.direction = direction;
+        this.switching = false;
+        window.clearTimeout(this.switchTimer);
+        window.requestAnimationFrame(() => {
+            this.switching = true;
+            this.switchTimer = window.setTimeout(() => { this.switching = false; }, 240);
+        });
+    },
+    queuePointer(event) {
         if (window.matchMedia('(pointer: coarse)').matches || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-        const rect = event.currentTarget.getBoundingClientRect();
-        this.setDirection(directionFor(event.clientX - (rect.left + rect.width / 2), event.clientY - (rect.top + rect.height / 2)));
+        this.pendingPointer = { x: event.clientX, y: event.clientY };
+        if (this.pointerFrame) return;
+        this.pointerFrame = window.requestAnimationFrame(() => {
+            this.pointerFrame = 0;
+            const mascot = this.$el.querySelector('.lyfla-ai-mascot');
+            if (!mascot || !this.pendingPointer) return;
+            const rect = mascot.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+            this.setDirection(directionFor(this.pendingPointer.x - centerX, this.pendingPointer.y - centerY));
+        });
     },
     handleEnter(event) {
         if (!event.shiftKey) {
@@ -88,7 +117,7 @@ document.addEventListener('alpine:init', () => {
             this.conversationId = payload.conversation_id || this.conversationId;
             this.messages.push({ role: 'assistant', content: payload.answer || 'Informasi tersebut belum tersedia di sistem sekolah.', sources: payload.sources || [] });
         } catch (error) {
-            this.messages.push({ role: 'assistant', content: 'LYFLA AI sedang tidak dapat mengambil informasi. Coba lagi sebentar.', sources: [] });
+            this.messages.push({ role: 'assistant', content: 'Lala sedang tidak dapat mengambil informasi. Coba lagi sebentar.', sources: [] });
         } finally {
             this.loading = false;
             this.$nextTick(() => { this.$refs.messages.scrollTop = this.$refs.messages.scrollHeight; });

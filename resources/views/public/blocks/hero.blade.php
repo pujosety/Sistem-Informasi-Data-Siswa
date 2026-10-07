@@ -106,14 +106,14 @@
             {{-- ============ Layered photographic composition ============ --}}
             <div class="relative hidden lg:col-span-6 lg:block">
 
-                {{-- The photograph, cropped tall. object-cover on a portrait
-                     aspect ratio is what makes it read as a composed panel
-                     rather than a squashed banner. --}}
+                {{-- The photograph keeps a wide editorial crop so the hero
+                     stays within the first viewport while retaining a clear
+                     school-life focal point. --}}
                 <div class="relative overflow-hidden rounded-[var(--radius-lg)] shadow-2xl ring-1 ring-white/15">
                     <picture>
                         <source srcset="{{ $heroSm }}" media="(max-width: 1400px)" type="image/webp">
                         <img src="{{ $heroWide }}" alt="{{ $alt }}"
-                             class="aspect-4/5 w-full object-cover"
+                             class="aspect-[16/10] w-full object-cover"
                              width="1600" height="1079"
                              loading="eager" fetchpriority="high">
                     </picture>
@@ -145,7 +145,7 @@
                 <div class="absolute -right-4 -top-5 flex items-center gap-3 rounded-[var(--radius-md)] border border-white/20 bg-white/95 px-4 py-3 shadow-xl backdrop-blur xl:-right-8">
                     <img src="{{ data_get($brand ?? [], 'icon') ?: data_get($brand ?? [], 'logo') ?: asset(config('branding.assets.logo_icon')) }}"
                          alt=""
-                         class="size-10 shrink-0">
+                         class="size-10 shrink-0 rounded-[0.65rem] bg-white p-1 ring-1 ring-[var(--app-border)]">
                     <div class="min-w-0">
                         <p class="text-caption text-[var(--app-text-subtle)]">{{ config('branding.platform.positioning') }}</p>
                         <p class="truncate text-small font-bold text-[var(--app-primary)]">{{ config('branding.platform.name') }}</p>

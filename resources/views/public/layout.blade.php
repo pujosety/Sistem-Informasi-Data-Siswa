@@ -84,7 +84,7 @@
             {{-- ============ Brand ============ --}}
             <a href="{{ route('home') }}" class="flex items-center gap-3 min-w-0 group">
                 @if (filled(data_get($brand ?? [], 'logo')))
-                    <x-brand.logo variant="lockup" height="h-9 w-auto max-w-[11rem] object-contain" alt="{{ $school['name'] ?: config('branding.platform.name') }}" />
+                    <x-brand.logo variant="lockup" height="h-9 w-auto max-w-[11rem] object-contain rounded-[0.7rem] bg-white/95 p-1 ring-1 ring-white/30" alt="{{ $school['name'] ?: config('branding.platform.name') }}" />
                 @else
                     <span class="grid place-items-center w-10 h-10 shrink-0 rounded-[var(--radius-lg)] bg-white">
                         <x-brand.logo variant="icon" height="h-8" alt="{{ config('branding.platform.name') }}" />
