@@ -1,18 +1,14 @@
-# Wasmer Edge application configuration.
-# Schema/data preparation is chained into start so a failed migration stops the
-# release instead of leaving an apparently healthy app on an old schema.
 kind: wasmer.io/App.v0
-name: SIDA
-
+name: Lyfla
+owner: pujosety
+package: .
 scripts:
-  install: |
-    composer install --optimize-autoloader --ignore-platform-reqs --no-scripts --no-interaction
-    npm install
-
   build: |
     composer run-script post-update-cmd
     npm run build
-
+  install: |
+    composer install --optimize-autoloader --ignore-platform-reqs --no-scripts --no-interaction
+    npm install
   start: |
     php artisan config:clear \
       && php artisan cache:clear \
@@ -21,3 +17,28 @@ scripts:
       && php artisan config:cache \
       && php artisan route:cache \
       && php -S 0.0.0.0:${PORT:-8080} -t public
+app_id: da_R9EIBt1U5YxN
+jobs:
+- name: after_deploy
+  trigger: post-deployment
+  action:
+    execute:
+      command: php artisan migrate --force --no-interaction
+annotations:
+  anybuild.run/config:
+    composer_build_script: post-update-cmd
+    composer_enable: true
+    name: out
+    node_build_command: npm run build
+    node_install_inputs:
+    - package.json
+    node_package_manager: npm
+    npm_version: '11'
+    php_framework: laravel
+    php_public_dir: public
+    phpix: true
+  anybuild.run/provider: laravel
+  anybuild.run/version: 0.33.0
+  wasmer.io/version: 7.5.0
+enableDatabase: true
+enable_email: true
