@@ -8,8 +8,8 @@
     $brandShortName = data_get($brand ?? [], 'shortName') ?: config('branding.platform.name');
     $brandTagline = data_get($brand ?? [], 'tagline') ?: 'Pendaftaran, akademik, dan informasi sekolah dalam satu portal.';
     $authLogo = data_get($brand ?? [], 'assets.loginLogo')
-        ?: data_get($brand ?? [], 'icon')
-        ?: data_get($brand ?? [], 'logo');
+        ?: data_get($brand ?? [], 'logo')
+        ?: data_get($brand ?? [], 'icon');
     $brandFavicon = data_get($brand ?? [], 'assets.favicon') ?: asset('branding/favicon-32x32.png');
     $brandAppIcon = data_get($brand ?? [], 'assets.appIcon') ?: asset('branding/apple-touch-icon.png');
 @endphp

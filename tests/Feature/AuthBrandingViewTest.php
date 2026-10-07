@@ -84,4 +84,23 @@ class AuthBrandingViewTest extends TestCase
 
         $this->assertStringContainsString('/branding/login-logo?v=', $html);
     }
+
+    /** @test */
+    public function login_falls_back_to_the_main_logo_before_the_icon_asset(): void
+    {
+        Storage::fake('public');
+        Storage::disk('public')->put('branding/2026/main-logo.png', 'main-logo-bytes');
+        Storage::disk('public')->put('branding/2026/icon.png', 'icon-bytes');
+
+        app(SettingsService::class)->setMany([
+            'branding.login_logo' => '',
+            'branding.logo' => 'branding/2026/main-logo.png',
+            'branding.icon' => 'branding/2026/icon.png',
+        ]);
+
+        $html = $this->get(route('login'))->assertOk()->getContent();
+
+        $this->assertStringContainsString('/branding/logo?v=', $html);
+        $this->assertStringNotContainsString('/branding/icon?v=', $html);
+    }
 }
