@@ -8,6 +8,7 @@ use App\Models\ContactMessage;
 use App\Models\Department;
 use App\Models\LandingSection;
 use App\Models\Post;
+use App\Services\SchoolContext;
 use App\Models\SchoolClass;
 use App\Models\Student;
 use App\Models\Subject;
@@ -72,16 +73,20 @@ class PublicHomeController extends Controller
      */
     private function schoolProfile(): array
     {
+        $school = app(SchoolContext::class)->current();
+        $contact = $school?->contact ?? [];
+        $principal = $school?->principal ?? [];
+
         return [
-            'name'     => $this->settings->get('school.name'),
-            'npsn'     => $this->settings->get('school.npsn'),
-            'address'  => $this->settings->get('school.address'),
-            'city'     => $this->settings->get('school.city'),
-            'province' => $this->settings->get('school.province'),
-            'email'    => $this->settings->get('school.email'),
-            'phone'    => $this->settings->get('school.phone'),
-            'website'  => $this->settings->get('school.website'),
-            'headmaster' => $this->settings->get('school.headmaster'),
+            'name'       => $school?->name ?: $this->settings->get('school.name'),
+            'npsn'       => $school?->npsn ?: $this->settings->get('school.npsn'),
+            'address'    => data_get($contact, 'address') ?: $this->settings->get('school.address'),
+            'city'       => data_get($contact, 'city') ?: $this->settings->get('school.city'),
+            'province'   => data_get($contact, 'province') ?: $this->settings->get('school.province'),
+            'email'      => data_get($contact, 'email') ?: $this->settings->get('school.email'),
+            'phone'      => data_get($contact, 'phone') ?: $this->settings->get('school.phone'),
+            'website'    => data_get($contact, 'website') ?: $this->settings->get('school.website'),
+            'headmaster' => data_get($principal, 'name') ?: $this->settings->get('school.headmaster'),
         ];
     }
 
