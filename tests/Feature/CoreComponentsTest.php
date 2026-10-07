@@ -175,6 +175,16 @@ class CoreComponentsTest extends TestCase
         ]);
 
         $this->assertStringContainsString('md:hidden', $html, 'No card layout was declared for mobile.');
+        $this->assertStringContainsString('hidden md:block', $html, 'The desktop table remains visible on mobile beside the card layout.');
+    }
+
+    /** @test */
+    public function page_headers_do_not_double_encode_ampersands(): void
+    {
+        $html = $this->blade('<x-page-header title="Tampilan &amp; Branding" />');
+
+        $this->assertStringContainsString('Tampilan &amp; Branding', $html);
+        $this->assertStringNotContainsString('&amp;amp;', $html);
     }
 
     /** @test */

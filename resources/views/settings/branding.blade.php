@@ -17,10 +17,10 @@
       enctype="multipart/form-data"
       x-data="brandingPreview({
           name: @js(old('app.name', $values['app.name']['value'] ?? config('branding.platform.full_name'))),
-          short: @js($values['app.short_name']['value'] ?? config('branding.platform.name')),
-          tagline: @js($values['app.tagline']['value'] ?? ''),
-          primary: @js(old('branding.primary_color', $values['branding.primary_color']['value'] ?? '#1D4ED8')),
-          accent: @js(old('branding.accent_color', $values['branding.accent_color']['value'] ?? '#0891B2')),
+          short: @js(old('app.short_name', $values['app.short_name']['value'] ?? config('branding.platform.name'))),
+          tagline: @js(old('app.tagline', $values['app.tagline']['value'] ?? '')),
+          primary: @js(old('branding.primary_color', $values['branding.primary_color']['value'] ?? '#681D2A')),
+          accent: @js(old('branding.accent_color', $values['branding.accent_color']['value'] ?? '#A83C4C')),
       })"
       class="grid lg:grid-cols-5 gap-4 sm:gap-5">
 

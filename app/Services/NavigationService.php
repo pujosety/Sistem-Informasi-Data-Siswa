@@ -31,11 +31,13 @@ class NavigationService
 
         $items = $this->sidebar($user);
 
+        $dock = $this->dock($user);
+
         return [
             'items' => $items,
-            'dock' => $this->dock($user),
+            'dock' => $dock,
             // Everything reachable but not worth a dock slot.
-            'more' => $this->more($user, $items),
+            'more' => $this->more($user, $items, $dock),
         ];
     }
 
@@ -225,7 +227,9 @@ class NavigationService
             ? $this->parentDock()
             : ($user->isStudent() ? $this->siswaDock() : $this->staffDock($user));
 
-        return array_slice($this->visible($user, $candidates), 0, 5);
+        // Four destinations plus the Menu button is the maximum usable phone
+        // dock. The fifth candidate belongs in the More sheet, not nowhere.
+        return array_slice($this->visible($user, $candidates), 0, 4);
     }
 
     private function staffDock(User $user): array
@@ -281,13 +285,21 @@ class NavigationService
      * Built from the sidebar by flattening it, so the sheet can never offer a
      * link the sidebar does not — and both stay permission-filtered.
      */
-    private function more(User $user, array $sidebar): array
+    private function more(User $user, array $sidebar, array $dock): array
     {
         $flat = [];
+        $dockRoutes = array_values(array_filter(array_map(
+            fn ($item) => $item['route'] ?? null,
+            $dock,
+        )));
 
         foreach ($sidebar as $item) {
             if (! empty($item['children'])) {
                 foreach ($item['children'] as $child) {
+                    if (in_array($child['route'] ?? null, $dockRoutes, true)) {
+                        continue;
+                    }
+
                     $child['group'] = $item['label'];
                     $flat[] = $child;
                 }
@@ -295,8 +307,10 @@ class NavigationService
                 continue;
             }
 
-            $item['group'] = null;
-            $flat[] = $item;
+            if (! in_array($item['route'] ?? null, $dockRoutes, true)) {
+                $item['group'] = null;
+                $flat[] = $item;
+            }
         }
 
         return $flat;

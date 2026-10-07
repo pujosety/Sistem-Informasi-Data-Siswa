@@ -6,8 +6,10 @@
 ])
 
 @php
-    $headingText = is_array($title) ? implode(' ', $title) : (string) $title;
-    $descText = is_array($description) ? implode(' ', $description) : (string) ($description ?? '');
+    // Yielded Blade sections can arrive entity-encoded through a component
+    // attribute. Decode once, then escape at render time so "&" stays "&".
+    $headingText = html_entity_decode(strip_tags(is_array($title) ? implode(' ', $title) : (string) $title), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+    $descText = html_entity_decode(strip_tags(is_array($description) ? implode(' ', $description) : (string) ($description ?? '')), ENT_QUOTES | ENT_HTML5, 'UTF-8');
 @endphp
 
 <div {{ $attributes->merge(['class' => 'mb-5 sm:mb-6']) }}>

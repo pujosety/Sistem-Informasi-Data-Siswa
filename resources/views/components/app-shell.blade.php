@@ -82,15 +82,15 @@
 
     {{-- ============ Mobile drawer ============ --}}
     <div x-show="$store.app.mobileNavOpen" x-cloak
-         class="lg:hidden fixed inset-0 z-50" role="dialog" aria-modal="true" aria-label="Menu navigasi">
+         class="lg:hidden fixed inset-0 z-50" role="dialog" aria-modal="true" aria-labelledby="mobile-nav-title">
         <div x-show="$store.app.mobileNavOpen" x-transition.opacity
              @click="$store.app.closeMobileNav()" class="absolute inset-0 bg-ink-900/60 backdrop-blur-sm"></div>
         <aside x-show="$store.app.mobileNavOpen"
                x-transition:enter-start="-translate-x-full" x-transition:enter-end="translate-x-0"
                x-transition:leave-start="translate-x-0" x-transition:leave-end="-translate-x-full"
                transition:enter="transition duration-200 ease-out" transition:leave="transition duration-150 ease-in"
-               class="absolute inset-y-0 left-0 w-[280px] max-w-[85vw] bg-[var(--app-sidebar-bg)] flex flex-col">
-            <x-sidebar :navigation="$navigation" :workspaces="$workspaces ?? []" />
+               class="absolute inset-y-0 left-0 w-[min(20rem,88vw)] max-w-[88vw] bg-[var(--app-sidebar-bg)] flex min-h-0 flex-col shadow-[var(--shadow-overlay)]">
+            <x-sidebar :navigation="$navigation" :workspaces="$workspaces ?? []" mobile />
         </aside>
     </div>
 

@@ -76,7 +76,7 @@
             @forelse ($items as $item)
                 @php $unread = ! ($item['read_at'] ?? $item['read'] ?? null); @endphp
 
-                <a href="{{ $item['url'] ?? '#' }}"
+                <a href="{{ $item['url'] ?? route('notifications.index') }}"
                    class="flex items-start gap-3 px-4 py-3 border-b border-[var(--app-border)]
                           hover:bg-[var(--app-surface-muted)] transition-colors last:border-b-0
                           {{ $unread ? 'bg-[var(--app-primary-soft)]/40' : '' }}">

@@ -45,7 +45,10 @@
             <p class="sr-only">{{ $caption }}</p>
         @endif
 
-        <div class="overflow-x-auto scrollbar-thin">
+        <div @class([
+            'overflow-x-auto scrollbar-thin',
+            'hidden md:block' => $responsive && $primaryCount > 0,
+        ])>
             <table class="data-table">
                 @if ($caption)
                     <caption class="sr-only">{{ $caption }}</caption>

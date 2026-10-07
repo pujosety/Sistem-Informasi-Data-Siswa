@@ -1,3 +1,9 @@
+@props([
+    'navigation' => [],
+    'workspaces' => [],
+    'mobile' => false,
+])
+
 @php
     // The workspace is resolved from ROLE + ASSIGNMENT, never hardcoded here.
     // A Wali Kelas is a kesiswaan with an assignment, so the label reflects
@@ -11,14 +17,17 @@
     $workspaceIcon = $activeWorkspace['icon'] ?? 'graduation-cap';
 @endphp
 
-<div class="flex flex-col h-full">
+<div class="relative flex flex-col h-full min-h-0">
 
     {{-- Brand + workspace ---------------------------------------------------- --}}
     {{-- Official LYFLA mark, not an icon-font stand-in: the mark combines a
          graduation cap with a flowing S-ribbon and has no Lucide equivalent.
          The wordmark beside it is real text, so it collapses with the rail and
          the emblem never moves. --}}
-    <div class="flex items-center gap-2.5 h-16 px-4 shrink-0 border-b border-white/8">
+    <div class="flex items-center gap-2.5 h-16 px-4 pr-12 shrink-0 border-b border-white/8">
+        @if ($mobile)
+            <h2 id="mobile-nav-title" class="sr-only">Menu navigasi</h2>
+        @endif
         {{-- The emblem carries its own deep navy, which measures 1.8:1 against
              this rail and disappears. A quiet light plate gives it the
              contrast a graphical object needs without recolouring the official
@@ -39,6 +48,14 @@
                 aria-label="Ciutkan atau perluas navigasi">
             <x-icon name="panel-left" class="w-[18px] h-[18px]" />
         </button>
+        @if ($mobile)
+            <button type="button" @click="$store.app.closeMobileNav()"
+                    class="lg:hidden absolute top-3 right-3 grid place-items-center w-10 h-10 rounded-[var(--radius-md)]
+                           text-[var(--app-sidebar-text)] hover:text-white hover:bg-white/10 transition-colors"
+                    aria-label="Tutup menu navigasi">
+                <x-icon name="x" class="w-5 h-5" />
+            </button>
+        @endif
     </div>
 
     {{-- Workspace switcher ----------------------------------------------------- --}}
@@ -86,7 +103,7 @@
     @endif
 
     {{-- Navigation ------------------------------------------------------------- --}}
-    <nav class="flex-1 overflow-y-auto overflow-x-hidden p-3 space-y-0.5 scrollbar-thin"
+    <nav class="flex-1 min-h-0 overflow-y-auto overflow-x-hidden p-3 space-y-0.5 scrollbar-thin"
          aria-label="Navigasi utama">
         <x-nav-items :items="$navigation" />
     </nav>

@@ -2,7 +2,7 @@
 
 @section('title', 'Kelas Saya')
 @section('page-title', 'Kelas Saya')
-@section('page-description', $year?->name . ' \u00b7 ' . $summaries->count() . ' kelas di tractor Anda')
+@section('page-description', $year?->name . ' · ' . $summaries->count() . ' kelas yang Anda kelola')
 
 @section('content')
 

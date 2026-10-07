@@ -177,7 +177,10 @@
     --app-primary: var(--brand-config-primary, var(--brand-maroon));
     --app-primary-hover: var(--brand-config-primary-hover, var(--brand-maroon-hover));
     --app-primary-soft: var(--brand-config-primary-soft, var(--brand-maroon-soft));
+    --app-primary-alt: var(--brand-config-primary-alt, var(--brand-maroon-alt));
     --app-on-primary: #ffffff;
+    --app-surface-alt: var(--app-surface-muted);
+    --app-text-secondary: var(--app-text-muted);
 
     /* A translucent maroon for washes that need to sit over either surface:
        selected table rows, the sidebar's active item, chart fills. One value
@@ -253,9 +256,12 @@
         --app-primary: var(--brand-config-primary-dark, #c2556b);
         --app-primary-hover: var(--brand-config-primary-dark-hover, #d4707f);
         --app-primary-soft: rgb(194 85 107 / 0.16);
+        --app-primary-alt: var(--brand-config-primary-alt-dark, #b97884);
         --app-primary-a10: var(--brand-config-primary-dark-a10, rgb(194 85 107 / 0.12));
         --app-primary-a16: var(--brand-config-primary-dark-a16, rgb(194 85 107 / 0.20));
         --app-on-primary: #ffffff;
+        --app-surface-alt: var(--app-surface-muted);
+        --app-text-secondary: var(--app-text-muted);
 
         --app-progress: #34c9a4;
         --app-progress-soft: rgb(52 201 164 / 0.16);
@@ -285,6 +291,8 @@
     --color-line-strong: var(--app-border-strong);
     --color-primary: var(--app-primary);
     --color-primary-soft: var(--app-primary-soft);
+    --color-surface-alt: var(--app-surface-alt);
+    --color-text-secondary: var(--app-text-secondary);
     --color-success: var(--app-success);
     --color-success-soft: var(--app-success-soft);
     --color-warning: var(--app-warning);

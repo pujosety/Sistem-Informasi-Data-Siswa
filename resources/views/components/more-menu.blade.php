@@ -5,7 +5,7 @@
      built from the same permission-filtered sidebar, so it can never offer a
      link the desktop menu does not. --}}
 
-<div x-show="$store.app.moreOpen" x-cloak class="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true" aria-label="Menu lainnya">
+    <div x-show="$store.app.moreOpen" x-cloak class="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true" aria-labelledby="more-menu-title">
     <div x-show="$store.app.moreOpen" x-transition.opacity
          @click="$store.app.closeMore()"
          class="absolute inset-0 bg-ink-900/60 backdrop-blur-sm"></div>
@@ -25,7 +25,7 @@
         </div>
 
         <header class="flex items-center justify-between px-4 py-2.5 border-b border-[var(--app-border)]">
-            <h2 class="text-body font-semibold">Menu Lainnya</h2>
+            <h2 id="more-menu-title" class="text-body font-semibold">Menu Lainnya</h2>
             <button type="button" @click="$store.app.closeMore()"
                     class="grid place-items-center w-9 h-9 rounded-[var(--radius-md)] text-[var(--app-text-muted)] hover:bg-[var(--app-surface-alt)]"
                     aria-label="Tutup menu">

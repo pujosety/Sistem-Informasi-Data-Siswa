@@ -8,7 +8,11 @@
 
 @foreach ($items as $item)
     @php
-        $isActive = $activePattern && request()->routeIs($item['active'] ?? $item['route']);
+        $itemPattern = $item['active'] ?? $item['route'] ?? null;
+        $isActive = ($itemPattern && request()->routeIs($itemPattern))
+            || collect($item['children'] ?? [])->contains(
+                fn ($child) => request()->routeIs($child['active'] ?? $child['route'] ?? '')
+            );
         $badge = $item['badge'] ?? null;
     @endphp
 
@@ -26,7 +30,7 @@
             <div x-show="open" x-collapse class="ml-4 pl-3 border-l border-white/10 space-y-0.5 mt-0.5">
                 @foreach ($item['children'] as $child)
                     <a href="{{ route($child['route']) }}"
-                       class="block px-3 py-2 rounded-[var(--radius-md)] text-small nav-label transition-colors
+                       class="flex min-h-10 items-center px-3 py-2 rounded-[var(--radius-md)] text-small nav-label transition-colors
                               {{ request()->routeIs($child['active'] ?? $child['route']) ? 'text-white bg-white/10 font-semibold' : 'text-[var(--app-sidebar-text)] hover:text-white hover:bg-white/5' }}">
                         {{ $child['label'] }}
                     </a>

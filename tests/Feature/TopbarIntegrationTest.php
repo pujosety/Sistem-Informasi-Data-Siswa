@@ -72,6 +72,20 @@ class TopbarIntegrationTest extends TestCase
         );
     }
 
+    /** @test */
+    public function the_phone_dock_and_more_sheet_do_not_duplicate_destinations(): void
+    {
+        $user = User::factory()->create();
+        $user->assignRole('admin');
+
+        $navigation = app(\App\Services\NavigationService::class)->forUser($user->refresh());
+        $dock = collect($navigation['dock'] ?? [])->pluck('route')->filter();
+        $more = collect($navigation['more'] ?? [])->pluck('route')->filter();
+
+        $this->assertLessThanOrEqual(4, $dock->count());
+        $this->assertSame([], $dock->intersect($more)->values()->all());
+    }
+
     /**
      * @test
      */
