@@ -207,6 +207,17 @@ class FileServingTest extends TestCase
         $this->get(route('brand.asset', ['key' => 'branding.icon']))->assertNotFound();
     }
 
+    public function test_a_missing_stored_brand_asset_is_not_emitted_as_a_broken_url(): void
+    {
+        $this->app->make(SettingsService::class)->setMany([
+            'branding.icon' => 'branding/2026/09/missing-icon.png',
+        ]);
+
+        $this->assertNull(
+            $this->app->make(SettingsService::class)->asset('branding.icon')
+        );
+    }
+
     public function test_an_svg_brand_asset_is_served_as_text_so_it_cannot_execute(): void
     {
         $this->app->make(SettingsService::class)->setMany(['branding.icon' => 'branding/icon.svg']);

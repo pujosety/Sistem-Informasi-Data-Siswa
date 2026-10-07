@@ -6,6 +6,7 @@ use App\Models\Setting;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * Typed, cached access to the settings table.
@@ -289,6 +290,20 @@ class SettingsService
         $path = $this->get($key);
 
         if (! filled($path)) {
+            return null;
+        }
+
+        // A database row can outlive its uploaded object (failed upload,
+        // storage cleanup, or a serverless rollout). Never emit a URL that is
+        // guaranteed to become a broken <img>; the logo component will use the
+        // repository fallback instead.
+        try {
+            if (! Storage::disk('public')->exists((string) $path)) {
+                return null;
+            }
+        } catch (\Throwable $e) {
+            report($e);
+
             return null;
         }
 
