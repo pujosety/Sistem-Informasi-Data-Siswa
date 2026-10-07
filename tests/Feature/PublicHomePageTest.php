@@ -47,7 +47,7 @@ class PublicHomePageTest extends TestCase
     private function seedSettings(): void
     {
         app(SettingsService::class)->setMany([
-            'school.name' => 'SMA Negeri 1 Bogor',
+            'school.name' => 'SMP 1 LYFLA',
             'school.npsn' => '20219876',
             'school.city' => 'Bogor',
             'school.email' => 'info@sma1bogor.sch.id',
@@ -63,7 +63,7 @@ class PublicHomePageTest extends TestCase
 
         $response->assertOk();
         $response->assertViewIs('public.home');
-        $this->assertStringContainsString('SMA Negeri 1 Bogor', $response->getContent());
+        $this->assertStringContainsString('SMP 1 LYFLA', $response->getContent());
     }
 
     /**
@@ -161,7 +161,7 @@ class PublicHomePageTest extends TestCase
         $response = $this->get('/');
 
         $response->assertOk();
-        $this->assertStringContainsString('SMA Negeri 1 Bogor', $response->getContent());
+        $this->assertStringContainsString('SMP 1 LYFLA', $response->getContent());
     }
 
     /** @test */
@@ -316,7 +316,7 @@ class PublicHomePageTest extends TestCase
         // No school.* values beyond the default, so the page must not render a
         // grid of empty labels.
         app(SettingsService::class)->setMany([
-            'school.name' => 'SMA Negeri 1 Bogor',
+            'school.name' => 'SMP 1 LYFLA',
             'school.npsn' => '',
             'school.address' => '',
             'school.city' => '',

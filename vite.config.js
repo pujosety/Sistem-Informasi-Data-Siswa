@@ -29,7 +29,7 @@ const pwaOptions = {
         // warm neutral rather than taking the brand colour — a full-bleed maroon
         // splash reads as an error state on launch.
         background_color: '#fbf9f8',
-        theme_color: '#7A1F32',
+        theme_color: '#681D2A',
         categories: ['education', 'productivity'],
         icons: [
             { src: '/branding/pwa-192x192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },

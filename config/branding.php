@@ -80,11 +80,12 @@ return [
     'colors' => [
 
         // Primary — maroon / burgundy
-        'primary' => '#7A1F32',
-        'primary_hover' => '#671829',
-        'primary_dark' => '#4A111D',
-        'primary_alt' => '#6B1D2A',
-        'soft' => '#F7ECEF',
+        'primary' => '#681D2A',
+        'primary_hover' => '#541722',
+        'primary_dark' => '#47141D',
+        'primary_alt' => '#7A2538',
+        'accent' => '#A83C4C',
+        'soft' => '#F7F3EF',
 
         // Supporting neutrals — warm
         'background' => '#FBF9F8',
@@ -166,7 +167,7 @@ return [
     |
     */
 
-    'theme_color' => '#7A1F32',
+    'theme_color' => '#681D2A',
 
     /*
     |--------------------------------------------------------------------------

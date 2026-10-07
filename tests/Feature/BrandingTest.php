@@ -51,11 +51,12 @@ class BrandingTest extends TestCase
     /** @test */
     public function the_branding_config_carries_the_specified_colours(): void
     {
-        $this->assertSame('#7A1F32', config('branding.colors.primary'));
-        $this->assertSame('#671829', config('branding.colors.primary_hover'));
-        $this->assertSame('#4A111D', config('branding.colors.primary_dark'));
-        $this->assertSame('#F7ECEF', config('branding.colors.soft'));
-        $this->assertSame('#6B1D2A', config('branding.colors.primary_alt'));
+        $this->assertSame('#681D2A', config('branding.colors.primary'));
+        $this->assertSame('#541722', config('branding.colors.primary_hover'));
+        $this->assertSame('#47141D', config('branding.colors.primary_dark'));
+        $this->assertSame('#F7F3EF', config('branding.colors.soft'));
+        $this->assertSame('#7A2538', config('branding.colors.primary_alt'));
+        $this->assertSame('#A83C4C', config('branding.colors.accent'));
     }
 
     /** @test */
@@ -124,7 +125,7 @@ class BrandingTest extends TestCase
             ->getContent();
 
         $this->assertStringContainsString(
-            '<meta name="theme-color" content="#7A1F32">',
+            '<meta name="theme-color" content="#681D2A">',
             $html,
             'The Android status bar colour is not the brand primary.'
         );
@@ -162,7 +163,7 @@ class BrandingTest extends TestCase
             $css
         );
         $this->assertStringContainsString(
-            '--app-primary-a10: var(--brand-config-primary-a10)',
+            '--app-primary-a10: var(--brand-config-primary-a10,',
             $css
         );
     }

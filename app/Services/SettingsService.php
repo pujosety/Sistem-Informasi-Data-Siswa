@@ -42,8 +42,8 @@ class SettingsService
         'app.tagline' => ['Portal Data Siswa', 'string', 'branding', 'Tagline', 'Kalimat singkat di bawah nama aplikasi.', 30],
         'branding.logo' => ['', 'image', 'branding', 'Logo', 'PNG/JPG/WebP, maksimal 1 MB, disarankan 240×60 px.', 40],
         'branding.icon' => ['', 'image', 'branding', 'Ikon / Favicon', 'Disimpan sebagai favicon situs.', 50],
-        'branding.primary_color' => ['#1D4ED8', 'color', 'branding', 'Warna Utama', 'Dipakai untuk tombol, tautan, dan sorotan.', 60],
-        'branding.accent_color' => ['#0891B2', 'color', 'branding', 'Warna Aksen', 'Dipakai untuk detail dan sorotan sekunder.', 70],
+        'branding.primary_color' => ['#681D2A', 'color', 'branding', 'Warna Utama', 'Dipakai untuk tombol, tautan, dan sorotan.', 60],
+        'branding.accent_color' => ['#A83C4C', 'color', 'branding', 'Warna Aksen', 'Dipakai untuk detail dan sorotan sekunder.', 70],
 
         // School profile
         'school.name' => ['SMP 1 LYFLA', 'string', 'school', 'Nama Sekolah', 'Tercetak di header laporan.', 10],
