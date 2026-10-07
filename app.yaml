@@ -1,7 +1,9 @@
 kind: wasmer.io/App.v0
 name: Lyfla
+app_id: da_R9EIBt1U5YxN
 owner: pujosety
 package: .
+jobs: []
 scripts:
   build: |
     composer run-script post-update-cmd
@@ -17,13 +19,6 @@ scripts:
       && php artisan config:cache \
       && php artisan route:cache \
       && php -S 0.0.0.0:${PORT:-8080} -t public
-app_id: da_R9EIBt1U5YxN
-jobs:
-- name: after_deploy
-  trigger: post-deployment
-  action:
-    execute:
-      command: php artisan migrate --force --no-interaction
 annotations:
   anybuild.run/config:
     composer_build_script: post-update-cmd
@@ -37,6 +32,8 @@ annotations:
     php_framework: laravel
     php_public_dir: public
     phpix: true
+    commands:
+      after_deploy: php artisan migrate --force --no-interaction
   anybuild.run/provider: laravel
   anybuild.run/version: 0.33.0
   wasmer.io/version: 7.5.0

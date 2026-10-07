@@ -1,0 +1,24 @@
+# Explicit Wasmer Anybuild definition for the Laravel application.
+# The generated Laravel definition preserved an old interactive migration job.
+# Keep the runtime compatible with Anybuild/PHPix, but make the post-deploy
+# migration non-interactive and safe for production.
+load("//anybuild/tools:laravel.bzl", "laravel_build", "laravel_config", "laravel_serve")
+
+config = laravel_config(
+    schema = 1,
+    commands = {
+        "after_deploy": "php artisan migrate --force --no-interaction",
+    },
+    node_package_manager = "npm",
+    node_build_command = "npm run build",
+    node_version = "24",
+    php_framework = "laravel",
+    composer_enable = True,
+    composer_build_script = "post-update-cmd",
+    php_version = "8.3.29",
+    php_public_dir = "public",
+    phpix = True,
+)
+
+build = laravel_build(config)
+laravel_serve(config, build, name = "Lyfla")

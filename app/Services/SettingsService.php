@@ -159,6 +159,28 @@ class SettingsService
         return $this->databaseUsable() && \Illuminate\Support\Facades\Schema::hasTable('settings');
     }
 
+    /**
+     * Keep known legacy showcase identity from winning over the current
+     * LYFLA defaults when an old production row survives a deployment.
+     *
+     * This is intentionally narrow: administrator-entered values remain
+     * editable, while only the obsolete values from the former showcase are
+     * normalized until the repair migration has run.
+     */
+    private function normalizeLegacyIdentity(string $key, mixed $value): mixed
+    {
+        return match ($key) {
+            'app.name', 'school.name' => in_array($value, [
+                'SMA Negeri 1',
+                'SMA Negeri 1 Bogor',
+                'Sistem Informasi Data Siswa',
+                'Sistem Informasi Data Siswa — SIDA',
+            ], true) ? 'SMP 1 LYFLA' : $value,
+            'app.short_name' => in_array($value, ['SIDA', 'SMA'], true) ? 'LYFLA' : $value,
+            default => $value,
+        };
+    }
+
     public function get(string $key, mixed $default = null): mixed
     {
         // all() is memoised per request, so this costs nothing extra.
@@ -170,7 +192,7 @@ class SettingsService
             return $default ?? (self::DEFAULTS[$key][0] ?? null);
         }
 
-        return $setting->typedValue();
+        return $this->normalizeLegacyIdentity($key, $setting->typedValue());
     }
 
     public function group(string $group): array
@@ -179,7 +201,7 @@ class SettingsService
             ->where('group', $group)
             ->mapWithKeys(fn (Setting $s) => [$s->key => [
                 'key' => $s->key,
-                'value' => $s->typedValue(),
+                'value' => $this->normalizeLegacyIdentity($s->key, $s->typedValue()),
                 'type' => $s->type,
                 'label' => $s->label ?: str_replace(['app.', 'school.', 'branding.', 'registration.'], '', $s->key),
                 'hint' => $s->hint,
