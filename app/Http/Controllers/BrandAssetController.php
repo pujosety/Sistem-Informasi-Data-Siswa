@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Services\SettingsService;
+use App\Models\Setting;
+use Aws\S3\S3Client;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -46,11 +48,26 @@ class BrandAssetController extends Controller
 
         $path = $this->settings->get($key);
 
+        // Do not let a stale settings cache turn a valid uploaded object into
+        // a 404 on another PHPix worker. Asset rows are tiny and are read fresh.
+        try {
+            $path = Setting::where('key', $key)->first()?->typedValue() ?? $path;
+        } catch (\Throwable $e) {
+            report($e);
+        }
+
         abort_if(blank($path), 404);
 
         $disk = \Illuminate\Support\Facades\Storage::disk('public');
 
-        abort_unless($disk->exists($path), 404);
+        try {
+            $exists = $disk->exists($path);
+        } catch (\Throwable $e) {
+            report($e);
+            $exists = false;
+        }
+
+        abort_unless($exists, 404);
 
         /*
          * A brand upload is validated to be a real image by BrandService, but
@@ -71,7 +88,12 @@ class BrandAssetController extends Controller
             default => 'application/octet-stream',
         };
 
-        $stream = $disk->readStream($path);
+        try {
+            $stream = $this->readStream($path, $disk);
+        } catch (\Throwable $e) {
+            report($e);
+            $stream = false;
+        }
 
         if ($stream === false) {
             abort(404, 'Berkas tidak ditemukan di penyimpanan.');
@@ -92,5 +114,40 @@ class BrandAssetController extends Controller
             'X-Content-Type-Options' => 'nosniff',
             'Content-Disposition' => 'inline',
         ]);
+    }
+
+    /**
+     * Flysystem's S3 readStream path is not reliable on the Wasmer volume
+     * endpoint even though HEAD/PUT work. Use the AWS client directly for the
+     * two public brand files while keeping local development on Flysystem.
+     */
+    private function readStream(string $path, mixed $disk): mixed
+    {
+        $config = config('filesystems.disks.public', []);
+
+        if (($config['driver'] ?? null) !== 's3') {
+            return $disk->readStream($path);
+        }
+
+        $client = new S3Client([
+            'version' => 'latest',
+            'region' => $config['region'] ?? 'us-east-1',
+            'endpoint' => $config['endpoint'] ?? null,
+            'use_path_style_endpoint' => (bool) ($config['use_path_style_endpoint'] ?? false),
+            'credentials' => [
+                'key' => $config['key'] ?? null,
+                'secret' => $config['secret'] ?? null,
+            ],
+            'http' => [
+                'verify' => $config['http']['verify'] ?? true,
+            ],
+        ]);
+
+        $object = $client->getObject([
+            'Bucket' => $config['bucket'],
+            'Key' => $path,
+        ]);
+
+        return $object['Body']->detach();
     }
 }

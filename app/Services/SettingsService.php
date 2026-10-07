@@ -287,7 +287,20 @@ class SettingsService
      */
     public function asset(string $key): ?string
     {
+        // Asset paths must be read fresh. A forever-cached settings collection
+        // can briefly retain the empty pre-upload value in another PHPix worker
+        // even after the upload request flushed the cache in its own worker.
+        // The database row is the source of truth for these two URLs.
         $path = $this->get($key);
+
+        if (in_array($key, ['branding.logo', 'branding.icon'], true)) {
+            try {
+                $fresh = Setting::where('key', $key)->first();
+                $path = $fresh?->typedValue() ?? $path;
+            } catch (\Throwable $e) {
+                report($e);
+            }
+        }
 
         if (! filled($path)) {
             return null;

@@ -103,6 +103,28 @@ return [
                 ? rtrim(env('ASSET_URL'), '/').'/storage'
                 : '/storage',
             'visibility' => 'public',
+            // The public disk switches to S3 when AWS_BUCKET is present.
+            // Keep the full S3 client configuration here too; Laravel does
+            // not merge the separate `s3` disk automatically when a disk's
+            // driver is changed dynamically.
+            'key' => env('AWS_ACCESS_KEY_ID'),
+            'secret' => env('AWS_SECRET_ACCESS_KEY'),
+            'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
+            'bucket' => env('AWS_BUCKET'),
+            'endpoint' => env('AWS_ENDPOINT'),
+            'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', false),
+            'http' => [
+                'verify' => file_exists(base_path('resources/certs/cacert.pem'))
+                    ? base_path('resources/certs/cacert.pem')
+                    : true,
+            ],
+            'options' => [
+                'http' => [
+                    'verify' => file_exists(base_path('resources/certs/cacert.pem'))
+                        ? base_path('resources/certs/cacert.pem')
+                        : true,
+                ],
+            ],
             'throw' => false,
             'report' => false,
         ],
