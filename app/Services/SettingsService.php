@@ -183,7 +183,7 @@ class SettingsService
             ->where('group', $group)
             ->mapWithKeys(fn (Setting $s) => [$s->key => [
                 'key' => $s->key,
-                'value' => $this->normalizeLegacyIdentity($s->key, $s->typedValue()),
+                'value' => $s->typedValue(),
                 'type' => $s->type,
                 'label' => $s->label ?: str_replace(['app.', 'school.', 'branding.', 'registration.'], '', $s->key),
                 'hint' => $s->hint,
