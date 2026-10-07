@@ -6,6 +6,10 @@
 
 @section('content')
 <div class="space-y-4">
+    @if (session('success'))
+        <x-alert variant="success" class="mb-4" :message="session('success')" />
+    @endif
+
     <x-card>
         <div class="flex flex-wrap items-start justify-between gap-4">
             <div>
@@ -30,15 +34,34 @@
                 <h2 class="text-h3 font-semibold">Materi pembelajaran</h2>
                 <p class="text-caption text-[var(--app-text-muted)]">Lesson akan muncul di portal siswa setelah diterbitkan.</p>
             </div>
-            <span class="badge badge-neutral">{{ $course->lessons->count() }} materi</span>
+            <div class="flex items-center gap-2">
+                <span class="badge badge-neutral">{{ $course->lessons->count() }} materi</span>
+                @can('lms.lesson.manage')
+                    <a href="{{ route('lms.teacher.lessons.create', $course) }}" class="btn btn-primary btn-sm">Tambah materi</a>
+                @endcan
+            </div>
         </div>
         <div class="mt-4 divide-y divide-[var(--app-border)]">
             @forelse ($course->lessons as $lesson)
                 <div class="flex items-center justify-between gap-3 py-3">
-                    <div><p class="font-medium">{{ $lesson->position }}. {{ $lesson->title }}</p><p class="text-caption text-[var(--app-text-muted)]">{{ $lesson->status === 'published' ? 'Terbit' : 'Draft' }}</p></div>
+                    <div>
+                        <p class="font-medium">{{ $lesson->position }}. {{ $lesson->title }}</p>
+                        <p class="text-caption text-[var(--app-text-muted)]">{{ $lesson->status === 'published' ? 'Terbit' : 'Draft' }}</p>
+                    </div>
+                    @can('lms.lesson.manage')
+                        <div class="flex items-center gap-2">
+                            <a href="{{ route('lms.teacher.lessons.edit', [$course, $lesson]) }}" class="btn btn-secondary btn-sm">Edit</a>
+                            @if ($lesson->status !== 'published')
+                                <form method="POST" action="{{ route('lms.teacher.lessons.publish', [$course, $lesson]) }}">
+                                    @csrf
+                                    <button class="btn btn-primary btn-sm">Terbitkan</button>
+                                </form>
+                            @endif
+                        </div>
+                    @endcan
                 </div>
             @empty
-                <p class="py-5 text-body text-[var(--app-text-muted)]">Belum ada materi. Tambahkan lesson pada slice berikutnya.</p>
+                <p class="py-5 text-body text-[var(--app-text-muted)]">Belum ada materi. Tambahkan materi pertama untuk course ini.</p>
             @endforelse
         </div>
     </x-card>
