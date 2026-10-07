@@ -120,11 +120,15 @@ return [
                 // Wasmer's volume S3 endpoint needs an explicit CA bundle in
                 // PHPix; relying only on libcurl's system default made every
                 // exists()/readStream() call fail with cURL error 60.
-                'verify' => env('AWS_CA_BUNDLE', true),
+                'verify' => file_exists(base_path('resources/certs/cacert.pem'))
+                    ? base_path('resources/certs/cacert.pem')
+                    : true,
             ],
             'options' => [
                 'http' => [
-                    'verify' => env('AWS_CA_BUNDLE', true),
+                    'verify' => file_exists(base_path('resources/certs/cacert.pem'))
+                        ? base_path('resources/certs/cacert.pem')
+                        : true,
                 ],
             ],
             'throw' => false,
