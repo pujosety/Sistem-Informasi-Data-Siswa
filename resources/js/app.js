@@ -1,6 +1,7 @@
 import './bootstrap';
 import Alpine from 'alpinejs';
 import './landing-crowd';
+import './ai-assistant';
 import { registerSW } from './pwa.js';
 
 const THEME_KEY = 'lyfla.theme';

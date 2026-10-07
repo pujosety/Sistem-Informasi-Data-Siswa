@@ -4,6 +4,9 @@ namespace App\Providers;
 
 use App\Models\ActivityLog;
 use App\Models\User;
+use App\Services\AI\AiService;
+use App\Services\AI\Contracts\AiProvider;
+use App\Services\AI\Providers\NaraRouterProvider;
 use App\Services\NavigationService;
 use App\Services\SchoolContext;
 use App\Services\SettingsService;
@@ -81,6 +84,13 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton(SchoolContext::class, fn () => new SchoolContext);
+
+        $this->app->singleton(AiProvider::class, fn () => new NaraRouterProvider(
+            (array) config('ai.nararouter', [])
+        ));
+        $this->app->singleton(AiService::class, fn ($app) => new AiService(
+            $app->make(AiProvider::class)
+        ));
     }
 
     /**

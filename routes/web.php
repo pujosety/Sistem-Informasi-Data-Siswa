@@ -26,6 +26,7 @@ use App\Http\Controllers\EnrollmentController;
 use App\Http\Controllers\HomeroomController;
 use App\Http\Controllers\WorkspaceController;
 use App\Http\Controllers\HealthController;
+use App\Http\Controllers\AiChatController;
 use App\Http\Controllers\ParentPortalController;
 use App\Http\Controllers\PublicHomeController;
 use Illuminate\Support\Facades\Route;
@@ -124,6 +125,10 @@ require __DIR__.'/fitur-workflow-ppdb.php';
 // ours win. Do not add a competing `home` route here.
 
 Route::get('/health', HealthController::class)->name('health');
+
+Route::post('/api/ai/chat', AiChatController::class)
+    ->middleware('throttle:10,1')
+    ->name('ai.chat');
 
 /*
 |--------------------------------------------------------------------------

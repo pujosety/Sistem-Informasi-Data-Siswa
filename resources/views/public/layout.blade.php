@@ -15,6 +15,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', $school['name'] ?: config('branding.platform.name'))</title>
     <meta name="description" content="@yield('description', 'Portal informasi dan administrasi ' . ($school['name'] ?: 'sekolah') . '.')">
     <link rel="canonical" href="{{ url()->current() }}">
@@ -297,6 +298,8 @@
     <main id="main-content" class="flex-1">
         @yield('body')
     </main>
+
+<x-public.ai-assistant />
 
 <footer class="mt-auto border-t border-[var(--app-border)] bg-[var(--app-surface)]">
         <div class="mx-auto max-w-6xl px-5 sm:px-8 py-8">
