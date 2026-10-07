@@ -166,7 +166,7 @@ class InstallCommand extends Command
 
         $values = array_filter([
             'school.name'        => $this->option('school-name'),
-            'app.name'           => $this->option('school-name') ? $this->option('school-name').' — SIDA' : null,
+            'app.name'           => $this->option('school-name') ? $this->option('school-name').' — LYFLA' : null,
         ]);
 
         if ($values === []) {

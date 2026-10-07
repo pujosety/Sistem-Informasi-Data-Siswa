@@ -96,8 +96,8 @@ class SeedPublicSiteCommand extends Command
     private function fillIdentity(SettingsService $settings, bool $reset, bool $dry): void
     {
         $identity = [
-            'app.name' => 'Sistem Informasi Data Siswa',
-            'app.short_name' => 'SIDA',
+            'app.name' => 'SMP 1 LYFLA',
+            'app.short_name' => 'LYFLA',
             'app.tagline' => 'Pendaftaran, akademik, dan informasi sekolah dalam satu portal.',
             'school.name' => 'SMP 1 LYFLA',
             'school.npsn' => '20219876',

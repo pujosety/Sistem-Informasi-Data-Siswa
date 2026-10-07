@@ -51,7 +51,7 @@ class SeedShowcaseDataset extends Command
     public function handle(EnrollmentService $enrollments): int
     {
         $year = $this->ensureAcademicYear();
-        $admin = $this->ensureUser('Administrator SIDA', 'admin@sida.test', 'super_admin');
+        $admin = $this->ensureUser('Administrator LYFLA', 'admin@sida.test', 'super_admin');
 
         if ($this->option('reset')) {
             $this->reset($year);
