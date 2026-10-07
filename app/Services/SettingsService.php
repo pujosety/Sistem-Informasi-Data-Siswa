@@ -160,31 +160,6 @@ class SettingsService
         return $this->databaseUsable() && \Illuminate\Support\Facades\Schema::hasTable('settings');
     }
 
-    /**
-     * Keep known legacy showcase identity from winning over the current
-     * LYFLA defaults when an old production row survives a deployment.
-     *
-     * This is intentionally narrow: administrator-entered values remain
-     * editable, while only the obsolete values from the former showcase are
-     * normalized until the repair migration has run.
-     */
-    private function normalizeLegacyIdentity(string $key, mixed $value): mixed
-    {
-        return match ($key) {
-            'app.name', 'school.name' => in_array($value, [
-                'SMA Negeri 1',
-                'SMA Negeri 1 Bogor',
-                'Sistem Informasi Data Siswa',
-                'Sistem Informasi Data Siswa — SIDA',
-            ], true) ? 'SMP 1 LYFLA' : $value,
-            'app.short_name' => in_array($value, ['SIDA', 'SMA', 'SIMS'], true) ? 'LYFLA' : $value,
-            'app.tagline' => in_array($value, ['Sistem Informasi Managemen Siswa', 'Portal Data Siswa', 'Data siswa, satu tempat'], true)
-                ? 'Pendaftaran, akademik, dan informasi sekolah dalam satu portal.'
-                : $value,
-            default => $value,
-        };
-    }
-
     public function get(string $key, mixed $default = null): mixed
     {
         // all() is memoised per request, so this costs nothing extra.
@@ -196,7 +171,10 @@ class SettingsService
             return $default ?? (self::DEFAULTS[$key][0] ?? null);
         }
 
-        return $this->normalizeLegacyIdentity($key, $setting->typedValue());
+        // The settings table is the source of truth. Legacy identity cleanup
+        // belongs in a one-time migration, not in every read, so administrator
+        // edits are reflected exactly across every surface.
+        return $setting->typedValue();
     }
 
     public function group(string $group): array

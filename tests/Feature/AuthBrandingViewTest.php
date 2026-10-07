@@ -49,4 +49,23 @@ class AuthBrandingViewTest extends TestCase
         $this->assertStringContainsString('action="'.route('register').'"', $html);
         $this->assertStringNotContainsString('href="#"', $html);
     }
+
+    /** @test */
+    public function auth_copy_and_palette_match_custom_database_settings_exactly(): void
+    {
+        app(SettingsService::class)->setMany([
+            'app.name' => 'Sekolah Contoh Dinamis',
+            'app.short_name' => 'SCD',
+            'app.tagline' => 'Tagline dari database',
+            'branding.primary_color' => '#123456',
+            'branding.accent_color' => '#654321',
+        ]);
+
+        $html = $this->get(route('login'))->assertOk()->getContent();
+
+        $this->assertStringContainsString('Sekolah Contoh Dinamis', $html);
+        $this->assertStringContainsString('Tagline dari database', $html);
+        $this->assertStringContainsString('--brand-config-primary:#123456', $html);
+        $this->assertStringContainsString('--brand-config-accent:#654321', $html);
+    }
 }
