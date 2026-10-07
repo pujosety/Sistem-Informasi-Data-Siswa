@@ -209,6 +209,20 @@ class SettingsService
 
     public function get(string $key, mixed $default = null): mixed
     {
+        // Branding is rendered on every public/authenticated surface. Read it
+        // directly so a deployment cache from an earlier worker can never make
+        // login show a stale identity after an admin or migration update.
+        if (($definition = self::DEFAULTS[$key] ?? null) && $definition[2] === 'branding' && $this->databaseUsable()) {
+            try {
+                $fresh = Setting::where('key', $key)->first();
+                if ($fresh) {
+                    return $fresh->typedValue();
+                }
+            } catch (\Throwable $e) {
+                report($e);
+            }
+        }
+
         // all() is memoised per request, so this costs nothing extra.
         $setting = $this->all()->get($key);
 
@@ -227,6 +241,18 @@ class SettingsService
     public function group(string $group): array
     {
         $rows = $this->all();
+
+        if ($group === 'branding' && $this->databaseUsable()) {
+            try {
+                $rows = Setting::where('group', $group)
+                    ->orderBy('sort_order')
+                    ->get()
+                    ->mapWithKeys(fn (Setting $setting) => [$setting->key => $setting]);
+            } catch (\Throwable $e) {
+                report($e);
+            }
+        }
+
         $keys = collect(self::DEFAULTS)
             ->filter(fn (array $definition) => $definition[2] === $group)
             ->keys()
