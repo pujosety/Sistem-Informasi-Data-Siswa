@@ -11,7 +11,7 @@
         <p class="text-caption uppercase tracking-[0.18em] text-white/50">
             PPDB{{ $figures['academicYear'] ? ' · ' . $figures['academicYear'] : '' }}
         </p>
-        <h1 class="mt-2 font-[var(--font-display)] text-3xl sm:text-4xl font-extrabold tracking-tight">
+        <h1 class="mt-2 font-[var(--font-display)] text-3xl sm:text-4xl font-extrabold tracking-tight text-white">
             Pendaftaran siswa baru
         </h1>
         <p class="mt-4 text-body text-white/70 max-w-2xl leading-relaxed">

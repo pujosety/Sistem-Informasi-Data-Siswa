@@ -9,7 +9,7 @@
 <section class="bg-[var(--app-sidebar-bg)] text-white">
     <div class="mx-auto max-w-6xl px-5 sm:px-8 py-12">
         <p class="text-caption uppercase tracking-[0.18em] text-white/50">Profil sekolah</p>
-        <h1 class="mt-2 font-[var(--font-display)] text-3xl sm:text-4xl font-extrabold tracking-tight">
+        <h1 class="mt-2 font-[var(--font-display)] text-3xl sm:text-4xl font-extrabold tracking-tight text-white">
             {{ $school['name'] ?: config('branding.platform.name') }}
         </h1>
     </div>
