@@ -9,11 +9,20 @@ use Illuminate\Support\Facades\Schema;
 class SchoolContext
 {
     private ?School $school = null;
+    private ?int $requestObjectId = null;
     private static ?bool $tableExists = null;
     private static ?int $consoleSchoolId = null;
 
     public function current(): ?School
     {
+        if (app()->bound('request')) {
+            $requestId = spl_object_id(request());
+            if ($this->requestObjectId !== $requestId) {
+                $this->requestObjectId = $requestId;
+                $this->school = null;
+            }
+        }
+
         if ($this->school) {
             return $this->school;
         }

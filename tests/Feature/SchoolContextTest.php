@@ -88,4 +88,26 @@ class SchoolContextTest extends TestCase
 
         $this->assertSame('smp-negeri-4-metro', session('active_school_slug'));
     }
+
+    /** @test */
+    public function public_school_query_selector_is_recomputed_for_each_request(): void
+    {
+        $second = School::create([
+            'slug' => 'smp-negeri-4-metro',
+            'name' => 'SMP Negeri 4 Metro',
+            'short_name' => 'SMPN 4 Metro',
+            'level' => 'SMP',
+            'status' => 'Negeri',
+            'is_active' => true,
+            'is_default' => false,
+        ]);
+
+        app(SchoolContext::class)->use($second);
+        app(SettingsService::class)->set('school.name', 'SMP Negeri 4 Metro');
+        app(SchoolContext::class)->reset();
+
+        $this->get('/?school=smp-negeri-4-metro')
+            ->assertOk()
+            ->assertSee('SMP Negeri 4 Metro');
+    }
 }
