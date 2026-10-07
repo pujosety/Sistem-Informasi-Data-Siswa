@@ -182,6 +182,7 @@ Route::middleware('guest')->group(function () {
 
     Route::get('/daftar', [RegisteredUserController::class, 'create'])->name('register');
     Route::post('/daftar', [RegisteredUserController::class, 'store'])->middleware('throttle:6,1');
+    Route::redirect('/register', '/daftar', 301);
 });
 
 Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])

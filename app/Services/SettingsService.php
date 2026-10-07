@@ -39,7 +39,7 @@ class SettingsService
         // Branding
         'app.name' => ['SMP 1 LYFLA', 'string', 'branding', 'Nama Aplikasi', 'Ditampilkan di sidebar, judul halaman, dan PDF.', 10],
         'app.short_name' => ['LYFLA', 'string', 'branding', 'Nama Pendek', 'Dipakai pada PWA dan layar sempit.', 20],
-        'app.tagline' => ['Portal Data Siswa', 'string', 'branding', 'Tagline', 'Kalimat singkat di bawah nama aplikasi.', 30],
+        'app.tagline' => ['Pendaftaran, akademik, dan informasi sekolah dalam satu portal.', 'string', 'branding', 'Tagline', 'Kalimat singkat di bawah nama aplikasi.', 30],
         'branding.logo' => ['', 'image', 'branding', 'Logo', 'PNG/JPG/WebP, maksimal 1 MB, disarankan 240×60 px.', 40],
         'branding.icon' => ['', 'image', 'branding', 'Ikon / Favicon', 'Disimpan sebagai favicon situs.', 50],
         'branding.primary_color' => ['#681D2A', 'color', 'branding', 'Warna Utama', 'Dipakai untuk tombol, tautan, dan sorotan.', 60],
@@ -177,7 +177,10 @@ class SettingsService
                 'Sistem Informasi Data Siswa',
                 'Sistem Informasi Data Siswa — SIDA',
             ], true) ? 'SMP 1 LYFLA' : $value,
-            'app.short_name' => in_array($value, ['SIDA', 'SMA'], true) ? 'LYFLA' : $value,
+            'app.short_name' => in_array($value, ['SIDA', 'SMA', 'SIMS'], true) ? 'LYFLA' : $value,
+            'app.tagline' => in_array($value, ['Sistem Informasi Managemen Siswa', 'Portal Data Siswa', 'Data siswa, satu tempat'], true)
+                ? 'Pendaftaran, akademik, dan informasi sekolah dalam satu portal.'
+                : $value,
             default => $value,
         };
     }
