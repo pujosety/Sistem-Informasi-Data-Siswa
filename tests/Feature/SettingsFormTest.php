@@ -71,6 +71,29 @@ class SettingsFormTest extends TestCase
     }
 
     /** @test */
+    public function browser_normalized_setting_names_are_restored_before_validation(): void
+    {
+        // PHP changes dots in HTML field names to underscores before Laravel
+        // receives a real browser request. This payload reproduces production
+        // rather than the flatter keys used by direct feature-test helpers.
+        $this->actingAs($this->admin)
+            ->from(route('settings.branding'))
+            ->put(route('settings.branding.update'), [
+                'app_name' => 'SMP 1 LYFLA',
+                'app_short_name' => 'LYFLA',
+                'app_tagline' => 'Portal sekolah terintegrasi',
+                'branding_primary_color' => '#681D2A',
+                'branding_accent_color' => '#A83C4C',
+            ])
+            ->assertRedirect(route('settings.branding'))
+            ->assertSessionHasNoErrors();
+
+        $this->assertSame('SMP 1 LYFLA', app(\App\Services\SettingsService::class)->get('app.name'));
+        $this->assertSame('LYFLA', app(\App\Services\SettingsService::class)->get('app.short_name'));
+        $this->assertSame('#681D2A', app(\App\Services\SettingsService::class)->get('branding.primary_color'));
+    }
+
+    /** @test */
     public function the_brand_name_is_actually_persisted(): void
     {
         // The assertion that matters. A redirect proves the request was

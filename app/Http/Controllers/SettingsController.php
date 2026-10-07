@@ -107,8 +107,43 @@ class SettingsController extends BaseController
         return $escaped;
     }
 
+    /**
+     * PHP converts dots in HTML field names to underscores before Laravel sees
+     * the request (`app.name` becomes `app_name`). Feature tests that call the
+     * controller directly do not pass through that PHP normalisation, which
+     * hid the production-only settings save failure. Restore the literal
+     * setting keys before validation and file handling.
+     */
+    private function normalizeSettingRequest(Request $request): void
+    {
+        $input = $request->all();
+        $merge = [];
+
+        foreach (array_keys(SettingsService::DEFAULTS) as $key) {
+            $wireKey = str_replace('.', '_', $key);
+
+            if (! array_key_exists($key, $input) && array_key_exists($wireKey, $input)) {
+                $merge[$key] = $input[$wireKey];
+            }
+        }
+
+        if ($merge !== []) {
+            $request->merge($merge);
+        }
+
+        foreach (array_keys(SettingsService::DEFAULTS) as $key) {
+            $wireKey = str_replace('.', '_', $key);
+
+            if (! $request->files->has($key) && $request->files->has($wireKey)) {
+                $request->files->set($key, $request->files->get($wireKey));
+            }
+        }
+    }
+
     public function updateSchool(Request $request): RedirectResponse
     {
+        $this->normalizeSettingRequest($request);
+
         $data = $request->validate($this->settingRules([
             'school.name' => ['required', 'string', 'max:190'],
             'school.npsn' => ['nullable', 'string', 'max:20'],
@@ -142,6 +177,8 @@ class SettingsController extends BaseController
 
     public function updateBranding(Request $request): RedirectResponse
     {
+        $this->normalizeSettingRequest($request);
+
         $data = $request->validate($this->settingRules([
             'app.name' => ['required', 'string', 'max:120'],
             'app.short_name' => ['required', 'string', 'max:20'],
@@ -202,6 +239,8 @@ class SettingsController extends BaseController
 
     public function updateRegistration(Request $request): RedirectResponse
     {
+        $this->normalizeSettingRequest($request);
+
         $data = $request->validate($this->settingRules([
             'registration.open' => ['nullable', 'boolean'],
             'registration.start_at' => ['nullable', 'date'],
@@ -237,6 +276,8 @@ class SettingsController extends BaseController
 
     public function updateApplication(Request $request): RedirectResponse
     {
+        $this->normalizeSettingRequest($request);
+
         $data = $request->validate($this->settingRules([
             /*
              * These three are HERE and were not before.
