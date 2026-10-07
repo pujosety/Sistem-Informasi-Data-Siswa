@@ -144,7 +144,7 @@ Route::get('/health', HealthController::class)->name('health');
 |
 */
 Route::get('/branding/{asset}', [BrandAssetController::class, 'show'])
-    ->whereIn('asset', ['logo', 'icon'])
+    ->whereIn('asset', ['logo', 'icon', 'logo-dark', 'logo-compact', 'favicon', 'app-icon', 'login-logo'])
     ->name('brand.asset');
 
 /*

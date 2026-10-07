@@ -6,6 +6,7 @@
     $runtimeBrandCss = app(\App\Services\BrandService::class)->cssVariables(
         data_get($brand ?? [], 'primary'),
         data_get($brand ?? [], 'accent'),
+        data_get($brand ?? [], 'tokens', []),
     );
 @endphp
 
@@ -57,6 +58,12 @@
     <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700|manrope:600,700,800&display=swap" rel="stylesheet">
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @php
+        $brandCustomCss = data_get($brand ?? [], 'tokens', [])['advanced.custom_css'] ?? null;
+    @endphp
+    @if (filled($brandCustomCss))
+        <style data-brand-custom-css>{!! $brandCustomCss !!}</style>
+    @endif
     @stack('head')
 </head>
 

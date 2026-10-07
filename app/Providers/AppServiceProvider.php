@@ -240,14 +240,21 @@ class AppServiceProvider extends ServiceProvider
                 return;
             }
 
+            $branding = $settings->group('branding');
+            $brandValue = fn (string $key, mixed $fallback = null) => $branding[$key]['value'] ?? $fallback;
+
             $view->with('brand', [
-                'name' => app(SettingsService::class)->get('app.name'),
-                'shortName' => app(SettingsService::class)->get('app.short_name'),
-                'tagline' => app(SettingsService::class)->get('app.tagline'),
-                'logo' => app(SettingsService::class)->asset('branding.logo'),
-                'icon' => app(SettingsService::class)->asset('branding.icon'),
-                'primary' => app(SettingsService::class)->get('branding.primary_color'),
-                'accent' => app(SettingsService::class)->get('branding.accent_color'),
+                'name' => $brandValue('app.name', $settings->get('app.name')),
+                'shortName' => $brandValue('app.short_name', $settings->get('app.short_name')),
+                'tagline' => $brandValue('app.tagline', $settings->get('app.tagline')),
+                'description' => $brandValue('app.description', $settings->get('app.description')),
+                'portalLabel' => $brandValue('app.portal_label', $settings->get('app.portal_label')),
+                'copyright' => $brandValue('app.copyright', $settings->get('app.copyright')),
+                'logo' => $settings->asset('branding.logo'),
+                'icon' => $settings->asset('branding.icon'),
+                'tokens' => collect($branding)->mapWithKeys(fn (array $item, string $key) => [$key => $item['value']])->all(),
+                'primary' => $brandValue('branding.primary_color', $settings->get('branding.primary_color')),
+                'accent' => $brandValue('branding.accent_color', $settings->get('branding.accent_color')),
                 'school' => [
                     'name' => app(SettingsService::class)->get('school.name'),
                     'npsn' => app(SettingsService::class)->get('school.npsn'),

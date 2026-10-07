@@ -44,6 +44,53 @@ class SettingsService
         'branding.icon' => ['', 'image', 'branding', 'Ikon / Favicon', 'Disimpan sebagai favicon situs.', 50],
         'branding.primary_color' => ['#681D2A', 'color', 'branding', 'Warna Utama', 'Dipakai untuk tombol, tautan, dan sorotan.', 60],
         'branding.accent_color' => ['#A83C4C', 'color', 'branding', 'Warna Aksen', 'Dipakai untuk detail dan sorotan sekunder.', 70],
+        'app.description' => ['Pengelolaan data siswa, pendaftaran, pembelajaran, dan informasi sekolah dalam satu portal.', 'text', 'branding', 'Deskripsi Aplikasi', 'Ringkasan singkat untuk halaman masuk dan metadata.', 80],
+        'app.portal_label' => ['Portal Akademik', 'string', 'branding', 'Label Portal', 'Label pendek yang tampil di preview dan halaman autentikasi.', 90],
+        'app.copyright' => ['© 2026 SMP 1 LYFLA', 'string', 'branding', 'Teks Copyright', 'Teks footer aplikasi.', 100],
+        'branding.logo_dark' => ['', 'image', 'branding', 'Logo Dark Mode', 'Logo untuk permukaan gelap.', 110],
+        'branding.logo_compact' => ['', 'image', 'branding', 'Logo Compact', 'Logo untuk sidebar collapsed.', 120],
+        'branding.favicon' => ['', 'image', 'branding', 'Favicon', 'Ikon browser.', 130],
+        'branding.app_icon' => ['', 'image', 'branding', 'App Icon', 'Ikon PWA dan homescreen.', 140],
+        'branding.login_logo' => ['', 'image', 'branding', 'Logo Login', 'Opsional, jika halaman login memakai logo berbeda.', 150],
+        'branding.primary_hover' => ['', 'color', 'branding', 'Primary Hover', 'Otomatis dari primary jika kosong.', 160],
+        'branding.background' => ['', 'color', 'branding', 'Background', 'Latar utama aplikasi.', 170],
+        'branding.surface' => ['', 'color', 'branding', 'Surface', 'Latar card dan panel.', 180],
+        'branding.sidebar' => ['', 'color', 'branding', 'Sidebar', 'Latar sidebar.', 190],
+        'branding.sidebar_active' => ['', 'color', 'branding', 'Sidebar Active', 'Gaya item menu aktif.', 200],
+        'branding.text_primary' => ['', 'color', 'branding', 'Text Primary', 'Teks utama.', 210],
+        'branding.text_secondary' => ['', 'color', 'branding', 'Text Secondary', 'Teks pendukung.', 220],
+        'branding.border' => ['', 'color', 'branding', 'Border', 'Garis dan pemisah.', 230],
+        'branding.success' => ['', 'color', 'branding', 'Success', 'Status berhasil.', 240],
+        'branding.warning' => ['', 'color', 'branding', 'Warning', 'Status peringatan.', 250],
+        'branding.error' => ['', 'color', 'branding', 'Error', 'Status error.', 260],
+        'theme.font_family' => ['System Default', 'string', 'branding', 'Font Utama', 'Font global aplikasi.', 270],
+        'theme.heading_weight' => ['700', 'int', 'branding', 'Font Weight Heading', 'Bobot judul.', 280],
+        'theme.font_scale' => ['default', 'string', 'branding', 'Skala Font', 'Compact, Default, atau Large.', 290],
+        'theme.radius' => ['rounded', 'string', 'branding', 'Radius Sudut', 'Gaya sudut komponen.', 300],
+        'theme.shadow' => ['soft', 'string', 'branding', 'Bayangan', 'Gaya bayangan card.', 310],
+        'theme.density' => ['comfortable', 'string', 'branding', 'Kepadatan Tampilan', 'Jarak dan tinggi kontrol.', 320],
+        'sidebar.active_style' => ['soft', 'string', 'branding', 'Sidebar Active Style', 'Filled, Pill, Left Border, atau Soft Highlight.', 330],
+        'sidebar.logo_position' => ['left', 'string', 'branding', 'Posisi Logo', 'Kiri atau center.', 340],
+        'sidebar.width' => ['default', 'string', 'branding', 'Lebar Sidebar', 'Compact, Default, atau Wide.', 350],
+        'header.background' => ['surface', 'string', 'branding', 'Background Header', 'White, Surface, atau Primary.', 360],
+        'header.border' => ['1', 'bool', 'branding', 'Border Header', 'Tampilkan garis header.', 370],
+        'header.shadow' => ['0', 'bool', 'branding', 'Shadow Header', 'Tampilkan bayangan header.', 380],
+        'header.search' => ['1', 'bool', 'branding', 'Search Bar', 'Tampilkan pencarian global.', 390],
+        'header.breadcrumb' => ['1', 'bool', 'branding', 'Breadcrumb', 'Tampilkan breadcrumb.', 400],
+        'header.sticky' => ['1', 'bool', 'branding', 'Header Sticky', 'Header tetap di atas saat scroll.', 410],
+        'component.button_style' => ['solid', 'string', 'branding', 'Gaya Tombol', 'Solid, Soft, Outline, atau Minimal.', 420],
+        'component.table_style' => ['clean', 'string', 'branding', 'Gaya Tabel', 'Clean, Bordered, Striped, atau Compact.', 430],
+        'component.card_style' => ['soft-shadow', 'string', 'branding', 'Gaya Card', 'Flat, Bordered, Soft Shadow, atau Elevated.', 440],
+        'component.badge_style' => ['soft', 'string', 'branding', 'Gaya Badge', 'Solid, Soft, atau Outline.', 450],
+        'component.badge_radius' => ['pill', 'string', 'branding', 'Radius Badge', 'Pill atau Rounded.', 460],
+        'theme.mode' => ['user', 'string', 'branding', 'Mode Tampilan', 'Light, Dark, System, atau User.', 470],
+        'login.layout' => ['split', 'string', 'branding', 'Layout Login', 'Centered, Split, atau Brand Panel.', 480],
+        'login.background' => ['gradient', 'string', 'branding', 'Background Login', 'Solid, Gradient, atau Image.', 490],
+        'theme.background_style' => ['warm', 'string', 'branding', 'Gaya Background', 'Pure White, Warm Gray, Soft Tint, atau Custom.', 500],
+        'theme.background_intensity' => ['35', 'int', 'branding', 'Intensitas Background', '0 sampai 100.', 510],
+        'theme.decorative' => ['subtle-gradient', 'string', 'branding', 'Elemen Dekoratif', 'None, Subtle Gradient, Soft Grid, atau Very Light Noise.', 520],
+        'theme.icon_style' => ['outline', 'string', 'branding', 'Gaya Ikon', 'Outline, Rounded, Filled, atau Duotone.', 530],
+        'advanced.custom_css' => ['', 'text', 'branding', 'Custom CSS', 'Khusus Super Admin.', 540],
 
         // School profile
         'school.name' => ['SMP 1 LYFLA', 'string', 'school', 'Nama Sekolah', 'Tercetak di header laporan.', 10],
@@ -179,16 +226,26 @@ class SettingsService
 
     public function group(string $group): array
     {
-        return $this->all()
-            ->where('group', $group)
-            ->mapWithKeys(fn (Setting $s) => [$s->key => [
-                'key' => $s->key,
-                'value' => $s->typedValue(),
-                'type' => $s->type,
-                'label' => $s->label ?: str_replace(['app.', 'school.', 'branding.', 'registration.'], '', $s->key),
-                'hint' => $s->hint,
-            ]])
-            ->all();
+        $rows = $this->all();
+        $keys = collect(self::DEFAULTS)
+            ->filter(fn (array $definition) => $definition[2] === $group)
+            ->keys()
+            ->merge($rows->where('group', $group)->keys())
+            ->unique()
+            ->values();
+
+        return $keys->mapWithKeys(function (string $key) use ($rows) {
+            $definition = self::DEFAULTS[$key] ?? [null, 'string', 'general', $key, null, 99];
+            $setting = $rows->get($key);
+
+            return [$key => [
+                'key' => $key,
+                'value' => $setting?->typedValue() ?? $definition[0],
+                'type' => $setting?->type ?? $definition[1],
+                'label' => $setting?->label ?: ($definition[3] ?? str_replace(['app.', 'school.', 'branding.', 'registration.'], '', $key)),
+                'hint' => $setting?->hint ?: ($definition[4] ?? null),
+            ]];
+        })->all();
     }
 
     public function set(string $key, mixed $value): void
@@ -274,7 +331,7 @@ class SettingsService
         // The database row is the source of truth for these two URLs.
         $path = $this->get($key);
 
-        if (in_array($key, ['branding.logo', 'branding.icon'], true)) {
+        if (in_array($key, ['branding.logo', 'branding.icon', 'branding.logo_dark', 'branding.logo_compact', 'branding.favicon', 'branding.app_icon', 'branding.login_logo'], true)) {
             try {
                 $fresh = Setting::where('key', $key)->first();
                 $path = $fresh?->typedValue() ?? $path;
@@ -311,6 +368,11 @@ class SettingsService
         $asset = match ($key) {
             'branding.logo' => 'logo',
             'branding.icon' => 'icon',
+            'branding.logo_dark' => 'logo-dark',
+            'branding.logo_compact' => 'logo-compact',
+            'branding.favicon' => 'favicon',
+            'branding.app_icon' => 'app-icon',
+            'branding.login_logo' => 'login-logo',
             default => null,
         };
 

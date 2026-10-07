@@ -137,13 +137,39 @@ class BrandService
     /**
      * CSS custom properties for the live theme preview.
      */
-    public function cssVariables(?string $primary, ?string $accent): string
+    public function cssVariables(?string $primary, ?string $accent, array $tokens = []): string
     {
         $primary = $this->normalize($primary);
         $accent = $this->normalize($accent);
+        $color = fn (string $key, string $fallback): string => preg_match('/^#[0-9a-fA-F]{6}$/', trim((string) ($tokens[$key] ?? '')))
+            ? trim((string) $tokens[$key])
+            : $fallback;
+        $primaryHover = $color('branding.primary_hover', $this->shade($primary, -12));
+        $background = $color('branding.background', '#fbf9f8');
+        $surface = $color('branding.surface', '#ffffff');
+        $border = $color('branding.border', '#f0eaec');
+        $text = $color('branding.text_primary', '#241A1C');
+        $textSecondary = $color('branding.text_secondary', '#5C4A4E');
+        $sidebar = $color('branding.sidebar', $this->shade($primary, -32));
+        $sidebarActive = $color('branding.sidebar_active', $this->shade($primary, -12));
+        $success = $color('branding.success', '#17805c');
+        $warning = $color('branding.warning', '#9a6410');
+        $danger = $color('branding.error', '#b42318');
+        $radius = match ($tokens['theme.radius'] ?? 'rounded') {
+            'sharp' => ['0.25rem', '0.375rem', '0.5rem'],
+            'soft' => ['0.5rem', '0.625rem', '0.75rem'],
+            'very-rounded' => ['0.75rem', '1rem', '1.25rem'],
+            default => ['0.5rem', '0.625rem', '0.875rem'],
+        };
+        $shadow = match ($tokens['theme.shadow'] ?? 'soft') {
+            'none' => 'none',
+            'thin' => '0 1px 2px rgb(15 23 42 / .06)',
+            'elevated' => '0 8px 24px -4px rgb(15 23 42 / .16), 0 16px 48px -8px rgb(15 23 42 / .14)',
+            default => '0 2px 8px -2px rgb(15 23 42 / .10)',
+        };
 
         return "--brand-config-primary:{$primary};"
-            ."--brand-config-primary-hover:{$this->shade($primary, -12)};"
+            ."--brand-config-primary-hover:{$primaryHover};"
             ."--brand-config-primary-soft:{$this->shade($primary, 92)};"
             ."--brand-config-primary-dark:{$this->shade($primary, 35)};"
             ."--brand-config-primary-dark-hover:{$this->shade($primary, 48)};"
@@ -151,10 +177,20 @@ class BrandService
             ."--brand-config-primary-a16:color-mix(in srgb, {$primary} 16%, transparent);"
             ."--brand-config-primary-dark-a10:color-mix(in srgb, {$this->shade($primary, 35)} 12%, transparent);"
             ."--brand-config-primary-dark-a16:color-mix(in srgb, {$this->shade($primary, 35)} 20%, transparent);"
-            ."--brand-config-rail:{$this->shade($primary, -32)};"
-            ."--brand-config-rail-dark:{$this->shade($primary, -55)};"
+            ."--brand-config-rail:{$sidebar};"
+            ."--brand-config-rail-dark:{$this->shade($sidebar, -18)};"
             ."--brand-config-accent:{$accent};"
-            // Keep legacy Tailwind brand-* utilities on the same runtime ramp.
+            ."--app-bg:{$background};--app-surface:{$surface};--app-border:{$border};"
+            ."--app-text:{$text};--app-text-muted:{$textSecondary};--app-sidebar-bg:{$sidebar};"
+            ."--app-sidebar-active-bg:{$sidebarActive};--app-success:{$success};"
+            ."--app-warning:{$warning};--app-danger:{$danger};"
+            ."--radius-sm:{$radius[0]};--radius-md:{$radius[1]};--radius-lg:{$radius[2]};"
+            ."--shadow-card:{$shadow};--font-heading-weight:".(int) ($tokens['theme.heading_weight'] ?? 700).";"
+            ."--brand-config-font-scale:".match ($tokens['theme.font_scale'] ?? 'default') {
+                'compact' => '.92',
+                'large' => '1.08',
+                default => '1',
+            } . ';'
             ."--color-brand-50:{$this->shade($primary, 95)};"
             ."--color-brand-100:{$this->shade($primary, 88)};"
             ."--color-brand-200:{$this->shade($primary, 76)};"

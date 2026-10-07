@@ -38,7 +38,15 @@ class BrandAssetController extends Controller
      * than sanitised. Anything else is a 404, not a lookup, so no crafted key
      * can walk out of the branding/ prefix.
      */
-    private const ALLOWED = ['branding.logo', 'branding.icon'];
+    private const ALLOWED = [
+        'branding.logo',
+        'branding.icon',
+        'branding.logo_dark',
+        'branding.logo_compact',
+        'branding.favicon',
+        'branding.app_icon',
+        'branding.login_logo',
+    ];
 
     public function __construct(private readonly SettingsService $settings) {}
 
@@ -47,6 +55,11 @@ class BrandAssetController extends Controller
         $key = match ($asset) {
             'logo' => 'branding.logo',
             'icon' => 'branding.icon',
+            'logo-dark' => 'branding.logo_dark',
+            'logo-compact' => 'branding.logo_compact',
+            'favicon' => 'branding.favicon',
+            'app-icon' => 'branding.app_icon',
+            'login-logo' => 'branding.login_logo',
             default => abort(404),
         };
 

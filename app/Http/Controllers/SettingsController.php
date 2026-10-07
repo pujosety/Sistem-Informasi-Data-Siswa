@@ -195,28 +195,53 @@ class SettingsController extends BaseController
     {
         $this->normalizeSettingRequest($request);
 
-        $data = validator($this->normalizedSettingPayload($request), $this->settingRules([
+        $rules = [
             'app.name' => ['required', 'string', 'max:120'],
             'app.short_name' => ['required', 'string', 'max:20'],
             'app.tagline' => ['nullable', 'string', 'max:120'],
+            'app.description' => ['nullable', 'string', 'max:500'],
+            'app.portal_label' => ['nullable', 'string', 'max:80'],
+            'app.copyright' => ['nullable', 'string', 'max:160'],
             'branding.primary_color' => ['required', 'regex:/^#[0-9a-fA-F]{6}$/'],
             'branding.accent_color' => ['required', 'regex:/^#[0-9a-fA-F]{6}$/'],
-        ]), [
-            // The message keys carry the SAME dot, so they need the same
-            // escape — otherwise a colour error is reported against a field
-            // the validator never looked at.
-            'branding\\.primary_color.regex' => 'Format warna harus hex, contoh #1D4ED8.',
-            'branding\\.accent_color.regex' => 'Format warna harus hex, contoh #1D4ED8.',
+        ];
+
+        foreach (['branding.primary_hover', 'branding.background', 'branding.surface', 'branding.sidebar', 'branding.sidebar_active', 'branding.text_primary', 'branding.text_secondary', 'branding.border', 'branding.success', 'branding.warning', 'branding.error'] as $key) {
+            $rules[$key] = ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'];
+        }
+
+        foreach (['theme.font_family', 'theme.font_scale', 'theme.radius', 'theme.shadow', 'theme.density', 'sidebar.active_style', 'sidebar.logo_position', 'sidebar.width', 'header.background', 'component.button_style', 'component.table_style', 'component.card_style', 'component.badge_style', 'component.badge_radius', 'theme.mode', 'login.layout', 'login.background', 'theme.background_style', 'theme.decorative', 'theme.icon_style'] as $key) {
+            $rules[$key] = ['nullable', 'string', 'max:40'];
+        }
+
+        $rules['theme.heading_weight'] = ['nullable', Rule::in(['500', '600', '700'])];
+        $rules['theme.background_intensity'] = ['nullable', 'integer', 'min:0', 'max:100'];
+        $rules['advanced.custom_css'] = ['nullable', 'string', 'max:20000'];
+
+        foreach (['header.border', 'header.shadow', 'header.search', 'header.breadcrumb', 'header.sticky'] as $key) {
+            $rules[$key] = ['nullable', 'boolean'];
+        }
+
+        $data = validator($this->normalizedSettingPayload($request), $this->settingRules($rules), [
+            'branding\\.primary_color.regex' => 'Format warna harus hex, contoh #681D2A.',
+            'branding\\.accent_color.regex' => 'Format warna harus hex, contoh #A83C4C.',
         ])->validate();
 
-        // Uploads are validated as real images before they ever reach disk.
-        $data = array_merge($data, $this->brand->handleUploads($request, ['branding.logo', 'branding.icon']));
+        foreach (['header.border', 'header.shadow', 'header.search', 'header.breadcrumb', 'header.sticky'] as $key) {
+            $data[$key] = $request->boolean($key) || $request->boolean(str_replace('.', '_', $key));
+        }
 
-        // Reject a theme that would make the UI unreadable.
+        if (! $request->user()?->hasRole('super_admin')) {
+            unset($data['advanced.custom_css']);
+        }
+
+        $assetKeys = ['branding.logo', 'branding.icon', 'branding.logo_dark', 'branding.logo_compact', 'branding.favicon', 'branding.app_icon', 'branding.login_logo'];
+        $data = array_merge($data, $this->brand->handleUploads($request, $assetKeys));
+
         if (! $this->brand->hasReadableContrast($data['branding.primary_color'])) {
             return back()
                 ->withInput()
-                ->with('error', 'Warna utama terlalu terang atau gelap sehingga teks tombol tidak terbaca. Pilih warna yang lebih netral.');
+                ->with('error', 'Warna utama terlalu terang atau gelap sehingga teks tombol tidak terbaca. Pilih warna yang lebih gelap.');
         }
 
         $this->settings->setMany($data);
@@ -227,7 +252,7 @@ class SettingsController extends BaseController
 
     public function removeAsset(Request $request, string $key): RedirectResponse
     {
-        abort_unless(in_array($key, ['branding.logo', 'branding.icon'], true), 404);
+        abort_unless(in_array($key, ['branding.logo', 'branding.icon', 'branding.logo_dark', 'branding.logo_compact', 'branding.favicon', 'branding.app_icon', 'branding.login_logo'], true), 404);
 
         $path = $this->settings->get($key);
 
