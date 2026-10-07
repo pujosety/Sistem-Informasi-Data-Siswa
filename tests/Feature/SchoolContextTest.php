@@ -106,8 +106,13 @@ class SchoolContextTest extends TestCase
         app(SettingsService::class)->set('school.name', 'SMP Negeri 4 Metro');
         app(SchoolContext::class)->reset();
 
-        $this->get('/?school=smp-negeri-4-metro')
+        $response = $this->get('/?school=smp-negeri-4-metro');
+
+        $this->assertSame('smp-negeri-4-metro', app(SchoolContext::class)->slug());
+        $response->assertOk()->assertSee('SMP Negeri 4 Metro');
+
+        $this->get('/?school=smp-negeri-1-metro')
             ->assertOk()
-            ->assertSee('SMP Negeri 4 Metro');
+            ->assertSee('SMP 1 LYFLA');
     }
 }

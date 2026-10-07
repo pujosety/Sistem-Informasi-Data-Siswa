@@ -98,6 +98,10 @@ return Application::configure(basePath: dirname(__DIR__))
         // Runs for every request so validation errors can always redirect.
         $middleware->append(\App\Http\Middleware\EnsureRedirectFallback::class);
 
+        // Resolve the requested school before controllers and global view
+        // composers access settings, CMS, media, or branding.
+        $middleware->append(\App\Http\Middleware\ResolveSchoolContext::class);
+
         /*
          | Forbids shared caching of any response that carries per-visitor state.
          |

@@ -217,7 +217,7 @@ class SettingsService
         // Branding is rendered on every public/authenticated surface. Read it
         // directly so a deployment cache from an earlier worker can never make
         // login show a stale identity after an admin or migration update.
-        if (($definition = self::DEFAULTS[$key] ?? null) && $definition[2] === 'branding' && $this->databaseUsable()) {
+        if (($definition = self::DEFAULTS[$key] ?? null) && $this->schoolId() !== null && $this->databaseUsable()) {
             try {
                 $query = Setting::where('key', $key);
                 $this->applySchoolScope($query);

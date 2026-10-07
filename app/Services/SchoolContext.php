@@ -9,16 +9,19 @@ use Illuminate\Support\Facades\Schema;
 class SchoolContext
 {
     private ?School $school = null;
-    private ?int $requestObjectId = null;
+    private ?string $requestSelector = null;
     private static ?bool $tableExists = null;
     private static ?int $consoleSchoolId = null;
 
     public function current(): ?School
     {
         if (app()->bound('request')) {
-            $requestId = spl_object_id(request());
-            if ($this->requestObjectId !== $requestId) {
-                $this->requestObjectId = $requestId;
+            $selector = request()->query('school')
+                ?: (function_exists('session') ? session('active_school_slug') : null);
+            $selectorKey = $selector ?: '__default__';
+
+            if ($this->requestSelector !== $selectorKey) {
+                $this->requestSelector = $selectorKey;
                 $this->school = null;
             }
         }
@@ -31,7 +34,7 @@ class SchoolContext
             return null;
         }
 
-        if ((app()->runningInConsole() || app()->environment('testing')) && static::$consoleSchoolId !== null) {
+        if ((app()->runningInConsole() || app()->environment('testing')) && static::$consoleSchoolId !== null && ! app()->bound('request')) {
             return $this->school = School::query()->find(static::$consoleSchoolId);
         }
 
@@ -72,6 +75,7 @@ class SchoolContext
 
         if ($this->school && app()->bound('request') && function_exists('session')) {
             session(['active_school_slug' => $this->school->slug]);
+            $this->requestSelector = $this->school->slug;
         }
 
         if (app()->runningInConsole() || app()->environment('testing')) {
