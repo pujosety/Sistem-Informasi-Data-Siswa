@@ -15,9 +15,12 @@
     $isIcon = $variant === 'icon';
 
     $brandSettings = $brand ?? [];
+    $configuredIcon = data_get($brandSettings, 'icon');
+    $configuredLogo = data_get($brandSettings, 'logo');
+    $usingLogoAsIconFallback = $isIcon && blank($configuredIcon) && filled($configuredLogo);
     $configuredSource = $isIcon
-        ? data_get($brandSettings, 'icon')
-        : data_get($brandSettings, 'logo');
+        ? ($configuredIcon ?: $configuredLogo)
+        : $configuredLogo;
 
     $brandName = data_get($brandSettings, 'shortName')
         ?: config('branding.platform.name');
@@ -42,6 +45,9 @@
     // duplicates like "w-8 h-8 w-8 h-8".
     $callerClass = trim($attributes->get('class', ''));
     $finalClass = trim($callerClass !== '' ? $callerClass.' '.$heightClass : $heightClass);
+    if ($usingLogoAsIconFallback) {
+        $finalClass .= ' object-contain';
+    }
 @endphp
 
 {{--
