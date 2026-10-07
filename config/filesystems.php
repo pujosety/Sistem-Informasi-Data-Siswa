@@ -116,6 +116,12 @@ return [
             'url' => env('AWS_URL'),
             'endpoint' => env('AWS_ENDPOINT'),
             'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', false),
+            'http' => [
+                // Wasmer's volume S3 endpoint needs an explicit CA bundle in
+                // PHPix; relying only on libcurl's system default made every
+                // exists()/readStream() call fail with cURL error 60.
+                'verify' => env('AWS_CA_BUNDLE', true),
+            ],
             'throw' => false,
             'report' => false,
         ],
