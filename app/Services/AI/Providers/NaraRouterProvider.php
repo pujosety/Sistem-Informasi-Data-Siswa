@@ -34,12 +34,11 @@ class NaraRouterProvider implements AiProvider
         }
 
         $started = microtime(true);
-        $payload = [
-            'model' => $this->model(),
-            'messages' => array_values($messages),
-            'temperature' => (float) ($options['temperature'] ?? $this->config['temperature'] ?? 0.2),
-            'max_tokens' => (int) ($options['max_tokens'] ?? $this->config['max_tokens'] ?? 700),
-        ];
+        $models = array_values(array_unique(array_filter([
+            $this->model(),
+            $this->fallbackModel(),
+        ])));
+        $usedModel = $models[0] ?? $this->model();
 
         try {
             $request = Http::withToken($apiKey)
@@ -58,14 +57,28 @@ class NaraRouterProvider implements AiProvider
                 $request = $request->withOptions(['verify' => $caBundle]);
             }
 
-            $response = $request->post(rtrim((string) $this->config['base_url'], '/').'/chat/completions', $payload);
+            $response = null;
+            foreach ($models as $index => $model) {
+                $usedModel = $model;
+                $payload = [
+                    'model' => $model,
+                    'messages' => array_values($messages),
+                    'temperature' => (float) ($options['temperature'] ?? $this->config['temperature'] ?? 0.2),
+                    'max_tokens' => (int) ($options['max_tokens'] ?? $this->config['max_tokens'] ?? 700),
+                ];
+                $response = $request->post(rtrim((string) $this->config['base_url'], '/').'/chat/completions', $payload);
+
+                if (! $response->failed() || $index === count($models) - 1 || $response->status() !== 503) {
+                    break;
+                }
+            }
         } catch (\Throwable $e) {
             report($e);
             throw new RuntimeException(sprintf('%s is unavailable.', $this->providerName()), 0, $e);
         }
 
         $latencyMs = (int) round((microtime(true) - $started) * 1000);
-        $status = $response->status();
+        $status = $response?->status() ?? 0;
 
         if ($response->failed()) {
             logger()->warning('AI upstream request failed.', [
@@ -114,6 +127,13 @@ class NaraRouterProvider implements AiProvider
     public function model(): string
     {
         return (string) ($this->config['model'] ?? 'agnes-2.5-flash');
+    }
+
+    private function fallbackModel(): string
+    {
+        $fallback = trim((string) ($this->config['fallback_model'] ?? ''));
+
+        return $fallback !== $this->model() ? $fallback : '';
     }
 
     private function friendlyFailure(int $status): string
