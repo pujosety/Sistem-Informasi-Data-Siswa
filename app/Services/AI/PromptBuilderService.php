@@ -20,6 +20,6 @@ class PromptBuilderService
             ->map(fn (AiKnowledge $row) => "[{$row->title}]\n{$row->content}")
             ->implode("\n\n");
 
-        return "DATA SEKOLAH:\n".$context;
+        return "Reference data for the user's question follows. Answer in the user's language and use only this data.\n\nDATA SEKOLAH:\n".$context;
     }
 }
