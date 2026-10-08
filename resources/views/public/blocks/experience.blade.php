@@ -31,27 +31,22 @@
                 @endif
             </div>
 
-            {{-- Mosaic: the first two tiles are tall, the rest are standard.
-                 Two sizes, six tiles — enough asymmetry to feel designed,
-                 few enough that nothing hides below the fold. --}}
-            <div class="mt-12 grid grid-cols-2 gap-4 lg:grid-cols-4">
-                @foreach ($items as $index => $item)
-                    @php $tall = $index < 2; @endphp
-
+            <div class="mt-12 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                @foreach ($items as $item)
                     @if (filled($item['url'] ?? null))
                         <a href="{{ $item['url'] }}"
-                           class="group relative overflow-hidden rounded-[var(--radius-md)] {{ $tall ? 'col-span-2 lg:row-span-2' : '' }}">
+                           class="group relative aspect-[4/3] overflow-hidden rounded-[var(--radius-md)]">
                     @else
-                        <article class="group relative overflow-hidden rounded-[var(--radius-md)] {{ $tall ? 'col-span-2 lg:row-span-2' : '' }}">
+                        <article class="group relative aspect-[4/3] overflow-hidden rounded-[var(--radius-md)]">
                     @endif
 
                         @if ($item['image'] ?? null)
                             <img src="{{ $item['image'] }}"
                                  alt="{{ $item['title'] ?? '' }}"
-                                 class="{{ $tall ? 'aspect-square lg:aspect-auto lg:h-full' : 'aspect-4/3' }} w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+                                 class="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
                                  loading="lazy">
                         @else
-                            <div class="grid {{ $tall ? 'aspect-square lg:aspect-auto lg:h-full' : 'aspect-4/3' }} w-full place-items-center bg-white/5">
+                            <div class="absolute inset-0 grid place-items-center bg-white/5">
                                 <x-icon :name="$item['icon'] ?? 'sparkles'" class="w-10 h-10 text-white/25" />
                             </div>
                         @endif
