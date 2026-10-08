@@ -65,7 +65,7 @@ class PublicHomePageTest extends TestCase
 
         $response->assertOk();
         $response->assertViewIs('public.home');
-        $this->assertStringContainsString('SMP 1 LYFLA', $response->getContent());
+        $this->assertStringContainsString('SMP Negeri 4 Metro', $response->getContent());
     }
 
     /** @test */
@@ -219,7 +219,7 @@ class PublicHomePageTest extends TestCase
         $response = $this->get('/');
 
         $response->assertOk();
-        $this->assertStringContainsString('SMP 1 LYFLA', $response->getContent());
+        $this->assertStringContainsString('SMP Negeri 4 Metro', $response->getContent());
     }
 
     /** @test */

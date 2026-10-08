@@ -39,10 +39,16 @@
             </div>
         </div>
         <figure class="group relative overflow-hidden rounded-[1.5rem] border border-[var(--app-border)] bg-[var(--app-surface)] shadow-xl">
-            <img src="{{ asset('images/schools/smpn4metro/landing/ppdb-feature.jpg') }}"
-                 alt="Kegiatan PPDB SMP Negeri 4 Metro"
-                 class="aspect-[16/10] w-full object-cover transition duration-700 group-hover:scale-[1.03]"
-                 loading="eager" decoding="async">
+            <x-public.responsive-image
+                src="{{ asset('images/schools/smpn4metro/landing/ppdb-feature.jpg') }}"
+                alt="Kegiatan PPDB SMP Negeri 4 Metro"
+                class="aspect-[16/10] w-full object-cover transition duration-700 group-hover:scale-[1.03]"
+                loading="eager"
+                decoding="async"
+                width="1672"
+                height="941"
+                sizes="(min-width: 1024px) 50vw, 100vw"
+                fetchpriority="high" />
             <figcaption class="absolute inset-x-4 bottom-4 rounded-xl border border-white/20 bg-black/45 px-4 py-3 text-small text-white backdrop-blur-md">
                 Informasi, prestasi, dan kegiatan siswa
             </figcaption>

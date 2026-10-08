@@ -34,7 +34,16 @@
     // replace it without a deploy. The -sm variant is derived from the same
     // slug: one upload, two crops.
     $heroWide = $section->media?->url() ?? asset('images/school/students-walking-courtyard.webp');
-    $heroSm   = str_replace('.webp', '-sm.webp', $heroWide);
+    $heroPath = parse_url((string) $heroWide, PHP_URL_PATH) ?: (string) $heroWide;
+    $heroWideWebpPath = preg_replace('/\.(jpe?g|png)$/i', '.webp', $heroPath);
+    $heroSmWebpPath = preg_replace('/\.(jpe?g|png)$/i', '-sm.webp', $heroPath);
+    $heroWideWebp = $heroWideWebpPath && is_file(public_path(ltrim($heroWideWebpPath, '/')))
+        ? '/'.ltrim($heroWideWebpPath, '/')
+        : (str_ends_with(strtolower($heroPath), '.webp') ? $heroWide : null);
+    $heroSm = $heroSmWebpPath && is_file(public_path(ltrim($heroSmWebpPath, '/')))
+        ? '/'.ltrim($heroSmWebpPath, '/')
+        : null;
+    $heroDisplay = $heroWideWebp ?: $heroWide;
     $alt      = $section->value('image_alt', 'Siswa SMP berkonsentrasi belajar di kelas. Beberapa siswa mengenakan seragam sekolah dan siswi berhijab di belakangnya.');
     $ctaLabel = $section->value('cta_label', 'Daftar Sekarang');
     $ctaUrl   = $section->value('cta_url', route('public.admission'));
@@ -51,8 +60,10 @@
          a page that looks like a school and a page that looks like a form. --}}
     <div class="relative lg:hidden">
         <picture>
-            <source media="(max-width: 640px)" srcset="{{ $heroSm }}" type="image/webp">
-            <img src="{{ $heroWide }}" alt="{{ $alt }}"
+            @if ($heroSm)
+                <source media="(max-width: 640px)" srcset="{{ $heroSm }}" type="image/webp">
+            @endif
+            <img src="{{ $heroDisplay }}" alt="{{ $alt }}"
                  class="h-[52vw] max-h-80 min-h-52 w-full object-cover"
                  width="1600" height="1079"
                  loading="eager" fetchpriority="high">
@@ -111,8 +122,10 @@
                      school-life focal point. --}}
                 <div class="relative overflow-hidden rounded-[var(--radius-lg)] shadow-2xl ring-1 ring-white/15">
                     <picture>
-                        <source srcset="{{ $heroSm }}" media="(max-width: 1400px)" type="image/webp">
-                        <img src="{{ $heroWide }}" alt="{{ $alt }}"
+                        @if ($heroSm)
+                            <source srcset="{{ $heroSm }}" media="(max-width: 1400px)" type="image/webp">
+                        @endif
+                        <img src="{{ $heroDisplay }}" alt="{{ $alt }}"
                              class="aspect-[16/10] w-full object-cover"
                              width="1600" height="1079"
                              loading="eager" fetchpriority="high">

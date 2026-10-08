@@ -32,7 +32,16 @@
         @if ($page->media->isNotEmpty())
             @php($cover = $page->media->first())
             <figure class="mb-10 overflow-hidden rounded-[var(--radius-lg)] border border-[var(--app-border)] bg-[var(--app-surface)]">
-                <img src="{{ $cover->url() }}" alt="{{ $cover->alt_text ?: $page->title }}" class="aspect-[16/9] w-full object-cover" loading="eager" decoding="async">
+                <x-public.responsive-image
+                    src="{{ $cover->url() }}"
+                    alt="{{ $cover->alt_text ?: $page->title }}"
+                    class="aspect-[16/9] w-full object-cover"
+                    loading="eager"
+                    decoding="async"
+                    width="1672"
+                    height="941"
+                    sizes="(min-width: 768px) 768px, 100vw"
+                    fetchpriority="high" />
             </figure>
         @endif
 

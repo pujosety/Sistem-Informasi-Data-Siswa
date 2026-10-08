@@ -18,10 +18,16 @@
 <section class="mx-auto max-w-6xl px-5 sm:px-8 py-14 sm:py-20">
     <div class="grid items-center gap-10 lg:grid-cols-[1.05fr_0.95fr]">
         <figure class="group relative overflow-hidden rounded-[1.5rem] border border-[var(--app-border)] bg-[var(--app-surface)] shadow-xl">
-            <img src="{{ asset('images/schools/smpn4metro/landing/profile-community.jpg') }}"
-                 alt="Keluarga sekolah SMP Negeri 4 Metro berdiskusi bersama"
-                 class="aspect-[4/3] w-full object-cover transition duration-700 group-hover:scale-[1.03]"
-                 loading="eager" decoding="async">
+            <x-public.responsive-image
+                src="{{ asset('images/schools/smpn4metro/landing/profile-community.jpg') }}"
+                alt="Keluarga sekolah SMP Negeri 4 Metro berdiskusi bersama"
+                class="aspect-[4/3] w-full object-cover transition duration-700 group-hover:scale-[1.03]"
+                loading="eager"
+                decoding="async"
+                width="1672"
+                height="941"
+                sizes="(min-width: 1024px) 50vw, 100vw"
+                fetchpriority="high" />
             <figcaption class="absolute inset-x-4 bottom-4 rounded-xl border border-white/20 bg-black/45 px-4 py-3 text-small text-white backdrop-blur-md">
                 <span class="font-semibold">SMP Negeri 4 Metro</span>
                 <span class="mt-0.5 block text-white/75">Cerdas, berkarakter, berprestasi.</span>

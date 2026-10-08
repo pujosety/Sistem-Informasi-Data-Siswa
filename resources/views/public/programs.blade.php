@@ -30,10 +30,16 @@
             </div>
         </div>
         <figure class="group relative overflow-hidden rounded-[1.5rem] border border-[var(--app-border)] bg-[var(--app-surface)] shadow-xl">
-            <img src="{{ asset('images/schools/smpn4metro/landing/facility-learning.jpg') }}"
-                 alt="Siswa SMP Negeri 4 Metro berdiskusi dalam pembelajaran"
-                 class="aspect-[16/10] w-full object-cover transition duration-700 group-hover:scale-[1.03]"
-                 loading="eager" decoding="async">
+            <x-public.responsive-image
+                src="{{ asset('images/schools/smpn4metro/landing/facility-learning.jpg') }}"
+                alt="Siswa SMP Negeri 4 Metro berdiskusi dalam pembelajaran"
+                class="aspect-[16/10] w-full object-cover transition duration-700 group-hover:scale-[1.03]"
+                loading="eager"
+                decoding="async"
+                width="1672"
+                height="941"
+                sizes="(min-width: 1024px) 50vw, 100vw"
+                fetchpriority="high" />
             <figcaption class="absolute inset-x-4 bottom-4 rounded-xl border border-white/20 bg-black/45 px-4 py-3 text-small text-white backdrop-blur-md">
                 Pembelajaran aktif di dalam dan di luar kelas
             </figcaption>
@@ -47,7 +53,15 @@
             ['Pramuka', 'program-pramuka.jpg', 'Melatih kepemimpinan, kepedulian, dan kemandirian.'],
         ] as [$label, $image, $description])
             <article class="group overflow-hidden rounded-[1.25rem] border border-[var(--app-border)] bg-[var(--app-surface)] shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl">
-                <img src="{{ asset('images/schools/smpn4metro/landing/'.$image) }}" alt="{{ $label }} SMP Negeri 4 Metro" class="aspect-[16/10] w-full object-cover transition duration-700 group-hover:scale-[1.04]" loading="lazy">
+                <x-public.responsive-image
+                    src="{{ asset('images/schools/smpn4metro/landing/'.$image) }}"
+                    alt="{{ $label }} SMP Negeri 4 Metro"
+                    class="aspect-[16/10] w-full object-cover transition duration-700 group-hover:scale-[1.04]"
+                    loading="lazy"
+                    decoding="async"
+                    width="1672"
+                    height="941"
+                    sizes="(min-width: 640px) 33vw, 100vw" />
                 <div class="p-5">
                     <p class="text-small font-bold text-[var(--app-text)]">{{ $label }}</p>
                     <p class="mt-2 text-small leading-relaxed text-[var(--app-text-muted)]">{{ $description }}</p>

@@ -41,10 +41,15 @@
                     @endif
 
                         @if ($item['image'] ?? null)
-                            <img src="{{ $item['image'] }}"
-                                 alt="{{ $item['title'] ?? '' }}"
-                                 class="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
-                                 loading="lazy">
+                            <x-public.responsive-image
+                                src="{{ $item['image'] }}"
+                                alt="{{ $item['title'] ?? '' }}"
+                                class="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+                                loading="lazy"
+                                decoding="async"
+                                width="1672"
+                                height="941"
+                                sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw" />
                         @else
                             <div class="absolute inset-0 grid place-items-center bg-white/5">
                                 <x-icon :name="$item['icon'] ?? 'sparkles'" class="w-10 h-10 text-white/25" />
