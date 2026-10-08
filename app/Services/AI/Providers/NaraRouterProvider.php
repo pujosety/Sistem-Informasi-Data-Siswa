@@ -79,7 +79,7 @@ class NaraRouterProvider implements AiProvider
                 Str::limit((string) $response->body(), 500)
             )));
 
-            throw new RuntimeException($this->friendlyFailure($status));
+            throw new RuntimeException(sprintf('%s request failed with HTTP %d.', $this->providerName(), $status));
         }
 
         $json = $response->json();
