@@ -198,13 +198,20 @@ class SchoolAssistantService
     private function conversation(School $school, ?int $id): AiConversation
     {
         if ($id) {
-            $conversation = AiConversation::withoutGlobalScopes()
+            $query = AiConversation::withoutGlobalScopes()
                 ->where('school_id', $school->id)
-                ->whereKey($id)
-                ->first();
-            if ($conversation) {
-                return $conversation;
+                ->whereKey($id);
+
+            if (auth()->check()) {
+                $query->where('user_id', auth()->id());
+            } else {
+                $query->whereNull('user_id')->where('session_id', session()->getId());
             }
+
+            $conversation = $query->first();
+            abort_unless($conversation, 404);
+
+            return $conversation;
         }
 
         return AiConversation::withoutGlobalScopes()->create([

@@ -7,6 +7,7 @@ use App\Services\AI\SchoolAssistantService;
 use App\Services\SchoolContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 class AiChatController extends Controller
 {
@@ -32,6 +33,8 @@ class AiChatController extends Controller
                 $data['conversation_id'] ?? null,
                 $companionContext->forRequest($request, $school),
             ));
+        } catch (HttpExceptionInterface $e) {
+            throw $e;
         } catch (\Throwable $e) {
             report($e);
             return response()->json([
