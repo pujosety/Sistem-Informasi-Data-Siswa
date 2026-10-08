@@ -25,14 +25,14 @@
         <form method="POST" action="{{ route('lms.teacher.enrollments.store', $course) }}" class="flex flex-col gap-3 sm:flex-row sm:items-end">
             @csrf
             <div class="min-w-0 flex-1">
-                <label for="student_id" class="mb-1.5 block text-small font-medium text-[var(--app-text)]">Siswa</label>
-                <select id="student_id" name="student_id" class="input" required>
-                    <option value="">Pilih siswa</option>
+                <label for="student_ids" class="mb-1.5 block text-small font-medium text-[var(--app-text)]">Siswa (bisa pilih beberapa)</label>
+                <select id="student_ids" name="student_ids[]" class="input min-h-32" multiple required>
                     @foreach ($availableStudents as $student)
                         <option value="{{ $student->id }}">{{ $student->full_name }}{{ $student->nisn ? ' · '.$student->nisn : '' }}</option>
                     @endforeach
                 </select>
-                @error('student_id')<p class="mt-1 text-caption text-red-600">{{ $message }}</p>@enderror
+                @error('student_ids')<p class="mt-1 text-caption text-red-600">{{ $message }}</p>@enderror
+                @error('student_ids.*')<p class="mt-1 text-caption text-red-600">{{ $message }}</p>@enderror
             </div>
             <button class="btn btn-primary">Tambahkan</button>
         </form>

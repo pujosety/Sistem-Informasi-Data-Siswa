@@ -73,18 +73,19 @@ This audit covers the LMS implementation currently present in the Laravel/Blade 
 - Lessons can be assigned to a course module with same-course and same-school validation.
 - Student course lessons display their module label when assigned.
 - Student dashboard progress aggregation no longer runs one `LessonProgress` query per course; counts are loaded through constrained `withCount()` relations.
-- LMS suite currently passes: **22 tests, 98 assertions**; PHPUnit reports 12 metadata deprecations.
+- LMS suite currently passes: **28 tests, 122 assertions**; PHPUnit reports 12 metadata deprecations.
 
 ### Remaining LMS work
 
-- Teacher enrollment/roster management is now implemented; course enrollment rows can still be seeded directly for bulk-import workflows.
-- Module edit/publish is now implemented.
 - Rich lesson materials now support validated external and video URLs, exposed in teacher forms and student course view.
-- LMS notifications now cover assignment publish/submit/grade and quiz publish/submit events.
+- LMS notifications now cover assignment publish/submit/grade, quiz publish/submit, course announcements, and course discussions.
 - Scheduled deadline notifications now cover upcoming assignments and quizzes, with hourly scheduling and duplicate suppression.
-- Course announcements are now supported with draft/publish state, student visibility, and notifications to active participants.
-- Teacher/student scheduled reminder flows remain limited to database notifications; outbound email/push is not yet wired.
-- Course create still needs stricter cross-entity academic-year/semester/classroom consistency validation.
+- Course announcements support draft/publish state, student visibility, and notifications to active participants.
+- Course discussion supports teacher/student threads, replies, enrollment-scoped access, and participant notifications.
+- Teacher roster supports bulk enrollment while preserving school/course/classroom eligibility checks and non-destructive inactive removal.
+- Course creation now rejects semester/classroom references from a different academic year.
+- Admin LMS monitoring is available with course, roster, lesson, and pending assessment counters.
+- Database notifications remain the verified channel; outbound email/push delivery is not wired because production channel configuration has not been authorized.
 - Full application suite remains separate from the LMS suite and is not yet green.
 
 ### Current implementation boundary
@@ -93,11 +94,11 @@ The module slice is committed locally but intentionally not deployed as a separa
 
 ## Priority decision
 
-Continue vertical slices in this order:
+The LMS feature slices are implemented and verified locally. Next release work is operational rather than feature scaffolding:
 
-1. Module edit/publish and richer lesson materials.
-2. Teacher/student deadline and notification flows.
-3. Course announcements and discussion.
-4. Admin monitoring and mobile polish.
+1. Run full application regression and resolve unrelated pre-existing failures.
+2. Commit the verified LMS wave as an isolated release.
+3. Deploy only after production migration and artifact verification plan is approved.
+4. Add outbound email/push channels after production mail/provider configuration is explicitly authorized.
 
 No public AI knowledge sync may include LMS rows, grades, submissions, feedback, or private lesson content.

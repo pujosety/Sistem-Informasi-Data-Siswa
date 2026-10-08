@@ -46,9 +46,20 @@ class CourseController extends Controller
 
         $data = $request->validate([
             'academic_year_id' => ['required', 'integer', 'exists:academic_years,id'],
-            'semester_id' => ['required', 'integer', 'exists:semesters,id'],
+            'semester_id' => [
+                'required',
+                'integer',
+                Rule::exists('semesters', 'id')->where(fn ($query) => $query
+                    ->where('academic_year_id', $request->input('academic_year_id'))),
+            ],
             'subject_id' => ['required', 'integer', 'exists:subjects,id'],
-            'classroom_id' => ['required', 'integer', 'exists:classes,id'],
+            'classroom_id' => [
+                'required',
+                'integer',
+                Rule::exists('classes', 'id')->where(fn ($query) => $query
+                    ->where('academic_year_id', $request->input('academic_year_id'))
+                    ->where('status', '!=', SchoolClass::ARCHIVED)),
+            ],
             'code' => [
                 'required',
                 'string',

@@ -28,6 +28,17 @@ class LmsSchemaTest extends TestCase
         $this->assertTrue(Schema::hasColumns('lms_lessons', [
             'course_id', 'title', 'body', 'position', 'status',
         ]));
+
+        $this->assertTrue(Schema::hasTable('lms_announcements'));
+        $this->assertTrue(Schema::hasColumns('lms_announcements', [
+            'course_id', 'author_id', 'title', 'body', 'status', 'published_at',
+        ]));
+
+        $this->assertTrue(Schema::hasTable('lms_discussions'));
+        $this->assertTrue(Schema::hasColumns('lms_discussions', [
+            'course_id', 'author_id', 'parent_id', 'body',
+        ]));
+
     }
 
     /** @test */

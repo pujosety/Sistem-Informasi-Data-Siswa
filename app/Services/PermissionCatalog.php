@@ -139,6 +139,9 @@ class PermissionCatalog
                     'lms.assignment.grade' => 'Nilai tugas',
                     'lms.enrollment.manage' => 'Kelola peserta course',
                     'lms.gradebook.view' => 'Lihat gradebook',
+                    'lms.discussion.view' => 'Lihat diskusi course',
+                    'lms.discussion.create' => 'Tulis diskusi course',
+                    'lms.monitor.view' => 'Lihat monitoring LMS',
                 ],
             ],
 
@@ -452,6 +455,7 @@ class PermissionCatalog
                 'cms.view', 'cms.posts.create', 'cms.posts.edit', 'cms.pages.edit',
                 'lms.course.view', 'lms.course.create', 'lms.course.update', 'lms.lesson.manage',
                 'lms.assignment.manage', 'lms.assignment.grade', 'lms.enrollment.manage', 'lms.gradebook.view',
+                'lms.discussion.view', 'lms.discussion.create', 'lms.monitor.view',
                 'guardian.view', 'announcement.view',
             ),
 
@@ -490,6 +494,7 @@ class PermissionCatalog
                     'grade.view', 'announcement.view',
                     'lms.course.view', 'lms.course.create', 'lms.course.update', 'lms.lesson.manage',
                     'lms.assignment.manage', 'lms.assignment.grade', 'lms.enrollment.manage', 'lms.gradebook.view',
+                    'lms.discussion.view', 'lms.discussion.create',
                 ),
                 // The prefix match that makes "classroom.view" useful also
                 // swallows "classroom.view.all", which is the school-wide scope
@@ -498,7 +503,7 @@ class PermissionCatalog
                 fn (string $permission) => $permission !== 'classroom.view.all',
             )),
 
-            'siswa' => $has('lms.student.view', 'lms.lesson.complete', 'lms.assignment.submit'),
+            'siswa' => $has('lms.student.view', 'lms.lesson.complete', 'lms.assignment.submit', 'lms.discussion.view', 'lms.discussion.create'),
         ];
     }
 

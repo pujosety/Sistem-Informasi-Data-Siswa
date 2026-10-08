@@ -43,6 +43,31 @@ class TeacherEnrollmentManagementTest extends TestCase
         ]);
     }
 
+    public function test_a_teacher_can_bulk_enroll_multiple_eligible_students(): void
+    {
+        app(RoleSeeder::class)->run();
+        $teacher = User::factory()->create(['email_verified_at' => now()]);
+        $teacher->assignRole('wali_kelas');
+        [$course, $classroomId, $yearId] = $this->courseFor($teacher);
+        $students = collect([1, 2])->map(function (int $index) use ($classroomId, $yearId): Student {
+            $user = User::factory()->create(['email_verified_at' => now()]);
+            $student = Student::factory()->create(['user_id' => $user->id, 'full_name' => 'Bulk '.$index]);
+            Enrollment::create([
+                'student_id' => $student->id, 'academic_year_id' => $yearId, 'classroom_id' => $classroomId,
+                'status' => Enrollment::ACTIVE, 'started_at' => now()->toDateString(),
+            ]);
+            return $student;
+        });
+
+        $this->actingAs($teacher)
+            ->post(route('lms.teacher.enrollments.store', $course), [
+                'student_ids' => $students->pluck('id')->all(),
+            ])
+            ->assertRedirect(route('lms.teacher.enrollments.index', $course));
+
+        $this->assertDatabaseCount('lms_course_enrollments', 2);
+    }
+
     public function test_a_student_cannot_manage_course_enrollments(): void
     {
         app(RoleSeeder::class)->run();

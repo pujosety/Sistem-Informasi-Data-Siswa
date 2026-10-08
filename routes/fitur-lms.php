@@ -9,6 +9,8 @@ use App\Http\Controllers\Lms\ModuleController;
 use App\Http\Controllers\Lms\EnrollmentController;
 use App\Http\Controllers\Lms\GradebookController;
 use App\Http\Controllers\Lms\AnnouncementController;
+use App\Http\Controllers\Lms\DiscussionController;
+use App\Http\Controllers\Lms\MonitoringController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'can:lms.course.view'])
@@ -60,6 +62,12 @@ Route::middleware(['auth', 'can:lms.course.view'])
         Route::post('/courses/{course}/announcements/{announcement}/publish', [AnnouncementController::class, 'publish'])
             ->middleware('can:lms.lesson.manage')
             ->name('announcements.publish');
+        Route::get('/courses/{course}/discussions', [DiscussionController::class, 'index'])
+            ->middleware('can:lms.discussion.view')
+            ->name('courses.discussions.index');
+        Route::post('/courses/{course}/discussions', [DiscussionController::class, 'store'])
+            ->middleware('can:lms.discussion.create')
+            ->name('courses.discussions.store');
 
         Route::get('/courses/{course}/lessons/create', [LessonController::class, 'create'])
             ->middleware('can:lms.lesson.manage')
@@ -94,6 +102,13 @@ Route::middleware(['auth', 'can:lms.course.view'])
             ->middleware('can:lms.assignment.manage')->name('quizzes.publish');
     });
 
+Route::middleware(['auth', 'can:lms.monitor.view'])
+    ->prefix('lms')
+    ->name('lms.')
+    ->group(function () {
+        Route::get('/monitoring', [MonitoringController::class, 'index'])->name('monitoring');
+    });
+
 Route::middleware(['auth', 'can:lms.student.view'])
     ->prefix('lms')
     ->name('lms.student.')
@@ -101,6 +116,12 @@ Route::middleware(['auth', 'can:lms.student.view'])
     ->group(function () {
         Route::get('/dashboard', [StudentLmsController::class, 'dashboard'])->name('dashboard');
         Route::get('/courses/{course}', [StudentLmsController::class, 'show'])->name('courses.show');
+        Route::get('/courses/{course}/discussions', [DiscussionController::class, 'index'])
+            ->middleware('can:lms.discussion.view')
+            ->name('courses.discussions.index');
+        Route::post('/courses/{course}/discussions', [DiscussionController::class, 'store'])
+            ->middleware('can:lms.discussion.create')
+            ->name('courses.discussions.store');
         Route::post('/courses/{course}/lessons/{lesson}/complete', [StudentLmsController::class, 'completeLesson'])
             ->middleware('can:lms.lesson.complete')
             ->name('lessons.complete');

@@ -42,28 +42,40 @@ class EnrollmentController extends Controller
     {
         $this->authorizeCourse($course);
 
-        $data = $request->validate([
-            'student_id' => ['required', 'integer', 'exists:students,id'],
-        ]);
+        if (is_array($request->input('student_ids')) && $request->input('student_ids') !== []) {
+            $data = $request->validate([
+                'student_ids' => ['required', 'array', 'min:1'],
+                'student_ids.*' => ['integer', 'distinct', 'exists:students,id'],
+            ]);
+            $studentIds = array_values(array_unique(array_map('intval', $data['student_ids'])));
+        } else {
+            $data = $request->validate([
+                'student_id' => ['required', 'integer', 'exists:students,id'],
+            ]);
+            $studentIds = [(int) $data['student_id']];
+        }
 
-        $eligible = Student::query()
-            ->whereKey($data['student_id'])
+        $eligibleIds = Student::query()
+            ->whereIn('id', $studentIds)
             ->whereHas('enrollments', fn ($query) => $query
                 ->where('academic_year_id', $course->academic_year_id)
                 ->where('classroom_id', $course->classroom_id)
                 ->whereIn('status', Enrollment::LIVE_STATUSES))
-            ->exists();
+            ->pluck('id')
+            ->all();
 
-        abort_unless($eligible, 422, 'Siswa bukan anggota kelas course ini.');
+        abort_unless(count($eligibleIds) === count($studentIds), 422, 'Semua siswa harus berasal dari kelas course ini.');
 
-        CourseEnrollment::updateOrCreate(
-            ['course_id' => $course->id, 'student_id' => $data['student_id']],
-            [
-                'school_id' => $course->school_id,
-                'enrolled_at' => now(),
-                'status' => CourseEnrollment::ACTIVE,
-            ]
-        );
+        foreach ($eligibleIds as $studentId) {
+            CourseEnrollment::updateOrCreate(
+                ['course_id' => $course->id, 'student_id' => $studentId],
+                [
+                    'school_id' => $course->school_id,
+                    'enrolled_at' => now(),
+                    'status' => CourseEnrollment::ACTIVE,
+                ]
+            );
+        }
 
         return redirect()->route('lms.teacher.enrollments.index', $course)
             ->with('success', 'Siswa berhasil ditambahkan ke course.');
