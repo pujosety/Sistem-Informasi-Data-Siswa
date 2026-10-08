@@ -76,7 +76,7 @@
 <header x-data="{
     open: false,
     openMenu() { this.open = true; document.body.classList.add('overflow-hidden'); this.$nextTick(() => this.$refs.closeButton?.focus()); },
-    closeMenu() { this.open = false; document.body.classList.remove('overflow-hidden'); this.$nextTick(() => this.$refs.menuButton?.focus()); },
+    closeMenu() { if (!this.open) return; this.open = false; document.body.classList.remove('overflow-hidden'); this.$nextTick(() => this.$refs.menuButton?.focus()); },
 }" class="sticky top-0 z-40 bg-[var(--app-sidebar-bg)] text-white">
     <div class="shell-wide">
         <div class="flex items-center justify-between gap-4 h-16">

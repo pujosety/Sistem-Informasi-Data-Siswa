@@ -10,6 +10,7 @@
 >
 
     <section
+        id="lyfla-ai-panel"
         x-show="open"
         x-cloak
         x-transition:enter="transition ease-out duration-200"
@@ -20,14 +21,14 @@
         x-transition:leave-end="opacity-0 translate-y-3 scale-[.98]"
         class="lyfla-ai-panel"
         role="dialog"
-        aria-label="Lala School Assistant"
+        aria-labelledby="lyfla-ai-title"
         aria-modal="false"
     >
         <header class="lyfla-ai-header">
             <div class="flex min-w-0 items-center gap-3">
                 <img src="{{ asset('assets/lyfla-ai/mascot/source-6.png') }}" alt="" class="lyfla-ai-header-mascot">
                 <div class="min-w-0">
-                    <p class="truncate text-small font-bold text-[var(--app-text)]">Lala</p>
+                    <p id="lyfla-ai-title" class="truncate text-small font-bold text-[var(--app-text)]">Lala</p>
                     <p class="truncate text-caption text-[var(--app-text-muted)]">Asisten Informasi Sekolah · {{ $assistantSchool }}</p>
                 </div>
             </div>
@@ -37,7 +38,7 @@
             </div>
         </header>
 
-        <div class="lyfla-ai-messages" x-ref="messages" aria-live="polite">
+        <div class="lyfla-ai-messages" x-ref="messages" aria-live="polite" :aria-busy="loading.toString()">
             <template x-for="(item, index) in messages" :key="index">
                 <article class="lyfla-ai-message" :class="item.role === 'user' ? 'is-user' : 'is-assistant'">
                     <div class="lyfla-ai-message-bubble" x-text="item.content"></div>
@@ -54,12 +55,12 @@
                     </template>
                 </article>
             </template>
-            <div x-show="loading" class="lyfla-ai-message is-assistant">
+            <div x-show="loading" role="status" aria-live="polite" class="lyfla-ai-message is-assistant">
                 <div class="lyfla-ai-message-bubble lyfla-ai-thinking"><span></span><span></span><span></span><em>Sedang mencari informasi...</em></div>
             </div>
         </div>
 
-        <div x-show="messages.length === 1 && !loading" class="lyfla-ai-suggestions" aria-label="Pertanyaan cepat">
+        <div x-show="messages.length === 1 && !loading" class="lyfla-ai-suggestions" role="group" aria-label="Pertanyaan cepat">
             <button type="button" @click="sendSuggestion('Apa saja ekstrakurikuler di sekolah ini?')">Ekstrakurikuler</button>
             <button type="button" @click="sendSuggestion('Kapan PPDB dibuka?')">PPDB</button>
             <button type="button" @click="sendSuggestion('Apa program unggulan sekolah?')">Program</button>
@@ -73,11 +74,14 @@
     </section>
 
     <button
+        x-show="!open"
+        x-ref="trigger"
         type="button"
         class="lyfla-ai-mascot"
         @click="toggle()"
         :class="{ 'is-open': open, 'is-thinking': loading, 'is-switching': switching }"
         :aria-label="open ? 'Tutup Lala School Assistant' : 'Buka Lala School Assistant'"
+        aria-controls="lyfla-ai-panel"
         :aria-expanded="open.toString()"
     >
         <span class="lyfla-ai-ground" aria-hidden="true"></span>

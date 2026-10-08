@@ -37,6 +37,7 @@ document.addEventListener('alpine:init', () => {
     pendingPointer: null,
     pointerHandler: null,
     switchTimer: null,
+    trigger: null,
 
     messages: [{
         role: 'assistant',
@@ -47,6 +48,7 @@ document.addEventListener('alpine:init', () => {
         return mascotBase + (mascotMap[this.direction] || mascotMap.center);
     },
     init() {
+        this.trigger = this.$refs.trigger;
         Object.values(mascotMap).forEach((file) => {
             const image = new Image();
             image.src = mascotBase + file;
@@ -55,10 +57,22 @@ document.addEventListener('alpine:init', () => {
         window.addEventListener('pointermove', this.pointerHandler, { passive: true });
     },
     toggle() {
-        this.open = !this.open;
-        if (this.open) this.$nextTick(() => this.$refs.input?.focus());
+        if (this.open) {
+            this.close();
+            return;
+        }
+        this.open = true;
+        this.$nextTick(() => this.$refs.input?.focus());
     },
-    close() { this.open = false; },
+    close() {
+        this.open = false;
+        this.$nextTick(() => this.$refs.trigger?.focus());
+    },
+    destroy() {
+        if (this.pointerHandler) window.removeEventListener('pointermove', this.pointerHandler);
+        if (this.pointerFrame) window.cancelAnimationFrame(this.pointerFrame);
+        window.clearTimeout(this.switchTimer);
+    },
     reset() {
         this.conversationId = null;
         this.messages = [{ role: 'assistant', content: `Halo! 👋\nSaya Lala, asisten virtual ${this.schoolName}.\nAda informasi sekolah yang ingin kamu cari?`, sources: [] }];
