@@ -8,6 +8,7 @@ use App\Http\Controllers\Lms\QuizController;
 use App\Http\Controllers\Lms\ModuleController;
 use App\Http\Controllers\Lms\EnrollmentController;
 use App\Http\Controllers\Lms\GradebookController;
+use App\Http\Controllers\Lms\AnnouncementController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'can:lms.course.view'])
@@ -50,6 +51,15 @@ Route::middleware(['auth', 'can:lms.course.view'])
         Route::get('/courses/{course}/gradebook', [GradebookController::class, 'index'])
             ->middleware('can:lms.gradebook.view')
             ->name('gradebook.index');
+        Route::get('/courses/{course}/announcements/create', [AnnouncementController::class, 'create'])
+            ->middleware('can:lms.lesson.manage')
+            ->name('announcements.create');
+        Route::post('/courses/{course}/announcements', [AnnouncementController::class, 'store'])
+            ->middleware('can:lms.lesson.manage')
+            ->name('announcements.store');
+        Route::post('/courses/{course}/announcements/{announcement}/publish', [AnnouncementController::class, 'publish'])
+            ->middleware('can:lms.lesson.manage')
+            ->name('announcements.publish');
 
         Route::get('/courses/{course}/lessons/create', [LessonController::class, 'create'])
             ->middleware('can:lms.lesson.manage')

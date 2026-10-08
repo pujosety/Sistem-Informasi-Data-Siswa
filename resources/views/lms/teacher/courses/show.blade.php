@@ -39,6 +39,38 @@
     <x-card>
         <div class="flex items-center justify-between gap-3">
             <div>
+                <h2 class="text-h3 font-semibold">Pengumuman course</h2>
+                <p class="text-caption text-[var(--app-text-muted)]">Informasi penting yang akan diterima peserta course.</p>
+            </div>
+            @can('lms.lesson.manage')
+                <a href="{{ route('lms.teacher.announcements.create', $course) }}" class="btn btn-primary btn-sm">Tambah pengumuman</a>
+            @endcan
+        </div>
+        <div class="mt-4 divide-y divide-[var(--app-border)]">
+            @forelse ($course->announcements as $announcement)
+                <div class="flex flex-col gap-2 py-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                        <p class="font-medium">{{ $announcement->title }}</p>
+                        <p class="line-clamp-2 text-small text-[var(--app-text-muted)]">{{ $announcement->body }}</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="badge {{ $announcement->status === 'published' ? 'badge-success' : 'badge-neutral' }}">{{ $announcement->status === 'published' ? 'Terbit' : 'Draft' }}</span>
+                        @if ($announcement->status !== 'published')
+                            @can('lms.lesson.manage')
+                                <form method="POST" action="{{ route('lms.teacher.announcements.publish', [$course, $announcement]) }}">@csrf<button class="btn btn-primary btn-sm">Terbitkan</button></form>
+                            @endcan
+                        @endif
+                    </div>
+                </div>
+            @empty
+                <p class="py-5 text-body text-[var(--app-text-muted)]">Belum ada pengumuman.</p>
+            @endforelse
+        </div>
+    </x-card>
+
+    <x-card>
+        <div class="flex items-center justify-between gap-3">
+            <div>
                 <h2 class="text-h3 font-semibold">Bab pembelajaran</h2>
                 <p class="text-caption text-[var(--app-text-muted)]">Kelompokkan materi agar alur belajar siswa lebih jelas.</p>
             </div>

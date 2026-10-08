@@ -72,6 +72,11 @@ class Course extends \Illuminate\Database\Eloquent\Model
         return $this->hasMany(LessonProgress::class);
     }
 
+    public function announcements(): HasMany
+    {
+        return $this->hasMany(LmsAnnouncement::class)->latest('published_at');
+    }
+
     public function assignments(): HasMany
     {
         return $this->hasMany(LmsAssignment::class)->latest('due_at');

@@ -78,6 +78,7 @@ class CourseController extends Controller
             'course' => $course->load([
                 'academicYear', 'semester', 'subject', 'classroom',
                 'modules.lessons',
+                'announcements',
                 'lessons', 'assignments', 'quizzes.questions',
             ]),
         ]);

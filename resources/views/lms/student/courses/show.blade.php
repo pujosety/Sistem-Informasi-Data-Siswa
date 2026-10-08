@@ -26,6 +26,20 @@
         </div>
     </x-card>
 
+    <x-card title="Pengumuman" icon="inbox" description="Informasi terbaru dari guru course.">
+        <div class="space-y-3">
+            @forelse ($course->announcements as $announcement)
+                <article class="rounded-[var(--radius-md)] border border-[var(--app-border)] p-4">
+                    <p class="font-semibold">{{ $announcement->title }}</p>
+                    <p class="mt-2 whitespace-pre-line text-small text-[var(--app-text-muted)]">{{ $announcement->body }}</p>
+                    <time class="mt-2 block text-caption text-[var(--app-text-subtle)]">{{ $announcement->published_at?->format('d M Y H:i') }}</time>
+                </article>
+            @empty
+                <p class="text-small text-[var(--app-text-muted)]">Belum ada pengumuman.</p>
+            @endforelse
+        </div>
+    </x-card>
+
     <x-card title="Materi Pembelajaran" icon="book-open" description="Selesaikan materi satu per satu untuk memperbarui progress Anda.">
         <div class="space-y-3">
             @forelse ($course->lessons as $lesson)

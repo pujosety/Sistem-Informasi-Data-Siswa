@@ -46,6 +46,7 @@ class StudentLmsController extends Controller
         $course->load([
             'subject', 'classroom', 'semester',
             'lessons' => fn ($query) => $query->published()->with('module')->orderBy('position'),
+            'announcements' => fn ($query) => $query->published(),
         ]);
         $completedLessonIds = LessonProgress::query()
             ->where('student_id', $student->id)

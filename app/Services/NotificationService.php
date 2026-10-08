@@ -36,6 +36,7 @@ class NotificationService
     public const QUIZ_SUBMITTED = 'lms.quiz.submitted';
     public const ASSIGNMENT_DEADLINE = 'lms.assignment.deadline';
     public const QUIZ_DEADLINE = 'lms.quiz.deadline';
+    public const COURSE_ANNOUNCEMENT = 'lms.course.announcement';
 
     // -----------------------------------------------------------------
     // Dispatch
