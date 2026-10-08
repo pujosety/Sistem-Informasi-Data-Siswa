@@ -109,7 +109,7 @@ class SchoolAssistantService
                 data_get($contact, 'address'),
                 data_get($contact, 'city'),
                 data_get($contact, 'province'),
-            ])));
+            ]))));
             return $address !== ''
                 ? 'Alamat sekolah: '.$address.'.'
                 : 'Informasi alamat belum tersedia di sistem sekolah.';
