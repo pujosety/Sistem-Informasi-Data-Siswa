@@ -1061,6 +1061,7 @@
 .auth-visual-copy h1 {
     max-width: 9ch;
     margin: 1rem 0 0;
+    color: #fff;
     font-family: var(--font-display);
     font-size: clamp(2.35rem, 4.2vw, 4.45rem);
     font-weight: 800;
