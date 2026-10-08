@@ -48,6 +48,14 @@ class KesiswaanController extends BaseController
             ->when($request->filled('department_id'), fn ($q) => $q->whereHas('schoolClass', fn ($c) => $c->where('department_id', $request->integer('department_id'))))
             ->when($request->filled('entry_year'), fn ($q) => $q->where('entry_year', $request->string('entry_year')))
             ->when($request->filled('gender'), fn ($q) => $q->where('gender', $request->string('gender')))
+            // When staff filters by lifecycle status, show the most recently
+            // updated registrations first. This keeps a newly verified or
+            // revised applicant visible on the first page even when the
+            // showcase roster contains more than one page of students.
+            ->when($request->filled('status'), fn ($q) => $q->orderByDesc(
+                Registration::select('updated_at')
+                    ->whereColumn('registrations.student_id', 'students.id')
+            ))
             ->orderBy('full_name');
 
         $students = $query->paginate(20)->withQueryString();
