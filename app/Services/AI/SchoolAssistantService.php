@@ -17,7 +17,7 @@ class SchoolAssistantService
         private readonly PromptBuilderService $prompts,
     ) {}
 
-    public function answer(School $school, string $message, ?int $conversationId = null): array
+    public function answer(School $school, string $message, ?int $conversationId = null, array $requestContext = []): array
     {
         $conversation = $this->conversation($school, $conversationId);
         $matches = $this->knowledge->search($school, $message);
@@ -42,13 +42,13 @@ class SchoolAssistantService
                 ->get()
                 ->reverse()
                 ->reject(fn (AiMessage $item) => $item->id === $userMessage->id);
-            $messages = [['role' => 'system', 'content' => $this->prompts->system($school, $matches)]];
+            $messages = [['role' => 'system', 'content' => $this->prompts->system($school, $matches, $requestContext)]];
             foreach ($history as $item) {
                 $messages[] = ['role' => $item->role, 'content' => $item->content];
             }
             $messages[] = [
                 'role' => 'user',
-                'content' => $this->prompts->context($matches)."\n\nQuestion: ".$message,
+                'content' => $this->prompts->context($matches, $requestContext)."\n\nQuestion: ".$message,
             ];
             try {
                 $result = $this->ai->chat($messages);

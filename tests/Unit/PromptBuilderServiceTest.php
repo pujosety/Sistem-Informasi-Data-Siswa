@@ -20,9 +20,18 @@ class PromptBuilderServiceTest extends TestCase
 
     public function test_context_prompt_keeps_reference_data_grounded_without_robotic_lead_in(): void
     {
-        $context = (new PromptBuilderService())->context([]);
+        $context = (new PromptBuilderService())->context([], [
+            'module' => 'lms',
+            'audience' => 'authenticated',
+            'route' => 'lms.student.courses.show',
+            'roles' => ['siswa'],
+            'school' => ['name' => 'SMP Negeri 4 Metro', 'slug' => 'smp-negeri-4-metro'],
+        ]);
 
         $this->assertStringContainsString('DATA SEKOLAH', $context);
+        $this->assertStringContainsString('"module":"lms"', $context);
+        $this->assertStringContainsString('lms.student.courses.show', $context);
+        $this->assertStringNotContainsString('"id"', $context);
         $this->assertStringNotContainsString('Informasi yang tersedia', $context);
     }
 }

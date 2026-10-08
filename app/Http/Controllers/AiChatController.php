@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\AI\CompanionContextService;
 use App\Services\AI\SchoolAssistantService;
 use App\Services\SchoolContext;
 use Illuminate\Http\JsonResponse;
@@ -9,7 +10,12 @@ use Illuminate\Http\Request;
 
 class AiChatController extends Controller
 {
-    public function __invoke(Request $request, SchoolAssistantService $assistant, SchoolContext $context): JsonResponse
+    public function __invoke(
+        Request $request,
+        SchoolAssistantService $assistant,
+        SchoolContext $context,
+        CompanionContextService $companionContext,
+    ): JsonResponse
     {
         $data = $request->validate([
             'message' => ['required', 'string', 'min:2', 'max:1200'],
@@ -24,6 +30,7 @@ class AiChatController extends Controller
                 $school,
                 trim($data['message']),
                 $data['conversation_id'] ?? null,
+                $companionContext->forRequest($request, $school),
             ));
         } catch (\Throwable $e) {
             report($e);
