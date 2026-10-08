@@ -132,6 +132,12 @@ class PermissionCatalog
                     'lms.course.create' => 'Buat course',
                     'lms.course.update' => 'Ubah course',
                     'lms.lesson.manage' => 'Kelola materi pelajaran',
+                    'lms.student.view' => 'Buka pembelajaran siswa',
+                    'lms.lesson.complete' => 'Tandai lesson selesai',
+                    'lms.assignment.manage' => 'Kelola tugas',
+                    'lms.assignment.submit' => 'Kirim tugas',
+                    'lms.assignment.grade' => 'Nilai tugas',
+                    'lms.gradebook.view' => 'Lihat gradebook',
                 ],
             ],
 
@@ -444,6 +450,7 @@ class PermissionCatalog
                 // the news and a head to approve it grants exactly this.
                 'cms.view', 'cms.posts.create', 'cms.posts.edit', 'cms.pages.edit',
                 'lms.course.view', 'lms.course.create', 'lms.course.update', 'lms.lesson.manage',
+                'lms.assignment.manage', 'lms.assignment.grade', 'lms.gradebook.view',
                 'guardian.view', 'announcement.view',
             ),
 
@@ -481,6 +488,7 @@ class PermissionCatalog
                     'classroom.report.view', 'classroom.report.export',
                     'grade.view', 'announcement.view',
                     'lms.course.view', 'lms.course.create', 'lms.course.update', 'lms.lesson.manage',
+                    'lms.assignment.manage', 'lms.assignment.grade', 'lms.gradebook.view',
                 ),
                 // The prefix match that makes "classroom.view" useful also
                 // swallows "classroom.view.all", which is the school-wide scope
@@ -489,8 +497,7 @@ class PermissionCatalog
                 fn (string $permission) => $permission !== 'classroom.view.all',
             )),
 
-            // Students are handled by their own portal, not this catalogue.
-            'siswa' => [],
+            'siswa' => $has('lms.student.view', 'lms.lesson.complete', 'lms.assignment.submit'),
         ];
     }
 

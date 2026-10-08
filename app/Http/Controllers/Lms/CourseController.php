@@ -10,6 +10,8 @@ use App\Models\Semester;
 use App\Models\Subject;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use App\Services\SchoolContext;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class CourseController extends Controller
@@ -47,7 +49,14 @@ class CourseController extends Controller
             'semester_id' => ['required', 'integer', 'exists:semesters,id'],
             'subject_id' => ['required', 'integer', 'exists:subjects,id'],
             'classroom_id' => ['required', 'integer', 'exists:classes,id'],
-            'code' => ['required', 'string', 'max:80', 'unique:lms_courses,code'],
+            'code' => [
+                'required',
+                'string',
+                'max:80',
+                Rule::unique('lms_courses', 'code')->where(
+                    fn ($query) => $query->where('school_id', app(SchoolContext::class)->id())
+                ),
+            ],
             'title' => ['required', 'string', 'max:180'],
             'description' => ['nullable', 'string'],
         ]);
@@ -66,7 +75,7 @@ class CourseController extends Controller
         $this->authorize('view', $course);
 
         return view('lms.teacher.courses.show', [
-            'course' => $course->load(['academicYear', 'semester', 'subject', 'classroom', 'lessons']),
+            'course' => $course->load(['academicYear', 'semester', 'subject', 'classroom', 'lessons', 'assignments', 'quizzes.questions']),
         ]);
     }
 }

@@ -33,7 +33,11 @@ class LmsSchemaTest extends TestCase
     /** @test */
     public function the_lms_tables_have_unique_course_code_and_enrollment_pair_indexes(): void
     {
-        $this->assertTrue(Schema::hasIndex('lms_courses', ['code'], 'unique'));
+        $this->assertTrue(Schema::hasIndex(
+            'lms_courses',
+            ['school_id', 'code'],
+            'unique'
+        ));
         $this->assertTrue(Schema::hasIndex(
             'lms_course_enrollments',
             ['course_id', 'student_id'],

@@ -65,5 +65,92 @@
             @endforelse
         </div>
     </x-card>
+
+    <x-card>
+        <div class="flex flex-wrap items-center justify-between gap-3">
+            <div>
+                <h2 class="text-h3 font-semibold">Tugas</h2>
+                <p class="text-caption text-[var(--app-text-muted)]">Kelola tugas dan nilai pengumpulan siswa.</p>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="badge badge-neutral">{{ $course->assignments->count() }} tugas</span>
+                @can('lms.assignment.manage')
+                    <a href="{{ route('lms.teacher.assignments.create', $course) }}" class="btn btn-primary btn-sm">Tambah tugas</a>
+                @endcan
+            </div>
+        </div>
+        <div class="mt-4 divide-y divide-[var(--app-border)]">
+            @forelse ($course->assignments as $assignment)
+                <div class="flex flex-col gap-3 py-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                        <p class="font-medium">{{ $assignment->title }}</p>
+                        <p class="text-caption text-[var(--app-text-muted)]">{{ $assignment->status === 'published' ? 'Terbit' : 'Draft' }} · {{ $assignment->due_at?->format('d M Y H:i') ?? 'Tanpa deadline' }}</p>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2">
+                        @if ($assignment->status !== 'published')
+                            @can('lms.assignment.manage')
+                                <form method="POST" action="{{ route('lms.teacher.assignments.publish', [$course, $assignment]) }}">@csrf<button class="btn btn-primary btn-sm">Terbitkan</button></form>
+                            @endcan
+                        @endif
+                        @can('lms.assignment.grade')
+                            <a href="{{ route('lms.teacher.assignments.submissions', [$course, $assignment]) }}" class="btn btn-secondary btn-sm">Pengumpulan</a>
+                        @endcan
+                    </div>
+                </div>
+            @empty
+                <p class="py-5 text-body text-[var(--app-text-muted)]">Belum ada tugas. Tambahkan tugas pertama untuk course ini.</p>
+            @endforelse
+        </div>
+    </x-card>
+
+    <x-card>
+        <div class="flex flex-wrap items-center justify-between gap-3">
+            <div>
+                <h2 class="text-h3 font-semibold">Kuis</h2>
+                <p class="text-caption text-[var(--app-text-muted)]">Buat pertanyaan, terbitkan kuis, dan siapkan evaluasi otomatis.</p>
+            </div>
+            <span class="badge badge-neutral">{{ $course->quizzes->count() }} kuis</span>
+        </div>
+        @can('lms.assignment.manage')
+            <form method="POST" action="{{ route('lms.teacher.quizzes.store', $course) }}" class="mt-4 grid gap-3 md:grid-cols-2">
+                @csrf
+                <input name="title" class="input" placeholder="Judul kuis" required>
+                <input name="attempt_limit" type="number" min="1" max="10" value="1" class="input" required>
+                <textarea name="description" class="input md:col-span-2" rows="2" placeholder="Deskripsi singkat"></textarea>
+                <input name="passing_score" type="number" min="0" max="100" step="0.01" value="70" class="input" required>
+                <button class="btn btn-primary md:col-span-2 md:justify-self-start">Buat kuis draft</button>
+            </form>
+        @endcan
+        <div class="mt-4 divide-y divide-[var(--app-border)]">
+            @forelse ($course->quizzes as $quiz)
+                <div class="py-4">
+                    <div class="flex flex-wrap items-center justify-between gap-3">
+                        <div>
+                            <p class="font-medium">{{ $quiz->title }}</p>
+                            <p class="text-caption text-[var(--app-text-muted)]">{{ $quiz->status === 'published' ? 'Terbit' : 'Draft' }} · {{ $quiz->questions->count() }} pertanyaan · {{ $quiz->attempt_limit }} percobaan</p>
+                        </div>
+                        @if ($quiz->status !== 'published')
+                            @can('lms.assignment.manage')
+                                <form method="POST" action="{{ route('lms.teacher.quizzes.publish', [$course, $quiz]) }}">@csrf<button class="btn btn-primary btn-sm">Terbitkan</button></form>
+                            @endcan
+                        @endif
+                    </div>
+                    @can('lms.assignment.manage')
+                        <form method="POST" action="{{ route('lms.teacher.quizzes.questions.store', [$course, $quiz]) }}" class="mt-3 grid gap-2 md:grid-cols-4">
+                            @csrf
+                            <input name="prompt" class="input md:col-span-2" placeholder="Pertanyaan" required>
+                            <select name="type" class="input"><option value="multiple_choice">Pilihan ganda</option><option value="true_false">Benar/Salah</option><option value="short_answer">Jawaban singkat</option></select>
+                            <input name="correct_answer" class="input" placeholder="Jawaban benar" required>
+                            <input name="options[]" class="input md:col-span-2" placeholder="Opsi (isi satu dulu; opsi tambahan lewat API/form lanjutan)">
+                            <input name="points" type="number" min="0.01" step="0.01" value="1" class="input">
+                            <button class="btn btn-secondary">Tambah pertanyaan</button>
+                        </form>
+                    @endcan
+                </div>
+            @empty
+                <p class="py-5 text-body text-[var(--app-text-muted)]">Belum ada kuis untuk course ini.</p>
+            @endforelse
+        </div>
+    </x-card>
 </div>
 @endsection
