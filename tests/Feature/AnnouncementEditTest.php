@@ -49,14 +49,16 @@ class AnnouncementEditTest extends TestCase
         $this->seedRoles();
         $this->revoked = [];
 
-        $this->year = AcademicYear::create([
-            'name' => '2026/2027',
-            'start_date' => '2026-07-01',
-            'end_date' => '2027-06-30',
-            'status' => AcademicYear::ACTIVE,
-            'is_active' => true,
-            'is_default' => true,
-        ]);
+        $this->year = AcademicYear::firstOrCreate(
+            ['name' => '2026/2027'],
+            [
+                'start_date' => '2026-07-01',
+                'end_date' => '2027-06-30',
+                'status' => AcademicYear::ACTIVE,
+                'is_active' => true,
+                'is_default' => true,
+            ]
+        );
 
         $department = Department::create(['name' => 'IPA', 'code' => 'IPA']);
 

@@ -118,7 +118,11 @@ class InstallCommand extends Command
             return false;
         }
 
+        // Showcase migrations create demo-only super admins so the seeded
+        // screenshots can log in. They do not mean a real operator has
+        // configured the instance; only a non-demo super admin closes setup.
         return \App\Models\User::query()
+            ->where('email', 'not like', '%@demo.test')
             ->role('super_admin')
             ->exists();
     }
