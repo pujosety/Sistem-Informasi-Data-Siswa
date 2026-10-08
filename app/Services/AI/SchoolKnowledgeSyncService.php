@@ -17,8 +17,9 @@ class SchoolKnowledgeSyncService
 
         LandingSection::withoutGlobalScopes()
             ->where('school_id', $school->id)
-            ->where('page_key', 'home')
             ->where('is_enabled', true)
+            ->orderBy('page_key')
+            ->orderBy('position')
             ->get()
             ->each(function (LandingSection $section) use ($school, &$count): void {
                 $content = trim(implode("\n", array_filter([
@@ -28,20 +29,34 @@ class SchoolKnowledgeSyncService
                     is_array($section->content) ? json_encode($section->content, JSON_UNESCAPED_UNICODE) : null,
                 ])));
                 if ($content !== '') {
-                    $count += $this->upsert($school, 'landing_'.$section->type, $section->id, $section->title ?: ucfirst($section->type), $content, route('home').'#'.$section->type);
+                    $url = $section->page_key === 'home'
+                        ? route('home').'#'.$section->type
+                        : null;
+                    $type = $section->page_key === 'home'
+                        ? 'landing_'.$section->type
+                        : 'landing_'.$section->page_key.'_'.$section->type;
+                    $count += $this->upsert($school, $type, $section->id, $section->title ?: ucfirst($section->type), $content, $url);
                 }
             });
 
         Post::withoutGlobalScopes()
             ->where('school_id', $school->id)
-            ->where('kind', Post::KIND_POST)
+            ->whereIn('kind', [Post::KIND_POST, Post::KIND_PAGE])
             ->where('status', Post::PUBLISHED)
             ->where('is_public', true)
             ->get()
             ->each(function (Post $post) use ($school, &$count): void {
-                $content = trim(implode("\n", array_filter([$post->title, $post->excerpt, $post->body])));
-                $url = $post->source_url ?: route('public.news.show', $post->slug);
-                $count += $this->upsert($school, 'post', $post->id, $post->title, $content, $url);
+                $content = trim(implode("\n", array_filter([
+                    $post->title,
+                    $post->excerpt,
+                    $post->body,
+                    is_array($post->blocks) ? json_encode($post->blocks, JSON_UNESCAPED_UNICODE) : null,
+                ])));
+                $url = $post->source_url ?: ($post->kind === Post::KIND_PAGE
+                    ? route('public.page', $post->slug)
+                    : route('public.news.show', $post->slug));
+                $type = $post->kind === Post::KIND_PAGE ? 'page' : 'post';
+                $count += $this->upsert($school, $type, $post->id, $post->title, $content, $url);
             });
 
         return $count;
