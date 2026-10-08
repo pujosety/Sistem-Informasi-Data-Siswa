@@ -45,6 +45,11 @@ class Student extends Model
         return $this->hasMany(ParentGuardian::class);
     }
 
+    public function courseEnrollments(): HasMany
+    {
+        return $this->hasMany(CourseEnrollment::class);
+    }
+
     public function academicYear(): BelongsTo
     {
         return $this->belongsTo(AcademicYear::class);

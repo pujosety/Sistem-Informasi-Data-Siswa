@@ -6,6 +6,7 @@ use App\Http\Controllers\Lms\StudentLmsController;
 use App\Http\Controllers\Lms\AssignmentController;
 use App\Http\Controllers\Lms\QuizController;
 use App\Http\Controllers\Lms\ModuleController;
+use App\Http\Controllers\Lms\EnrollmentController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'can:lms.course.view'])
@@ -27,6 +28,15 @@ Route::middleware(['auth', 'can:lms.course.view'])
         Route::post('/courses/{course}/modules', [ModuleController::class, 'store'])
             ->middleware('can:lms.lesson.manage')
             ->name('modules.store');
+        Route::get('/courses/{course}/enrollments', [EnrollmentController::class, 'index'])
+            ->middleware('can:lms.enrollment.manage')
+            ->name('enrollments.index');
+        Route::post('/courses/{course}/enrollments', [EnrollmentController::class, 'store'])
+            ->middleware('can:lms.enrollment.manage')
+            ->name('enrollments.store');
+        Route::delete('/courses/{course}/enrollments/{enrollment}', [EnrollmentController::class, 'destroy'])
+            ->middleware('can:lms.enrollment.manage')
+            ->name('enrollments.destroy');
 
         Route::get('/courses/{course}/lessons/create', [LessonController::class, 'create'])
             ->middleware('can:lms.lesson.manage')

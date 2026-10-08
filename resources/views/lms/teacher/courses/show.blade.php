@@ -17,9 +17,14 @@
                 <h2 class="mt-1 text-h2 font-semibold text-[var(--app-text)]">{{ $course->title }}</h2>
                 <p class="mt-2 text-body text-[var(--app-text-muted)]">{{ $course->description ?: 'Belum ada deskripsi.' }}</p>
             </div>
-            <span class="badge {{ $course->status === 'published' ? 'badge-success' : 'badge-neutral' }}">
+            <div class="flex items-center gap-2">
+                @can('lms.enrollment.manage')
+                    <a href="{{ route('lms.teacher.enrollments.index', $course) }}" class="btn btn-secondary btn-sm">Peserta</a>
+                @endcan
+                <span class="badge {{ $course->status === 'published' ? 'badge-success' : 'badge-neutral' }}">
                 {{ $course->status === 'published' ? 'Terbit' : 'Draft' }}
             </span>
+            </div>
         </div>
         <div class="mt-5 grid gap-3 sm:grid-cols-3">
             <div><p class="text-caption text-[var(--app-text-muted)]">Kelas</p><p class="font-semibold">{{ $course->classroom?->name }}</p></div>

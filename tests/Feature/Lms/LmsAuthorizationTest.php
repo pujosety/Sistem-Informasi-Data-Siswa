@@ -18,6 +18,7 @@ class LmsAuthorizationTest extends TestCase
         $this->assertContains('lms.course.create', $names);
         $this->assertContains('lms.course.update', $names);
         $this->assertContains('lms.lesson.manage', $names);
+        $this->assertContains('lms.enrollment.manage', $names);
 
         app(RoleSeeder::class)->run();
 
@@ -27,6 +28,7 @@ class LmsAuthorizationTest extends TestCase
             $this->assertTrue($role->hasPermissionTo('lms.course.view'), $roleName);
             $this->assertTrue($role->hasPermissionTo('lms.course.create'), $roleName);
             $this->assertTrue($role->hasPermissionTo('lms.lesson.manage'), $roleName);
+            $this->assertTrue($role->hasPermissionTo('lms.enrollment.manage'), $roleName);
         }
     }
 

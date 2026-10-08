@@ -137,6 +137,7 @@ class PermissionCatalog
                     'lms.assignment.manage' => 'Kelola tugas',
                     'lms.assignment.submit' => 'Kirim tugas',
                     'lms.assignment.grade' => 'Nilai tugas',
+                    'lms.enrollment.manage' => 'Kelola peserta course',
                     'lms.gradebook.view' => 'Lihat gradebook',
                 ],
             ],
@@ -450,7 +451,7 @@ class PermissionCatalog
                 // the news and a head to approve it grants exactly this.
                 'cms.view', 'cms.posts.create', 'cms.posts.edit', 'cms.pages.edit',
                 'lms.course.view', 'lms.course.create', 'lms.course.update', 'lms.lesson.manage',
-                'lms.assignment.manage', 'lms.assignment.grade', 'lms.gradebook.view',
+                'lms.assignment.manage', 'lms.assignment.grade', 'lms.enrollment.manage', 'lms.gradebook.view',
                 'guardian.view', 'announcement.view',
             ),
 
@@ -488,7 +489,7 @@ class PermissionCatalog
                     'classroom.report.view', 'classroom.report.export',
                     'grade.view', 'announcement.view',
                     'lms.course.view', 'lms.course.create', 'lms.course.update', 'lms.lesson.manage',
-                    'lms.assignment.manage', 'lms.assignment.grade', 'lms.gradebook.view',
+                    'lms.assignment.manage', 'lms.assignment.grade', 'lms.enrollment.manage', 'lms.gradebook.view',
                 ),
                 // The prefix match that makes "classroom.view" useful also
                 // swallows "classroom.view.all", which is the school-wide scope
