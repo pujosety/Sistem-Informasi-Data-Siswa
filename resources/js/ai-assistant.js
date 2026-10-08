@@ -52,10 +52,9 @@ document.addEventListener('alpine:init', () => {
     },
     init() {
         this.trigger = this.$refs.trigger;
-        Object.values(mascotMap).forEach((file) => {
-            const image = new Image();
-            image.src = mascotBase + file;
-        });
+        // Keep the initial render to one lightweight center frame. Directional
+        // frames are requested by the browser only after the pointer selects
+        // them, instead of downloading the entire mascot set on every page.
         this.pointerHandler = (event) => this.queuePointer(event);
         window.addEventListener('pointermove', this.pointerHandler, { passive: true });
     },

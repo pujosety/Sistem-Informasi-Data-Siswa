@@ -280,11 +280,11 @@ class AppServiceProvider extends ServiceProvider
                 'primary' => $brandValue('branding.primary_color', $settings->get('branding.primary_color')),
                 'accent' => $brandValue('branding.accent_color', $settings->get('branding.accent_color')),
                 'school' => [
-                    'name' => app(SettingsService::class)->get('school.name'),
-                    'npsn' => app(SettingsService::class)->get('school.npsn'),
-                    'address' => app(SettingsService::class)->get('school.address'),
-                    'city' => app(SettingsService::class)->get('school.city'),
-                    'headmaster' => app(SettingsService::class)->get('school.headmaster'),
+                    'name' => $settings->get('school.name'),
+                    'npsn' => $settings->get('school.npsn'),
+                    'address' => $settings->get('school.address'),
+                    'city' => $settings->get('school.city'),
+                    'headmaster' => $settings->get('school.headmaster'),
                 ],
             ]);
         });
