@@ -23,6 +23,8 @@
                 </div>
             @endif
             <x-form-field name="body" label="Isi materi" type="textarea" rows="10" :value="$lesson->body" />
+            <x-form-field name="external_url" label="Tautan materi eksternal" type="url" :value="$lesson->external_url" placeholder="https://..." />
+            <x-form-field name="video_url" label="Tautan video" type="url" :value="$lesson->video_url" placeholder="https://..." />
             <x-form-field name="position" label="Urutan" type="number" :value="$lesson->position" min="1" required />
         </div>
     </x-card>

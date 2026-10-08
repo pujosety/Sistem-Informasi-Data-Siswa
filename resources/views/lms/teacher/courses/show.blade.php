@@ -53,7 +53,15 @@
                         <p class="font-medium">{{ $module->position }}. {{ $module->title }}</p>
                         <p class="text-caption text-[var(--app-text-muted)]">{{ $module->description ?: 'Belum ada deskripsi.' }} · {{ $module->lessons->count() }} materi</p>
                     </div>
-                    <span class="badge {{ $module->status === 'published' ? 'badge-success' : 'badge-neutral' }}">{{ $module->status === 'published' ? 'Terbit' : 'Draft' }}</span>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <span class="badge {{ $module->status === 'published' ? 'badge-success' : 'badge-neutral' }}">{{ $module->status === 'published' ? 'Terbit' : 'Draft' }}</span>
+                        @can('lms.lesson.manage')
+                            <a href="{{ route('lms.teacher.modules.edit', [$course, $module]) }}" class="btn btn-secondary btn-sm">Edit</a>
+                            @if ($module->status !== 'published')
+                                <form method="POST" action="{{ route('lms.teacher.modules.publish', [$course, $module]) }}">@csrf<button class="btn btn-primary btn-sm">Terbitkan</button></form>
+                            @endif
+                        @endcan
+                    </div>
                 </div>
             @empty
                 <p class="py-5 text-body text-[var(--app-text-muted)]">Belum ada bab. Materi masih dapat ditambahkan tanpa bab.</p>

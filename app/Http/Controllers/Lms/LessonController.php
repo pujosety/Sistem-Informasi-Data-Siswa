@@ -36,6 +36,8 @@ class LessonController extends Controller
             ],
             'title' => ['required', 'string', 'max:180'],
             'body' => ['nullable', 'string'],
+            'external_url' => ['nullable', 'url', 'max:2000'],
+            'video_url' => ['nullable', 'url', 'max:2000'],
             'position' => ['nullable', 'integer', 'min:1'],
         ]);
 
@@ -43,6 +45,8 @@ class LessonController extends Controller
             'module_id' => $data['module_id'] ?? null,
             'title' => $data['title'],
             'body' => $data['body'] ?? null,
+            'external_url' => $data['external_url'] ?? null,
+            'video_url' => $data['video_url'] ?? null,
             'position' => $data['position'] ?? (((int) $course->lessons()->max('position')) + 1),
             'status' => Lesson::DRAFT,
         ]);
@@ -75,6 +79,8 @@ class LessonController extends Controller
             ],
             'title' => ['required', 'string', 'max:180'],
             'body' => ['nullable', 'string'],
+            'external_url' => ['nullable', 'url', 'max:2000'],
+            'video_url' => ['nullable', 'url', 'max:2000'],
             'position' => ['required', 'integer', 'min:1'],
         ]);
 
@@ -82,6 +88,8 @@ class LessonController extends Controller
             'module_id' => $data['module_id'] ?? null,
             'title' => $data['title'],
             'body' => $data['body'] ?? null,
+            'external_url' => $data['external_url'] ?? null,
+            'video_url' => $data['video_url'] ?? null,
             'position' => $data['position'],
         ]);
 

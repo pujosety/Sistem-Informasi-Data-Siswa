@@ -3,6 +3,7 @@
 namespace Tests\Feature\Lms;
 
 use App\Models\Course;
+use App\Models\LmsModule;
 use App\Models\User;
 use App\Services\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -43,6 +44,48 @@ class TeacherModuleManagementTest extends TestCase
             'course_id' => $course->id,
             'module_id' => $moduleId,
             'title' => 'Pengenalan Algoritma',
+        ]);
+    }
+
+    public function test_a_teacher_can_edit_and_publish_a_module_and_add_lesson_material_links(): void
+    {
+        app(RoleSeeder::class)->run();
+        $teacher = User::factory()->create(['email_verified_at' => now()]);
+        $teacher->assignRole('wali_kelas');
+        $course = $this->courseFor($teacher);
+        $module = LmsModule::create([
+            'school_id' => $course->school_id, 'course_id' => $course->id,
+            'title' => 'Bab Draft', 'position' => 1, 'status' => LmsModule::DRAFT,
+        ]);
+
+        $this->actingAs($teacher)
+            ->put(route('lms.teacher.modules.update', [$course, $module]), [
+                'title' => 'Bab Algoritma', 'description' => 'Konsep dasar.', 'position' => 1,
+            ])
+            ->assertRedirect(route('lms.teacher.courses.show', $course));
+
+        $this->actingAs($teacher)
+            ->post(route('lms.teacher.modules.publish', [$course, $module]))
+            ->assertRedirect(route('lms.teacher.courses.show', $course));
+
+        $this->actingAs($teacher)
+            ->post(route('lms.teacher.lessons.store', $course), [
+                'module_id' => $module->id,
+                'title' => 'Video Algoritma',
+                'body' => 'Tonton materi berikut.',
+                'external_url' => 'https://example.com/materi-algoritma',
+                'video_url' => 'https://video.example.com/algoritma',
+                'position' => 1,
+            ])
+            ->assertRedirect(route('lms.teacher.courses.show', $course));
+
+        $this->assertDatabaseHas('lms_modules', [
+            'id' => $module->id, 'title' => 'Bab Algoritma', 'status' => LmsModule::PUBLISHED,
+        ]);
+        $this->assertDatabaseHas('lms_lessons', [
+            'course_id' => $course->id, 'module_id' => $module->id,
+            'external_url' => 'https://example.com/materi-algoritma',
+            'video_url' => 'https://video.example.com/algoritma',
         ]);
     }
 

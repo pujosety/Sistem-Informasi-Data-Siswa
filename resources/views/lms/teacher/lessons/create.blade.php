@@ -22,6 +22,8 @@
                 </div>
             @endif
             <x-form-field name="body" label="Isi materi" type="textarea" rows="10" hint="Gunakan teks terstruktur yang mudah dibaca siswa." />
+            <x-form-field name="external_url" label="Tautan materi eksternal" type="url" placeholder="https://..." hint="Opsional. Tautan aman ke materi atau referensi tambahan." />
+            <x-form-field name="video_url" label="Tautan video" type="url" placeholder="https://..." hint="Opsional. URL video pembelajaran." />
             <x-form-field name="position" label="Urutan" type="number" :value="$nextPosition" min="1" required hint="Urutan materi dalam course." />
         </div>
     </x-card>

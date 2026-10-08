@@ -47,6 +47,16 @@
                             @if ($lesson->body)
                                 <p class="mt-1 line-clamp-2 text-small text-[var(--app-text-muted)]">{{ $lesson->body }}</p>
                             @endif
+                            @if ($lesson->external_url || $lesson->video_url)
+                                <div class="mt-2 flex flex-wrap gap-3 text-caption font-semibold">
+                                    @if ($lesson->external_url)
+                                        <a href="{{ $lesson->external_url }}" target="_blank" rel="noopener noreferrer" class="text-[var(--app-primary)]">Buka materi ↗</a>
+                                    @endif
+                                    @if ($lesson->video_url)
+                                        <a href="{{ $lesson->video_url }}" target="_blank" rel="noopener noreferrer" class="text-[var(--app-primary)]">Tonton video ↗</a>
+                                    @endif
+                                </div>
+                            @endif
                             <p class="mt-2 text-caption {{ $completed ? 'text-[var(--app-success)]' : 'text-[var(--app-text-subtle)]' }}">{{ $completed ? 'Selesai' : 'Belum selesai' }}</p>
                         </div>
                     </div>

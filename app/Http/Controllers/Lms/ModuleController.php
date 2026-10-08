@@ -43,6 +43,43 @@ class ModuleController extends Controller
             ->with('success', 'Bab pembelajaran berhasil dibuat sebagai draft.');
     }
 
+    public function edit(Course $course, LmsModule $module): View
+    {
+        $this->authorizeModule($course, $module);
+
+        return view('lms.teacher.modules.edit', compact('course', 'module'));
+    }
+
+    public function update(Request $request, Course $course, LmsModule $module): RedirectResponse
+    {
+        $this->authorizeModule($course, $module);
+
+        $data = $request->validate([
+            'title' => ['required', 'string', 'max:180'],
+            'description' => ['nullable', 'string', 'max:20000'],
+            'position' => ['required', 'integer', 'min:1'],
+        ]);
+        $module->update($data);
+
+        return redirect()->route('lms.teacher.courses.show', $course)
+            ->with('success', 'Bab pembelajaran berhasil diperbarui.');
+    }
+
+    public function publish(Course $course, LmsModule $module): RedirectResponse
+    {
+        $this->authorizeModule($course, $module);
+        $module->update(['status' => LmsModule::PUBLISHED]);
+
+        return redirect()->route('lms.teacher.courses.show', $course)
+            ->with('success', 'Bab pembelajaran berhasil diterbitkan.');
+    }
+
+    private function authorizeModule(Course $course, LmsModule $module): void
+    {
+        abort_unless($module->course_id === $course->id, 404);
+        $this->authorizeCourse($course);
+    }
+
     private function authorizeCourse(Course $course): void
     {
         abort_unless(request()->user()?->can('lms.lesson.manage'), 403);

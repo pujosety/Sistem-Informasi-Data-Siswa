@@ -29,6 +29,15 @@ Route::middleware(['auth', 'can:lms.course.view'])
         Route::post('/courses/{course}/modules', [ModuleController::class, 'store'])
             ->middleware('can:lms.lesson.manage')
             ->name('modules.store');
+        Route::get('/courses/{course}/modules/{module}/edit', [ModuleController::class, 'edit'])
+            ->middleware('can:lms.lesson.manage')
+            ->name('modules.edit');
+        Route::put('/courses/{course}/modules/{module}', [ModuleController::class, 'update'])
+            ->middleware('can:lms.lesson.manage')
+            ->name('modules.update');
+        Route::post('/courses/{course}/modules/{module}/publish', [ModuleController::class, 'publish'])
+            ->middleware('can:lms.lesson.manage')
+            ->name('modules.publish');
         Route::get('/courses/{course}/enrollments', [EnrollmentController::class, 'index'])
             ->middleware('can:lms.enrollment.manage')
             ->name('enrollments.index');
