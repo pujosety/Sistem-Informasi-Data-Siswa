@@ -33,7 +33,10 @@ class SchoolAssistantService
             $responseMeta = ['provider' => 'local-fallback'];
         } else {
             $history = $conversation->messages()->latest('created_at')->limit(8)->get()->reverse();
-            $messages = [['role' => 'system', 'content' => $this->prompts->system($school, $matches)]];
+            $messages = [
+                ['role' => 'system', 'content' => $this->prompts->system($school, $matches)],
+                ['role' => 'user', 'content' => $this->prompts->context($matches)],
+            ];
             foreach ($history as $item) {
                 $messages[] = ['role' => $item->role, 'content' => $item->content];
             }
