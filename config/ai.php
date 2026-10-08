@@ -13,6 +13,11 @@ return [
         'connect_timeout' => (int) env('AGENTROUTER_CONNECT_TIMEOUT', 8),
         'timeout' => (int) env('AGENTROUTER_TIMEOUT', 35),
         'ca_bundle' => env('AGENTROUTER_CA_BUNDLE', base_path('resources/certs/cacert.pem')),
+        'headers' => [
+            'Originator' => env('AGENTROUTER_ORIGINATOR', 'codex_cli_rs'),
+            'Version' => env('AGENTROUTER_VERSION', '0.101.0'),
+            'User-Agent' => env('AGENTROUTER_USER_AGENT', 'codex_cli_rs/0.101.0 (Mac OS 26.0.1; arm64) Apple_Terminal/464'),
+        ],
     ],
 
     // Kept for rollback compatibility; production now selects AgentRouter.

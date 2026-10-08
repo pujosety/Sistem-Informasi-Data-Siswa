@@ -48,6 +48,11 @@ class NaraRouterProvider implements AiProvider
                 ->connectTimeout((int) ($this->config['connect_timeout'] ?? 8))
                 ->timeout((int) ($this->config['timeout'] ?? 35));
 
+            $headers = array_filter((array) ($this->config['headers'] ?? []), static fn ($value) => filled($value));
+            if ($headers !== []) {
+                $request = $request->withHeaders($headers);
+            }
+
             $caBundle = (string) ($this->config['ca_bundle'] ?? '');
             if ($caBundle !== '' && is_file($caBundle)) {
                 $request = $request->withOptions(['verify' => $caBundle]);
