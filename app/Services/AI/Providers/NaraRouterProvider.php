@@ -68,6 +68,10 @@ class NaraRouterProvider implements AiProvider
         $status = $response->status();
 
         if ($response->failed()) {
+            logger()->warning('AI upstream request failed.', [
+                'provider' => $this->providerName(),
+                'status' => $status,
+            ]);
             report(new RuntimeException(sprintf(
                 '%s request failed with HTTP %d: %s',
                 $this->providerName(),
