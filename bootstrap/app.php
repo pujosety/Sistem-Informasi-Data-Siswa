@@ -6,6 +6,7 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Console\Scheduling\Schedule;
 use Spatie\Permission\Exceptions\UnauthorizedException;
 
 
@@ -97,6 +98,9 @@ return Application::configure(basePath: dirname(__DIR__))
             */
         },
     )
+    ->withSchedule(function (Schedule $schedule): void {
+        $schedule->command('lms:notify-deadlines')->hourly();
+    })
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             // Legacy role guard, kept so existing routes keep working.

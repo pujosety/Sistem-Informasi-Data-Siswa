@@ -73,7 +73,7 @@ This audit covers the LMS implementation currently present in the Laravel/Blade 
 - Lessons can be assigned to a course module with same-course and same-school validation.
 - Student course lessons display their module label when assigned.
 - Student dashboard progress aggregation no longer runs one `LessonProgress` query per course; counts are loaded through constrained `withCount()` relations.
-- LMS suite currently passes: **19 tests, 86 assertions**; PHPUnit reports 12 metadata deprecations.
+- LMS suite currently passes: **20 tests, 88 assertions**; PHPUnit reports 12 metadata deprecations.
 
 ### Remaining LMS work
 
@@ -81,7 +81,8 @@ This audit covers the LMS implementation currently present in the Laravel/Blade 
 - Module edit/publish is now implemented.
 - Rich lesson materials now support validated external and video URLs, exposed in teacher forms and student course view.
 - LMS notifications now cover assignment publish/submit/grade and quiz publish/submit events.
-- Teacher/student deadline and scheduled reminder flows remain missing.
+- Scheduled deadline notifications now cover upcoming assignments and quizzes, with hourly scheduling and duplicate suppression.
+- Teacher/student scheduled reminder flows remain limited to database notifications; outbound email/push is not yet wired.
 - Course create still needs stricter cross-entity academic-year/semester/classroom consistency validation.
 - Full application suite remains separate from the LMS suite and is not yet green.
 

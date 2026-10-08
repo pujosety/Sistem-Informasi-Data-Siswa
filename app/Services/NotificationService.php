@@ -34,6 +34,8 @@ class NotificationService
     public const ASSIGNMENT_GRADED = 'lms.assignment.graded';
     public const QUIZ_PUBLISHED = 'lms.quiz.published';
     public const QUIZ_SUBMITTED = 'lms.quiz.submitted';
+    public const ASSIGNMENT_DEADLINE = 'lms.assignment.deadline';
+    public const QUIZ_DEADLINE = 'lms.quiz.deadline';
 
     // -----------------------------------------------------------------
     // Dispatch
