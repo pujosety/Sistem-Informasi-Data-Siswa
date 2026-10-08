@@ -32,14 +32,20 @@ class SchoolAssistantService
             $answer = 'Informasi tersebut belum tersedia di sistem sekolah.';
             $responseMeta = ['provider' => 'local-fallback'];
         } else {
-            $history = $conversation->messages()->latest('created_at')->limit(8)->get()->reverse();
-            $messages = [
-                ['role' => 'system', 'content' => $this->prompts->system($school, $matches)],
-                ['role' => 'user', 'content' => $this->prompts->context($matches)],
-            ];
+            $history = $conversation->messages()
+                ->latest('created_at')
+                ->limit(9)
+                ->get()
+                ->reverse()
+                ->reject(fn (AiMessage $item) => $item->id === $userMessage->id);
+            $messages = [['role' => 'system', 'content' => $this->prompts->system($school, $matches)]];
             foreach ($history as $item) {
                 $messages[] = ['role' => $item->role, 'content' => $item->content];
             }
+            $messages[] = [
+                'role' => 'user',
+                'content' => $this->prompts->context($matches)."\n\nQuestion: ".$message,
+            ];
             $result = $this->ai->chat($messages);
             $answer = $result->content;
             $responseMeta = ['provider' => $this->ai->providerName(), 'model' => $this->ai->model(), 'latency_ms' => $result->latencyMs];
