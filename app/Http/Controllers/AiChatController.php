@@ -33,6 +33,10 @@ class AiChatController extends Controller
             report($e);
             return response()->json([
                 'message' => 'LYFLA AI sedang tidak dapat mengambil informasi. Coba lagi sebentar.',
+                'diagnostic' => [
+                    'exception' => get_class($e),
+                    'message' => substr($e->getMessage(), 0, 240),
+                ],
             ], 503);
         }
     }
