@@ -105,7 +105,7 @@ class SchoolAssistantService
 
         $contact = $school->contact ?? [];
         if (Str::contains($question, ['alamat', 'lokasi'])) {
-            $address = trim(implode(', ', array_filter([
+            $address = trim(implode(', ', array_unique(array_filter([
                 data_get($contact, 'address'),
                 data_get($contact, 'city'),
                 data_get($contact, 'province'),
@@ -144,8 +144,10 @@ class SchoolAssistantService
         $content = preg_replace('/https?:\\/\\/\\S+|localhost\\S*/iu', '', $content);
         $content = trim((string) preg_replace('/\\s+/u', ' ', $content));
 
+        $label = filled($candidate?->title) ? $candidate->title.'. ' : '';
+
         return $content !== ''
-            ? 'Informasi yang tersedia: '.Str::limit($content, 700)
+            ? 'Informasi yang tersedia: '.$label.Str::limit($content, 700)
             : 'Informasi tersebut belum tersedia di sistem sekolah.';
     }
 
