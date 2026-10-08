@@ -7,6 +7,7 @@ use App\Http\Controllers\Lms\AssignmentController;
 use App\Http\Controllers\Lms\QuizController;
 use App\Http\Controllers\Lms\ModuleController;
 use App\Http\Controllers\Lms\EnrollmentController;
+use App\Http\Controllers\Lms\GradebookController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'can:lms.course.view'])
@@ -37,6 +38,9 @@ Route::middleware(['auth', 'can:lms.course.view'])
         Route::delete('/courses/{course}/enrollments/{enrollment}', [EnrollmentController::class, 'destroy'])
             ->middleware('can:lms.enrollment.manage')
             ->name('enrollments.destroy');
+        Route::get('/courses/{course}/gradebook', [GradebookController::class, 'index'])
+            ->middleware('can:lms.gradebook.view')
+            ->name('gradebook.index');
 
         Route::get('/courses/{course}/lessons/create', [LessonController::class, 'create'])
             ->middleware('can:lms.lesson.manage')

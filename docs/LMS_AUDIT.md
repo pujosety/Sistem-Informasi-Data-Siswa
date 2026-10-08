@@ -69,10 +69,11 @@ This audit covers the LMS implementation currently present in the Laravel/Blade 
 - Quiz creation, question entry, publication, student submission, and automatic scoring are implemented.
 - Teacher module/chapter creation is now implemented.
 - Teacher enrollment/roster management is now implemented with school/course/classroom eligibility checks and non-destructive inactive removal.
+- Teacher gradebook is now implemented with latest graded assignment submissions, latest submitted quiz attempts, and per-student averages.
 - Lessons can be assigned to a course module with same-course and same-school validation.
 - Student course lessons display their module label when assigned.
 - Student dashboard progress aggregation no longer runs one `LessonProgress` query per course; counts are loaded through constrained `withCount()` relations.
-- LMS suite currently passes: **16 tests, 67 assertions**; PHPUnit reports 12 metadata deprecations.
+- LMS suite currently passes: **18 tests, 72 assertions**; PHPUnit reports 12 metadata deprecations.
 
 ### Remaining LMS work
 
@@ -91,9 +92,9 @@ The module slice is committed locally but intentionally not deployed as a separa
 
 Continue vertical slices in this order:
 
-1. Teacher enrollment/roster management with explicit `lms.enrollment.manage` authorization and school-scoped writes.
-2. Module edit/publish and richer lesson materials.
-3. Gradebook/progress aggregation.
-4. Announcements, discussion, notifications, admin reporting, and mobile polish.
+1. Module edit/publish and richer lesson materials.
+2. Teacher/student deadline and notification flows.
+3. Course announcements and discussion.
+4. Admin monitoring and mobile polish.
 
 No public AI knowledge sync may include LMS rows, grades, submissions, feedback, or private lesson content.

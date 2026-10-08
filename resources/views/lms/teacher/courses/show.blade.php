@@ -18,6 +18,9 @@
                 <p class="mt-2 text-body text-[var(--app-text-muted)]">{{ $course->description ?: 'Belum ada deskripsi.' }}</p>
             </div>
             <div class="flex items-center gap-2">
+                @can('lms.gradebook.view')
+                    <a href="{{ route('lms.teacher.gradebook.index', $course) }}" class="btn btn-secondary btn-sm">Gradebook</a>
+                @endcan
                 @can('lms.enrollment.manage')
                     <a href="{{ route('lms.teacher.enrollments.index', $course) }}" class="btn btn-secondary btn-sm">Peserta</a>
                 @endcan
