@@ -86,6 +86,9 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(SchoolContext::class, fn () => new SchoolContext);
 
         $providerName = (string) config('ai.default', 'agentrouter');
+        if ($providerName === 'agentrouter' && blank(config('ai.agentrouter.api_key'))) {
+            $providerName = 'nararouter';
+        }
         $providerConfig = (array) config('ai.'.$providerName, config('ai.agentrouter', []));
 
         $this->app->singleton(AiProvider::class, fn () => new NaraRouterProvider($providerConfig));

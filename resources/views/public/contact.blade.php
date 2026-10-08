@@ -18,15 +18,33 @@
     </div>
 </section>
 
-<section class="mx-auto max-w-6xl px-5 sm:px-8 py-12">
-    <div class="grid items-center gap-8 lg:grid-cols-[0.9fr_1.1fr]">
-        <x-image-placeholder type="contact" aspect="4/3" alt="Guru SMP 1 LYFLA berdiskusi dengan siswa" />
+<section class="mx-auto max-w-6xl px-5 sm:px-8 py-14 sm:py-20">
+    <div class="grid items-center gap-10 lg:grid-cols-[0.95fr_1.05fr]">
+        <figure class="group relative overflow-hidden rounded-[1.5rem] border border-[var(--app-border)] bg-[var(--app-surface)] shadow-xl">
+            <img src="{{ asset('images/schools/smpn4metro/landing/facility-community.jpg') }}"
+                 alt="Komunitas sekolah SMP Negeri 4 Metro berdiskusi bersama"
+                 class="aspect-[4/3] w-full object-cover transition duration-700 group-hover:scale-[1.03]"
+                 loading="eager" decoding="async">
+            <figcaption class="absolute inset-x-4 bottom-4 rounded-xl border border-white/20 bg-black/45 px-4 py-3 text-small text-white backdrop-blur-md">
+                Kami terbuka untuk berdiskusi dan membantu
+            </figcaption>
+        </figure>
         <div>
-            <p class="text-small font-semibold text-[var(--app-primary)]">Yuk, ngobrol.</p>
-            <h2 class="mt-2 text-h1 font-bold tracking-tight">Punya pertanyaan? Kami siap membantu.</h2>
-            <p class="mt-4 max-w-2xl text-body leading-relaxed text-[var(--app-text-muted)]">
-                Temukan kanal kontak sekolah atau kirim pesan melalui formulir yang tersedia.
+            <p class="text-small font-semibold uppercase tracking-[0.16em] text-[var(--app-primary)]">Yuk, ngobrol.</p>
+            <h2 class="mt-3 text-h1 font-bold tracking-tight text-balance">Punya pertanyaan? Kami siap membantu.</h2>
+            <p class="mt-5 max-w-2xl text-body leading-relaxed text-[var(--app-text-muted)]">
+                Temukan kanal kontak sekolah atau kirim pesan melalui formulir yang tersedia. Tim SMP Negeri 4 Metro akan membantu mengarahkan kebutuhan Anda.
             </p>
+            <div class="mt-7 grid gap-3 sm:grid-cols-2">
+                <div class="rounded-xl border border-[var(--app-border)] bg-[var(--app-surface)] p-4">
+                    <p class="text-caption uppercase tracking-[0.14em] text-[var(--app-text-muted)]">Respon jelas</p>
+                    <p class="mt-1 text-small font-semibold">Informasi dari kanal sekolah</p>
+                </div>
+                <div class="rounded-xl border border-[var(--app-border)] bg-[var(--app-surface)] p-4">
+                    <p class="text-caption uppercase tracking-[0.14em] text-[var(--app-text-muted)]">Lokasi nyata</p>
+                    <p class="mt-1 text-small font-semibold">Jl. Kemiri 15 A, Metro</p>
+                </div>
+            </div>
         </div>
     </div>
 

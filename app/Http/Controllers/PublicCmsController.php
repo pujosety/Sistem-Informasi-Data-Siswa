@@ -54,7 +54,7 @@ class PublicCmsController extends Controller
                 'category',
                 fn ($category) => $category->where('slug', $categorySlug)
             ))
-            ->with(['category', 'author'])
+            ->with(['category', 'author', 'media'])
             ->orderByDesc('published_at')
             ->paginate(self::PER_PAGE)
             ->withQueryString();

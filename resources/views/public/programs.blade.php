@@ -15,16 +15,45 @@
     </div>
 </section>
 
-<section class="mx-auto max-w-6xl px-5 sm:px-8 py-12">
-    <div class="grid items-center gap-8 lg:grid-cols-[1.05fr_0.95fr]">
+<section class="mx-auto max-w-6xl px-5 sm:px-8 py-14 sm:py-20">
+    <div class="grid items-center gap-10 lg:grid-cols-[1.05fr_0.95fr]">
         <div>
-            <p class="text-small font-semibold text-[var(--app-primary)]">Temukan bidang yang bikin kamu penasaran.</p>
-            <h2 class="mt-2 text-h1 font-bold tracking-tight">Belajar bukan cuma soal teori.</h2>
-            <p class="mt-4 max-w-2xl text-body leading-relaxed text-[var(--app-text-muted)]">
-                Kenali mata pelajaran dan bidang belajar yang tersedia. Informasi program ditampilkan dari data kurikulum yang dipublikasikan sekolah.
+            <p class="text-small font-semibold uppercase tracking-[0.16em] text-[var(--app-primary)]">Temukan bidang yang bikin kamu penasaran.</p>
+            <h2 class="mt-3 text-h1 font-bold tracking-tight text-balance">Belajar bukan cuma soal teori.</h2>
+            <p class="mt-5 max-w-2xl text-body leading-relaxed text-[var(--app-text-muted)]">
+                Dari sains, bahasa, teknologi, hingga kegiatan kreatif, setiap program dirancang untuk membantu siswa menemukan kekuatan dan arah belajarnya.
             </p>
+            <div class="mt-7 flex flex-wrap gap-2 text-caption font-semibold text-[var(--app-primary)]">
+                <span class="rounded-full bg-[var(--public-soft)] px-3 py-1.5">Kurikulum aktif</span>
+                <span class="rounded-full bg-[var(--public-soft)] px-3 py-1.5">Kegiatan beragam</span>
+                <span class="rounded-full bg-[var(--public-soft)] px-3 py-1.5">Pendampingan guru</span>
+            </div>
         </div>
-        <x-image-placeholder type="program" aspect="16/10" alt="Siswa SMP 1 LYFLA belajar di laboratorium komputer" />
+        <figure class="group relative overflow-hidden rounded-[1.5rem] border border-[var(--app-border)] bg-[var(--app-surface)] shadow-xl">
+            <img src="{{ asset('images/schools/smpn4metro/landing/facility-learning.jpg') }}"
+                 alt="Siswa SMP Negeri 4 Metro berdiskusi dalam pembelajaran"
+                 class="aspect-[16/10] w-full object-cover transition duration-700 group-hover:scale-[1.03]"
+                 loading="eager" decoding="async">
+            <figcaption class="absolute inset-x-4 bottom-4 rounded-xl border border-white/20 bg-black/45 px-4 py-3 text-small text-white backdrop-blur-md">
+                Pembelajaran aktif di dalam dan di luar kelas
+            </figcaption>
+        </figure>
+    </div>
+
+    <div class="mt-14 grid gap-5 sm:grid-cols-3">
+        @foreach ([
+            ['Program Seni', 'program-seni.jpg', 'Ruang untuk berekspresi, berkolaborasi, dan berani tampil.'],
+            ['Program Olahraga', 'program-olahraga.jpg', 'Membangun kebugaran, sportivitas, dan kerja sama.'],
+            ['Pramuka', 'program-pramuka.jpg', 'Melatih kepemimpinan, kepedulian, dan kemandirian.'],
+        ] as [$label, $image, $description])
+            <article class="group overflow-hidden rounded-[1.25rem] border border-[var(--app-border)] bg-[var(--app-surface)] shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl">
+                <img src="{{ asset('images/schools/smpn4metro/landing/'.$image) }}" alt="{{ $label }} SMP Negeri 4 Metro" class="aspect-[16/10] w-full object-cover transition duration-700 group-hover:scale-[1.04]" loading="lazy">
+                <div class="p-5">
+                    <p class="text-small font-bold text-[var(--app-text)]">{{ $label }}</p>
+                    <p class="mt-2 text-small leading-relaxed text-[var(--app-text-muted)]">{{ $description }}</p>
+                </div>
+            </article>
+        @endforeach
     </div>
 
     <div class="mt-12">

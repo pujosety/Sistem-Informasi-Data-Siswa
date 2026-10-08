@@ -118,6 +118,7 @@ class Smpn4MetroSeeder extends Seeder
         $files = [
             'logo' => ['images/schools/smpn4metro/branding/logo-smpn4metro.png', 'Logo SMP Negeri 4 Metro', self::SOURCE_HOME],
             'history' => ['images/schools/smpn4metro/profile/sejarah.jpg', 'Foto halaman sejarah sekolah', self::SOURCE_HOME.'halaman.php?slug=sejarah-sekolah'],
+            'hero' => ['images/schools/smpn4metro/landing/hero-campus.jpg', 'Siswa SMP Negeri 4 Metro menyampaikan presentasi', self::SOURCE_HOME],
             'vision' => ['images/schools/smpn4metro/profile/visi-misi.jpg', 'Foto halaman visi dan misi', self::SOURCE_HOME.'halaman.php?slug=visi-misi'],
             'profile' => ['images/schools/smpn4metro/landing/profile-community.jpg', 'Keluarga sekolah SMP Negeri 4 Metro', self::SOURCE_HOME],
             'program_pramuka' => ['images/schools/smpn4metro/landing/program-pramuka.jpg', 'Kegiatan Pramuka SMP Negeri 4 Metro', self::SOURCE_HOME.'galeri-foto/kegiatan-pramuka'],
@@ -305,7 +306,7 @@ class Smpn4MetroSeeder extends Seeder
                     'is_enabled' => true,
                     'position' => $position,
                     'media_id' => $type === 'hero'
-                        ? $media['history']->id
+                        ? $media['hero']->id
                         : ($type === 'about' ? $media['profile']->id : ($type === 'ppdb' ? $media['ppdb_feature']->id : null)),
                 ]
             );

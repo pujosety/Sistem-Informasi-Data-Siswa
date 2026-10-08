@@ -15,15 +15,29 @@
     </div>
 </section>
 
-<section class="mx-auto max-w-6xl px-5 sm:px-8 py-12">
-    <div class="grid items-center gap-8 lg:grid-cols-[0.9fr_1.1fr]">
-        <x-image-placeholder type="profile" aspect="4/3" alt="Siswa SMP 1 LYFLA belajar bersama" />
+<section class="mx-auto max-w-6xl px-5 sm:px-8 py-14 sm:py-20">
+    <div class="grid items-center gap-10 lg:grid-cols-[1.05fr_0.95fr]">
+        <figure class="group relative overflow-hidden rounded-[1.5rem] border border-[var(--app-border)] bg-[var(--app-surface)] shadow-xl">
+            <img src="{{ asset('images/schools/smpn4metro/landing/profile-community.jpg') }}"
+                 alt="Keluarga sekolah SMP Negeri 4 Metro berdiskusi bersama"
+                 class="aspect-[4/3] w-full object-cover transition duration-700 group-hover:scale-[1.03]"
+                 loading="eager" decoding="async">
+            <figcaption class="absolute inset-x-4 bottom-4 rounded-xl border border-white/20 bg-black/45 px-4 py-3 text-small text-white backdrop-blur-md">
+                <span class="font-semibold">SMP Negeri 4 Metro</span>
+                <span class="mt-0.5 block text-white/75">Cerdas, berkarakter, berprestasi.</span>
+            </figcaption>
+        </figure>
         <div>
-            <p class="text-small font-semibold text-[var(--app-primary)]">Kenalan lebih dekat</p>
-            <h2 class="mt-2 text-h1 font-bold tracking-tight">Tempat ide tumbuh dan masa depan mulai dibentuk.</h2>
-            <p class="mt-4 max-w-2xl text-body leading-relaxed text-[var(--app-text-muted)]">
-                Profil ini merangkum informasi resmi yang dipublikasikan sekolah. Detail akan mengikuti pengaturan yang dikelola administrator.
+            <p class="text-small font-semibold uppercase tracking-[0.16em] text-[var(--app-primary)]">Kenalan lebih dekat</p>
+            <h2 class="mt-3 text-h1 font-bold tracking-tight text-balance">Tempat ide tumbuh dan masa depan mulai dibentuk.</h2>
+            <p class="mt-5 max-w-2xl text-body leading-relaxed text-[var(--app-text-muted)]">
+                SMP Negeri 4 Metro mengembangkan prestasi akademik dan non-akademik, karakter mulia, serta budaya bersih, sehat, dan peduli lingkungan.
             </p>
+            <div class="mt-7 flex flex-wrap gap-2 text-caption font-semibold text-[var(--app-primary)]">
+                <span class="rounded-full bg-[var(--public-soft)] px-3 py-1.5">Berprestasi</span>
+                <span class="rounded-full bg-[var(--public-soft)] px-3 py-1.5">Berkarakter</span>
+                <span class="rounded-full bg-[var(--public-soft)] px-3 py-1.5">Peduli lingkungan</span>
+            </div>
         </div>
     </div>
 
@@ -33,7 +47,7 @@
         </p>
     @endif
 
-    <div class="mt-6 grid gap-6 sm:grid-cols-2">
+    <div class="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         @foreach ([
             'NPSN' => $school['npsn'],
             'Alamat' => $school['address'],
