@@ -21,6 +21,7 @@ class SchoolAssistantService
     {
         $conversation = $this->conversation($school, $conversationId);
         $matches = $this->knowledge->search($school, $message);
+        $smallTalk = $this->smallTalkResponse($school, $message);
 
         $userMessage = AiMessage::create([
             'conversation_id' => $conversation->id,
@@ -28,8 +29,11 @@ class SchoolAssistantService
             'content' => $message,
         ]);
 
-        if ($matches === []) {
-            $answer = 'Informasi tersebut belum tersedia di sistem sekolah.';
+        if ($smallTalk !== null) {
+            $answer = $smallTalk;
+            $responseMeta = ['provider' => 'local-personality'];
+        } elseif ($matches === []) {
+            $answer = $this->notFoundResponse();
             $responseMeta = ['provider' => 'local-fallback'];
         } else {
             $history = $conversation->messages()
@@ -48,7 +52,7 @@ class SchoolAssistantService
             ];
             try {
                 $result = $this->ai->chat($messages);
-                $answer = $result->content;
+                $answer = $this->naturalize($result->content);
                 $responseMeta = [
                     'provider' => $this->ai->providerName(),
                     'model' => $this->ai->model(),
@@ -100,7 +104,7 @@ class SchoolAssistantService
     {
         $question = Str::lower($message);
         if (Str::contains($question, 'nama') && Str::contains($question, 'sekolah')) {
-            return 'Nama sekolah ini adalah '.$school->name.'.';
+            return 'Ini '.$school->name." 😊 Kalau kamu mau, Lala juga bisa bantu cari info program, fasilitas, prestasi, atau PPDB.";
         }
 
         $contact = $school->contact ?? [];
@@ -112,21 +116,24 @@ class SchoolAssistantService
                     data_get($contact, 'province'),
                 ])));
             }
+
             return $address !== ''
-                ? 'Alamat sekolah: '.$address.'.'
-                : 'Informasi alamat belum tersedia di sistem sekolah.';
+                ? 'Alamatnya di '.$address.'. Kalau mau, Lala bisa bantu cari nomor telepon atau info PPDB juga.'
+                : 'Maaf, Lala belum menemukan alamat sekolahnya.';
         }
         if (Str::contains($question, ['telepon', 'nomor'])) {
             $phone = data_get($contact, 'phone');
+
             return filled($phone)
-                ? 'Nomor telepon sekolah: '.$phone.'.'
-                : 'Informasi telepon belum tersedia di sistem sekolah.';
+                ? 'Nomor telepon sekolahnya '.$phone.'.'
+                : 'Maaf, Lala belum menemukan nomor telepon sekolahnya.';
         }
         if (Str::contains($question, ['email', 'surel'])) {
             $email = data_get($contact, 'email');
+
             return filled($email)
-                ? 'Email sekolah: '.$email.'.'
-                : 'Informasi email belum tersedia di sistem sekolah.';
+                ? 'Email sekolahnya '.$email.'.'
+                : 'Maaf, Lala belum menemukan email sekolahnya.';
         }
 
         $candidate = collect($matches)->first(function ($row) use ($question): bool {
@@ -146,11 +153,46 @@ class SchoolAssistantService
         $content = preg_replace('/https?:\\/\\/\\S+|localhost\\S*/iu', '', $content);
         $content = trim((string) preg_replace('/\\s+/u', ' ', $content));
 
-        $label = filled($candidate?->title) ? $candidate->title.'. ' : '';
-
         return $content !== ''
-            ? 'Informasi yang tersedia: '.$label.Str::limit($content, 700)
-            : 'Informasi tersebut belum tersedia di sistem sekolah.';
+            ? (filled($candidate?->title) ? $candidate->title.': ' : '').Str::limit($content, 700)
+            : $this->notFoundResponse();
+    }
+
+    private function smallTalkResponse(School $school, string $message): ?string
+    {
+        $question = trim(Str::lower($message));
+
+        if (preg_match('/^(halo|hai|hi|hei|assalamualaikum|pagi|siang|sore|malam)\\b/u', $question)) {
+            return 'Hai! Lala di sini 😊 Ada yang ingin kamu cari tentang '.$school->name.'?';
+        }
+
+        if (Str::contains($question, ['terima kasih', 'makasih', 'thanks'])) {
+            return 'Sama-sama 😊 Kalau masih butuh info sekolah, panggil Lala lagi ya.';
+        }
+
+        if (Str::contains($question, ['bisa bantu', 'tolong bantu', 'apa yang bisa'])) {
+            return 'Tentu. Lala bisa bantu cari info PPDB, program, fasilitas, prestasi, alamat, dan kontak sekolah.';
+        }
+
+        return null;
+    }
+
+    private function notFoundResponse(): string
+    {
+        return 'Maaf, Lala belum menemukan info itu di data sekolah. Coba tanya tentang PPDB, program, fasilitas, prestasi, alamat, atau kontak sekolah ya.';
+    }
+
+    private function naturalize(string $answer): string
+    {
+        $answer = trim($answer);
+        $answer = preg_replace(
+            '/^(?:berdasarkan|dari)\\s+(?:informasi|data)(?:\\s+yang\\s+(?:tersedia|diberikan))?[,:]?\\s*/iu',
+            '',
+            $answer
+        );
+        $answer = preg_replace('/^informasi yang tersedia[:,]?\\s*/iu', '', $answer);
+
+        return trim((string) $answer) !== '' ? trim((string) $answer) : $this->notFoundResponse();
     }
 
     private function conversation(School $school, ?int $id): AiConversation
