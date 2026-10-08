@@ -30,7 +30,7 @@ class NaraRouterProvider implements AiProvider
     {
         $apiKey = trim((string) ($this->config['api_key'] ?? ''));
         if ($apiKey === '') {
-            throw new RuntimeException('NaraRouter API key is not configured.');
+            throw new RuntimeException(sprintf('%s API key is not configured.', $this->providerName()));
         }
 
         $started = microtime(true);
@@ -56,7 +56,7 @@ class NaraRouterProvider implements AiProvider
             $response = $request->post(rtrim((string) $this->config['base_url'], '/').'/chat/completions', $payload);
         } catch (\Throwable $e) {
             report($e);
-            throw new RuntimeException('NaraRouter is unavailable.', 0, $e);
+            throw new RuntimeException(sprintf('%s is unavailable.', $this->providerName()), 0, $e);
         }
 
         $latencyMs = (int) round((microtime(true) - $started) * 1000);
@@ -64,7 +64,8 @@ class NaraRouterProvider implements AiProvider
 
         if ($response->failed()) {
             report(new RuntimeException(sprintf(
-                'NaraRouter request failed with HTTP %d: %s',
+                '%s request failed with HTTP %d: %s',
+                $this->providerName(),
                 $status,
                 Str::limit((string) $response->body(), 500)
             )));
@@ -75,8 +76,8 @@ class NaraRouterProvider implements AiProvider
         $json = $response->json();
         $content = trim((string) Arr::get($json, 'choices.0.message.content', ''));
         if ($content === '') {
-            report(new RuntimeException('NaraRouter returned no message content.'));
-            throw new RuntimeException('NaraRouter returned an empty response.');
+            report(new RuntimeException(sprintf('%s returned no message content.', $this->providerName())));
+            throw new RuntimeException(sprintf('%s returned an empty response.', $this->providerName()));
         }
 
         return new AiProviderResponse(
@@ -93,7 +94,7 @@ class NaraRouterProvider implements AiProvider
 
     public function name(): string
     {
-        return 'NaraRouter';
+        return $this->providerName();
     }
 
     public function model(): string
@@ -103,14 +104,21 @@ class NaraRouterProvider implements AiProvider
 
     private function friendlyFailure(int $status): string
     {
+        $provider = $this->providerName();
+
         return match ($status) {
-            401, 403 => 'NaraRouter authentication failed.',
-            408, 504 => 'NaraRouter timed out.',
-            429 => 'NaraRouter rate limit reached.',
-            422 => 'NaraRouter rejected the request.',
-            404 => 'NaraRouter endpoint was not found.',
-            500, 502, 503 => 'NaraRouter is temporarily unavailable.',
-            default => 'NaraRouter request failed.',
+            401, 403 => $provider.' authentication failed.',
+            408, 504 => $provider.' timed out.',
+            429 => $provider.' rate limit reached.',
+            422 => $provider.' rejected the request.',
+            404 => $provider.' endpoint was not found.',
+            500, 502, 503 => $provider.' is temporarily unavailable.',
+            default => $provider.' request failed.',
         };
+    }
+
+    private function providerName(): string
+    {
+        return (string) ($this->config['name'] ?? 'NaraRouter');
     }
 }
