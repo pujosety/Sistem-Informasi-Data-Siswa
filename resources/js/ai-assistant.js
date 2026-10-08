@@ -1,14 +1,14 @@
-const mascotBase = '/assets/lyfla-ai/mascot/';
+const mascotBase = '/assets/lyfla-ai/mascot/optimized/';
 const mascotMap = {
-    'top-left': 'source-1.png',
-    top: 'source-2.png',
-    'top-right': 'source-3.png',
-    left: 'source-5.png',
-    center: 'source-6.png',
-    right: 'source-7.png',
-    'bottom-left': 'source-4.png',
-    bottom: 'source-8.png',
-    'bottom-right': 'source-7.png',
+    'top-left': 'source-1.webp',
+    top: 'source-2.webp',
+    'top-right': 'source-3.webp',
+    left: 'source-5.webp',
+    center: 'source-6.webp',
+    right: 'source-7.webp',
+    'bottom-left': 'source-4.webp',
+    bottom: 'source-8.webp',
+    'bottom-right': 'source-7.webp',
 };
 
 function directionFor(dx, dy, deadZone = 44) {
@@ -46,6 +46,9 @@ document.addEventListener('alpine:init', () => {
     }],
     get mascotSrc() {
         return mascotBase + (mascotMap[this.direction] || mascotMap.center);
+    },
+    get headerMascotSrc() {
+        return mascotBase + mascotMap.center;
     },
     init() {
         this.trigger = this.$refs.trigger;

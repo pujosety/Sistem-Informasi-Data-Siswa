@@ -26,7 +26,9 @@
     >
         <header class="lyfla-ai-header">
             <div class="flex min-w-0 items-center gap-3">
-                <img src="{{ asset('assets/lyfla-ai/mascot/source-6.png') }}" alt="" class="lyfla-ai-header-mascot">
+                <template x-if="open">
+                    <img :src="headerMascotSrc" alt="" class="lyfla-ai-header-mascot">
+                </template>
                 <div class="min-w-0">
                     <p id="lyfla-ai-title" class="truncate text-small font-bold text-[var(--app-text)]">Lala</p>
                     <p class="truncate text-caption text-[var(--app-text-muted)]">Asisten Informasi Sekolah · {{ $assistantSchool }}</p>
