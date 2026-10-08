@@ -56,7 +56,7 @@ class SchoolAssistantService
                 ];
             } catch (\Throwable $e) {
                 report($e);
-                $answer = $this->groundedFallback($matches);
+                $answer = $this->groundedFallback($school, $matches, $message);
                 $responseMeta = ['provider' => 'local-grounded-fallback'];
             }
         }
@@ -75,19 +75,40 @@ class SchoolAssistantService
             'sources' => collect($matches)->map(fn ($row) => array_filter([
                 'title' => $row->title,
                 'type' => $row->source_type,
-                'url' => $row->source_url,
+                'url' => $this->publicSourceUrl($row->source_url),
                 'updated_at' => $row->updated_at?->toIso8601String(),
             ], fn ($value) => filled($value)))->values()->all(),
         ];
     }
 
-    private function groundedFallback(array $matches): string
+    private function publicSourceUrl(?string $url): ?string
     {
-        $content = collect($matches)
-            ->pluck('content')
-            ->filter()
-            ->implode("\n\n");
-        $content = trim((string) preg_replace('/\s+/u', ' ', $content));
+        if (! filled($url)) {
+            return null;
+        }
+
+        if (Str::contains($url, ['localhost', '127.0.0.1'])) {
+            $path = parse_url($url, PHP_URL_PATH);
+            $query = parse_url($url, PHP_URL_QUERY);
+            return $path.($query ? '?'.$query : '');
+        }
+
+        return $url;
+    }
+
+    private function groundedFallback(School $school, array $matches, string $message): string
+    {
+        $question = Str::lower($message);
+        if (Str::contains($question, 'nama') && Str::contains($question, 'sekolah')) {
+            return 'Nama sekolah ini adalah '.$school->name.'.';
+        }
+
+        $content = trim((string) ($matches[0]->content ?? ''));
+        if (($jsonStart = strpos($content, '{')) !== false) {
+            $content = substr($content, 0, $jsonStart);
+        }
+        $content = preg_replace('/https?:\\/\\/\\S+|localhost\\S*/iu', '', $content);
+        $content = trim((string) preg_replace('/\\s+/u', ' ', $content));
 
         return $content !== ''
             ? 'Informasi yang tersedia: '.Str::limit($content, 700)
