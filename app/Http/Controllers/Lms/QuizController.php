@@ -8,12 +8,15 @@ use App\Models\CourseEnrollment;
 use App\Models\LmsQuiz;
 use App\Models\LmsQuizAttempt;
 use App\Models\Student;
+use App\Services\NotificationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class QuizController extends Controller
 {
+    public function __construct(private readonly NotificationService $notifications) {}
+
     public function store(Request $request, Course $course): RedirectResponse
     {
         $this->authorizeTeacher($course);
@@ -73,6 +76,23 @@ class QuizController extends Controller
         abort_if($quiz->questions()->count() === 0, 422, 'Tambahkan minimal satu pertanyaan sebelum menerbitkan kuis.');
         $quiz->update(['status' => LmsQuiz::PUBLISHED]);
 
+        $studentUserIds = $course->enrollments()
+            ->where('status', CourseEnrollment::ACTIVE)
+            ->with('student')
+            ->get()
+            ->pluck('student.user_id')
+            ->filter()
+            ->all();
+        $this->notifications->notifyUsers(
+            $studentUserIds,
+            NotificationService::QUIZ_PUBLISHED,
+            'Kuis baru: '.$quiz->title,
+            $quiz->due_at
+                ? 'Kuis baru tersedia. Batas pengerjaan '.$quiz->due_at->format('d M Y H:i').'.'
+                : 'Kuis baru tersedia di course '.$course->title.'.',
+            ['course_id' => $course->id, 'quiz_id' => $quiz->id]
+        );
+
         return redirect()->route('lms.teacher.courses.show', $course)
             ->with('success', 'Kuis berhasil diterbitkan.');
     }
@@ -122,6 +142,13 @@ class QuizController extends Controller
             'answers' => $answers,
             'status' => 'submitted',
         ]);
+        $this->notifications->notifyUser(
+            $course->teacher_id,
+            NotificationService::QUIZ_SUBMITTED,
+            'Kuis dikumpulkan: '.$quiz->title,
+            ($student->full_name ?: 'Siswa').' mengumpulkan kuis dengan nilai '.$score.'.',
+            ['course_id' => $course->id, 'quiz_id' => $quiz->id, 'student_id' => $student->id]
+        );
 
         return redirect()->route('lms.student.quizzes.show', [$course, $quiz])
             ->with('success', $quiz->show_results ? 'Kuis dikumpulkan. Nilai: '.$score : 'Kuis berhasil dikumpulkan.');

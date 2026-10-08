@@ -8,6 +8,7 @@ use App\Models\LmsAssignment;
 use App\Models\LmsAssignmentSubmission;
 use App\Models\Student;
 use App\Models\User;
+use App\Notifications\SidaNotification;
 use App\Services\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -48,6 +49,12 @@ class AssignmentFlowTest extends TestCase
             ->post(route('lms.teacher.assignments.publish', [$course, $assignment]))
             ->assertRedirect();
 
+        $this->assertDatabaseHas('notifications', [
+            'notifiable_id' => $studentUser->id,
+            'notifiable_type' => User::class,
+            'type' => SidaNotification::class,
+        ]);
+
         $this->actingAs($studentUser)
             ->post(route('lms.student.assignments.submit', [$course, $assignment]), [
                 'body' => 'Jawaban siswa.',
@@ -55,6 +62,11 @@ class AssignmentFlowTest extends TestCase
             ->assertRedirect();
 
         $submission = LmsAssignmentSubmission::firstOrFail();
+        $this->assertDatabaseHas('notifications', [
+            'notifiable_id' => $teacher->id,
+            'notifiable_type' => User::class,
+            'type' => SidaNotification::class,
+        ]);
         $this->actingAs($teacher)
             ->put(route('lms.teacher.submissions.grade', [$course, $assignment, $submission]), [
                 'score' => 88,
@@ -68,6 +80,14 @@ class AssignmentFlowTest extends TestCase
             'status' => LmsAssignmentSubmission::GRADED,
             'feedback' => 'Langkah sudah benar.',
         ]);
+        $this->assertGreaterThanOrEqual(
+            2,
+            DB::table('notifications')
+                ->where('notifiable_id', $studentUser->id)
+                ->where('notifiable_type', User::class)
+                ->where('type', SidaNotification::class)
+                ->count()
+        );
     }
 
     private function courseFor(User $teacher, Student $student): Course

@@ -8,6 +8,7 @@ use App\Models\CourseEnrollment;
 use App\Models\LmsAssignment;
 use App\Models\LmsAssignmentSubmission;
 use App\Models\Student;
+use App\Services\NotificationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -15,6 +16,8 @@ use Illuminate\View\View;
 
 class AssignmentController extends Controller
 {
+    public function __construct(private readonly NotificationService $notifications) {}
+
     public function create(Course $course): View
     {
         $this->authorizeTeacher($course);
@@ -49,6 +52,24 @@ class AssignmentController extends Controller
     {
         $this->authorizeAssignment($course, $assignment);
         $assignment->update(['status' => LmsAssignment::PUBLISHED]);
+
+        $studentUserIds = $course->enrollments()
+            ->where('status', CourseEnrollment::ACTIVE)
+            ->with('student')
+            ->get()
+            ->pluck('student.user_id')
+            ->filter()
+            ->all();
+        $this->notifications->notifyUsers(
+            $studentUserIds,
+            NotificationService::ASSIGNMENT_PUBLISHED,
+            'Tugas baru: '.$assignment->title,
+            $assignment->due_at
+                ? 'Tugas baru tersedia. Batas pengumpulan '.$assignment->due_at->format('d M Y H:i').'.'
+                : 'Tugas baru tersedia di course '.$course->title.'.',
+            ['course_id' => $course->id, 'assignment_id' => $assignment->id]
+        );
+
         return redirect()->route('lms.teacher.courses.show', $course)
             ->with('success', 'Tugas berhasil diterbitkan.');
     }
@@ -72,6 +93,16 @@ class AssignmentController extends Controller
             'score' => $data['score'], 'feedback' => $data['feedback'] ?? null,
             'graded_by' => $request->user()->id, 'graded_at' => now(), 'status' => LmsAssignmentSubmission::GRADED,
         ]);
+        $submission->load('student');
+        if ($submission->student) {
+            $this->notifications->notifyStudent(
+                $submission->student,
+                NotificationService::ASSIGNMENT_GRADED,
+                'Tugas dinilai: '.$assignment->title,
+                'Nilai Anda '.$data['score'].' dari '.$assignment->max_score.'.'.(($data['feedback'] ?? null) ? ' Feedback guru tersedia.' : ''),
+                ['course_id' => $course->id, 'assignment_id' => $assignment->id, 'submission_id' => $submission->id]
+            );
+        }
         return back()->with('success', 'Nilai dan feedback berhasil disimpan.');
     }
 
@@ -114,6 +145,13 @@ class AssignmentController extends Controller
             'is_late' => $late,
             'status' => LmsAssignmentSubmission::SUBMITTED,
         ]);
+        $this->notifications->notifyUser(
+            $course->teacher_id,
+            NotificationService::ASSIGNMENT_SUBMITTED,
+            'Pengumpulan baru: '.$assignment->title,
+            ($student->full_name ?: 'Siswa').' mengirim jawaban untuk tugas ini.'.($late ? ' Pengumpulan terlambat.' : ''),
+            ['course_id' => $course->id, 'assignment_id' => $assignment->id, 'student_id' => $student->id]
+        );
         return redirect()->route('lms.student.assignments.show', [$course, $assignment])
             ->with('success', 'Tugas berhasil dikirim.');
     }

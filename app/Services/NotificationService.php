@@ -29,6 +29,11 @@ class NotificationService
     public const STUDENT_MOVED = 'enrollment.moved';
     public const CLASS_PROMOTED = 'enrollment.promoted';
     public const GRADUATED = 'enrollment.graduated';
+    public const ASSIGNMENT_PUBLISHED = 'lms.assignment.published';
+    public const ASSIGNMENT_SUBMITTED = 'lms.assignment.submitted';
+    public const ASSIGNMENT_GRADED = 'lms.assignment.graded';
+    public const QUIZ_PUBLISHED = 'lms.quiz.published';
+    public const QUIZ_SUBMITTED = 'lms.quiz.submitted';
 
     // -----------------------------------------------------------------
     // Dispatch

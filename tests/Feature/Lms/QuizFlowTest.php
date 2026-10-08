@@ -9,6 +9,7 @@ use App\Models\LmsQuizAttempt;
 use App\Models\LmsQuizQuestion;
 use App\Models\Student;
 use App\Models\User;
+use App\Notifications\SidaNotification;
 use App\Services\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -38,11 +39,21 @@ class QuizFlowTest extends TestCase
             'type' => 'multiple_choice', 'prompt' => '2 + 2 = ?', 'options' => ['3', '4', '5'], 'correct_answer' => '4', 'points' => 100,
         ])->assertRedirect();
         $this->actingAs($teacher)->post(route('lms.teacher.quizzes.publish', [$course, $quiz]))->assertRedirect();
+        $this->assertDatabaseHas('notifications', [
+            'notifiable_id' => $studentUser->id,
+            'notifiable_type' => User::class,
+            'type' => SidaNotification::class,
+        ]);
 
         $this->actingAs($studentUser)->get(route('lms.student.quizzes.show', [$course, $quiz]))->assertOk()->assertSee('2 + 2');
         $this->actingAs($studentUser)->post(route('lms.student.quizzes.submit', [$course, $quiz]), [
             'answers' => ['1' => '4'],
         ])->assertRedirect();
+        $this->assertDatabaseHas('notifications', [
+            'notifiable_id' => $teacher->id,
+            'notifiable_type' => User::class,
+            'type' => SidaNotification::class,
+        ]);
 
         $this->assertDatabaseHas('lms_quiz_attempts', ['quiz_id' => $quiz->id, 'student_id' => $student->id, 'score' => 100, 'status' => 'submitted']);
     }
