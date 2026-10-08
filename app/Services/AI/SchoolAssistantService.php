@@ -105,11 +105,13 @@ class SchoolAssistantService
 
         $contact = $school->contact ?? [];
         if (Str::contains($question, ['alamat', 'lokasi'])) {
-            $address = trim(implode(', ', array_unique(array_filter([
-                data_get($contact, 'address'),
-                data_get($contact, 'city'),
-                data_get($contact, 'province'),
-            ]))));
+            $address = trim((string) data_get($contact, 'address'));
+            if ($address === '') {
+                $address = trim(implode(', ', array_filter([
+                    data_get($contact, 'city'),
+                    data_get($contact, 'province'),
+                ])));
+            }
             return $address !== ''
                 ? 'Alamat sekolah: '.$address.'.'
                 : 'Informasi alamat belum tersedia di sistem sekolah.';
