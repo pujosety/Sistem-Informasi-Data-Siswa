@@ -5,6 +5,7 @@ use App\Http\Controllers\Lms\LessonController;
 use App\Http\Controllers\Lms\StudentLmsController;
 use App\Http\Controllers\Lms\AssignmentController;
 use App\Http\Controllers\Lms\QuizController;
+use App\Http\Controllers\Lms\ModuleController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'can:lms.course.view'])
@@ -20,6 +21,12 @@ Route::middleware(['auth', 'can:lms.course.view'])
             ->middleware('can:lms.course.create')
             ->name('courses.store');
         Route::get('/courses/{course}', [CourseController::class, 'show'])->name('courses.show');
+        Route::get('/courses/{course}/modules/create', [ModuleController::class, 'create'])
+            ->middleware('can:lms.lesson.manage')
+            ->name('modules.create');
+        Route::post('/courses/{course}/modules', [ModuleController::class, 'store'])
+            ->middleware('can:lms.lesson.manage')
+            ->name('modules.store');
 
         Route::get('/courses/{course}/lessons/create', [LessonController::class, 'create'])
             ->middleware('can:lms.lesson.manage')

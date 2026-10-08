@@ -41,6 +41,9 @@
                         </span>
                         <div class="min-w-0">
                             <h3 class="font-semibold text-[var(--app-text)]">{{ $lesson->title }}</h3>
+                            @if ($lesson->module)
+                                <p class="mt-1 text-caption font-medium text-[var(--app-primary)]">{{ $lesson->module->title }}</p>
+                            @endif
                             @if ($lesson->body)
                                 <p class="mt-1 line-clamp-2 text-small text-[var(--app-text-muted)]">{{ $lesson->body }}</p>
                             @endif

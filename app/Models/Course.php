@@ -67,6 +67,11 @@ class Course extends \Illuminate\Database\Eloquent\Model
         return $this->hasMany(LmsModule::class)->orderBy('position');
     }
 
+    public function lessonProgress(): HasMany
+    {
+        return $this->hasMany(LessonProgress::class);
+    }
+
     public function assignments(): HasMany
     {
         return $this->hasMany(LmsAssignment::class)->latest('due_at');

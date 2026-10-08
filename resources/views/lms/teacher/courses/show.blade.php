@@ -31,6 +31,31 @@
     <x-card>
         <div class="flex items-center justify-between gap-3">
             <div>
+                <h2 class="text-h3 font-semibold">Bab pembelajaran</h2>
+                <p class="text-caption text-[var(--app-text-muted)]">Kelompokkan materi agar alur belajar siswa lebih jelas.</p>
+            </div>
+            @can('lms.lesson.manage')
+                <a href="{{ route('lms.teacher.modules.create', $course) }}" class="btn btn-primary btn-sm">Tambah bab</a>
+            @endcan
+        </div>
+        <div class="mt-4 divide-y divide-[var(--app-border)]">
+            @forelse ($course->modules as $module)
+                <div class="flex flex-col gap-2 py-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                        <p class="font-medium">{{ $module->position }}. {{ $module->title }}</p>
+                        <p class="text-caption text-[var(--app-text-muted)]">{{ $module->description ?: 'Belum ada deskripsi.' }} · {{ $module->lessons->count() }} materi</p>
+                    </div>
+                    <span class="badge {{ $module->status === 'published' ? 'badge-success' : 'badge-neutral' }}">{{ $module->status === 'published' ? 'Terbit' : 'Draft' }}</span>
+                </div>
+            @empty
+                <p class="py-5 text-body text-[var(--app-text-muted)]">Belum ada bab. Materi masih dapat ditambahkan tanpa bab.</p>
+            @endforelse
+        </div>
+    </x-card>
+
+    <x-card>
+        <div class="flex items-center justify-between gap-3">
+            <div>
                 <h2 class="text-h3 font-semibold">Materi pembelajaran</h2>
                 <p class="text-caption text-[var(--app-text-muted)]">Lesson akan muncul di portal siswa setelah diterbitkan.</p>
             </div>

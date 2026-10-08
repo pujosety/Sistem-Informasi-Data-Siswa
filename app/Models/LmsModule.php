@@ -11,6 +11,9 @@ class LmsModule extends Model
 {
     use BelongsToSchool;
 
+    public const DRAFT = 'draft';
+    public const PUBLISHED = 'published';
+
     protected $table = 'lms_modules';
     protected $fillable = ['school_id', 'course_id', 'title', 'description', 'position', 'status'];
     protected $casts = ['position' => 'integer'];

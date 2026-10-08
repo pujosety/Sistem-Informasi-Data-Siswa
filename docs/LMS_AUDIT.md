@@ -58,14 +58,41 @@ This audit covers the LMS implementation currently present in the Laravel/Blade 
 - Public/primary-school architecture recently became single-primary for public context, but LMS must still retain `school_id` isolation for administrative and private data.
 - Existing course table has a global unique `code`, which will prevent safe tenant-scoped course codes.
 
+## Update — 8 October 2026
+
+### DONE / VERIFIED in the current LMS wave
+
+- Tenant-aware course, enrollment, lesson, assignment, submission, quiz, question, and attempt models are present.
+- Student dashboard and enrolled course/lesson flow are implemented.
+- Lesson completion/progress records are implemented.
+- Assignment submission and teacher grading are implemented.
+- Quiz creation, question entry, publication, student submission, and automatic scoring are implemented.
+- Teacher module/chapter creation is now implemented.
+- Lessons can be assigned to a course module with same-course and same-school validation.
+- Student course lessons display their module label when assigned.
+- Student dashboard progress aggregation no longer runs one `LessonProgress` query per course; counts are loaded through constrained `withCount()` relations.
+- LMS suite currently passes: **14 tests, 59 assertions**; PHPUnit reports 12 metadata deprecations.
+
+### Remaining LMS work
+
+- Teacher enrollment/roster management UI and service are still missing; current tests create enrollment rows as fixtures.
+- Module publication/editing is still draft/create-only.
+- Lesson file/video/external-link fields exist in schema/model but are not yet exposed by the teacher forms.
+- Gradebook aggregation and teacher progress dashboard remain missing.
+- Course create still needs stricter cross-entity academic-year/semester/classroom consistency validation.
+- Full application suite remains separate from the LMS suite and is not yet green.
+
+### Current implementation boundary
+
+The module slice is committed locally but intentionally not deployed as a separate production release. Production still serves the previously verified LMS/public artifact until the broader regression policy allows an LMS release.
+
 ## Priority decision
 
-Implement vertical slices in this order:
+Continue vertical slices in this order:
 
-1. Tenant-safe LMS foundation and enrollment/progress primitives.
-2. Student course/lesson flow.
-3. Assignment submission and teacher grading.
-4. Quiz engine and gradebook.
-5. Dashboards, announcements, discussion, notifications, admin reports, and polish.
+1. Teacher enrollment/roster management with explicit `lms.enrollment.manage` authorization and school-scoped writes.
+2. Module edit/publish and richer lesson materials.
+3. Gradebook/progress aggregation.
+4. Announcements, discussion, notifications, admin reporting, and mobile polish.
 
 No public AI knowledge sync may include LMS rows, grades, submissions, feedback, or private lesson content.

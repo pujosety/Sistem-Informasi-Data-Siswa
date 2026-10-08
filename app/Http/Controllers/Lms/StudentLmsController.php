@@ -20,7 +20,18 @@ class StudentLmsController extends Controller
         $courses = CourseEnrollment::query()
             ->where('student_id', $student->id)
             ->where('status', CourseEnrollment::ACTIVE)
-            ->with(['course.subject', 'course.classroom', 'course.semester', 'course.lessons' => fn ($q) => $q->published()])
+            ->with([
+                'course.subject',
+                'course.classroom',
+                'course.semester',
+                'course.lessons' => fn ($q) => $q->published(),
+                'course' => fn ($q) => $q->withCount([
+                    'lessons as published_lessons_count' => fn ($lessons) => $lessons->published(),
+                    'lessonProgress as completed_lessons_count' => fn ($progress) => $progress
+                        ->where('student_id', $student->id)
+                        ->whereNotNull('completed_at'),
+                ]),
+            ])
             ->latest('enrolled_at')
             ->paginate(12);
 
@@ -34,7 +45,7 @@ class StudentLmsController extends Controller
 
         $course->load([
             'subject', 'classroom', 'semester',
-            'lessons' => fn ($query) => $query->published()->orderBy('position'),
+            'lessons' => fn ($query) => $query->published()->with('module')->orderBy('position'),
         ]);
         $completedLessonIds = LessonProgress::query()
             ->where('student_id', $student->id)

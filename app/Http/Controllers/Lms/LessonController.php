@@ -7,6 +7,7 @@ use App\Models\Course;
 use App\Models\Lesson;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class LessonController extends Controller
@@ -16,7 +17,7 @@ class LessonController extends Controller
         $this->authorizeCourse($course);
 
         return view('lms.teacher.lessons.create', [
-            'course' => $course->load(['subject', 'classroom']),
+            'course' => $course->load(['subject', 'classroom', 'modules' => fn ($query) => $query->orderBy('position')]),
             'nextPosition' => ((int) $course->lessons()->max('position')) + 1,
         ]);
     }
@@ -26,12 +27,20 @@ class LessonController extends Controller
         $this->authorizeCourse($course);
 
         $data = $request->validate([
+            'module_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('lms_modules', 'id')->where(fn ($query) => $query
+                    ->where('course_id', $course->id)
+                    ->where('school_id', $course->school_id)),
+            ],
             'title' => ['required', 'string', 'max:180'],
             'body' => ['nullable', 'string'],
             'position' => ['nullable', 'integer', 'min:1'],
         ]);
 
         $course->lessons()->create([
+            'module_id' => $data['module_id'] ?? null,
             'title' => $data['title'],
             'body' => $data['body'] ?? null,
             'position' => $data['position'] ?? (((int) $course->lessons()->max('position')) + 1),
@@ -46,7 +55,10 @@ class LessonController extends Controller
     {
         $this->authorizeLesson($course, $lesson);
 
-        return view('lms.teacher.lessons.edit', compact('course', 'lesson'));
+        return view('lms.teacher.lessons.edit', [
+            'course' => $course->load(['subject', 'classroom', 'modules' => fn ($query) => $query->orderBy('position')]),
+            'lesson' => $lesson,
+        ]);
     }
 
     public function update(Request $request, Course $course, Lesson $lesson): RedirectResponse
@@ -54,12 +66,24 @@ class LessonController extends Controller
         $this->authorizeLesson($course, $lesson);
 
         $data = $request->validate([
+            'module_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('lms_modules', 'id')->where(fn ($query) => $query
+                    ->where('course_id', $course->id)
+                    ->where('school_id', $course->school_id)),
+            ],
             'title' => ['required', 'string', 'max:180'],
             'body' => ['nullable', 'string'],
             'position' => ['required', 'integer', 'min:1'],
         ]);
 
-        $lesson->update($data);
+        $lesson->update([
+            'module_id' => $data['module_id'] ?? null,
+            'title' => $data['title'],
+            'body' => $data['body'] ?? null,
+            'position' => $data['position'],
+        ]);
 
         return redirect()->route('lms.teacher.courses.show', $course)
             ->with('success', 'Materi berhasil diperbarui.');

@@ -75,7 +75,11 @@ class CourseController extends Controller
         $this->authorize('view', $course);
 
         return view('lms.teacher.courses.show', [
-            'course' => $course->load(['academicYear', 'semester', 'subject', 'classroom', 'lessons', 'assignments', 'quizzes.questions']),
+            'course' => $course->load([
+                'academicYear', 'semester', 'subject', 'classroom',
+                'modules.lessons',
+                'lessons', 'assignments', 'quizzes.questions',
+            ]),
         ]);
     }
 }

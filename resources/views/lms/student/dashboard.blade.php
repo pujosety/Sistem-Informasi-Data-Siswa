@@ -12,12 +12,9 @@
                 @php
                     $course = $enrollment->course;
                     $lessons = $course?->lessons ?? collect();
-                    $done = \App\Models\LessonProgress::query()
-                        ->where('student_id', $student->id)
-                        ->where('course_id', $course?->id)
-                        ->whereNotNull('completed_at')
-                        ->count();
-                    $progress = $lessons->count() > 0 ? (int) round(($done / $lessons->count()) * 100) : 0;
+                    $lessonTotal = (int) ($course?->published_lessons_count ?? $lessons->count());
+                    $done = (int) ($course?->completed_lessons_count ?? 0);
+                    $progress = $lessonTotal > 0 ? (int) round(($done / $lessonTotal) * 100) : 0;
                 @endphp
                 <a href="{{ route('lms.student.courses.show', $course) }}" class="block">
                     <x-card class="h-full transition hover:-translate-y-0.5">
