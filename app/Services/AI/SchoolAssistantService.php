@@ -103,7 +103,41 @@ class SchoolAssistantService
             return 'Nama sekolah ini adalah '.$school->name.'.';
         }
 
-        $content = trim((string) ($matches[0]->content ?? ''));
+        $contact = $school->contact ?? [];
+        if (Str::contains($question, ['alamat', 'lokasi'])) {
+            $address = trim(implode(', ', array_filter([
+                data_get($contact, 'address'),
+                data_get($contact, 'city'),
+                data_get($contact, 'province'),
+            ])));
+            return $address !== ''
+                ? 'Alamat sekolah: '.$address.'.'
+                : 'Informasi alamat belum tersedia di sistem sekolah.';
+        }
+        if (Str::contains($question, ['telepon', 'nomor'])) {
+            $phone = data_get($contact, 'phone');
+            return filled($phone)
+                ? 'Nomor telepon sekolah: '.$phone.'.'
+                : 'Informasi telepon belum tersedia di sistem sekolah.';
+        }
+        if (Str::contains($question, ['email', 'surel'])) {
+            $email = data_get($contact, 'email');
+            return filled($email)
+                ? 'Email sekolah: '.$email.'.'
+                : 'Informasi email belum tersedia di sistem sekolah.';
+        }
+
+        $candidate = collect($matches)->first(function ($row) use ($question): bool {
+            if (! Str::contains($question, ['prestasi', 'juara', 'penghargaan', 'kompetisi'])) {
+                return false;
+            }
+
+            return Str::contains(Str::lower($row->title.' '.$row->content), [
+                'prestasi', 'juara', 'penghargaan', 'kompetisi', 'robotik',
+            ]);
+        }) ?? ($matches[0] ?? null);
+
+        $content = trim((string) ($candidate?->content ?? ''));
         if (($jsonStart = strpos($content, '{')) !== false) {
             $content = substr($content, 0, $jsonStart);
         }

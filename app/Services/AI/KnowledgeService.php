@@ -11,7 +11,7 @@ class KnowledgeService
 {
     private const STOP_WORDS = [
         'apa', 'apakah', 'bagaimana', 'berapa', 'boleh', 'dan', 'dari', 'di',
-        'ini', 'itu', 'ke', 'mana', 'mau', 'pada', 'saja', 'sebutkan', 'tentang',
+        'ini', 'itu', 'ke', 'mana', 'mau', 'pada', 'saja', 'sekolah', 'sebutkan', 'tentang',
         'untuk', 'yang', 'the', 'what', 'where', 'when', 'how', 'is', 'are',
     ];
 
