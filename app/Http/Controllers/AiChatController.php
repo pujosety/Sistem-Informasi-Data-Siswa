@@ -26,17 +26,9 @@ class AiChatController extends Controller
                 $data['conversation_id'] ?? null,
             ));
         } catch (\Throwable $e) {
-            logger()->error('AI chat request failed.', [
-                'exception' => get_class($e),
-                'message' => substr($e->getMessage(), 0, 240),
-            ]);
             report($e);
             return response()->json([
                 'message' => 'LYFLA AI sedang tidak dapat mengambil informasi. Coba lagi sebentar.',
-                'diagnostic' => [
-                    'exception' => get_class($e),
-                    'message' => substr($e->getMessage(), 0, 240),
-                ],
             ], 503);
         }
     }

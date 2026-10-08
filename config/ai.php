@@ -8,7 +8,7 @@ return [
         'base_url' => rtrim(env('AGENTROUTER_BASE_URL', 'https://agentrouter.org/v1'), '/'),
         'api_key' => env('AGENTROUTER_API_KEY'),
         'model' => env('AGENTROUTER_MODEL', 'glm-5.3'),
-        'fallback_model' => env('AGENTROUTER_FALLBACK_MODEL', 'glm-4.6'),
+        'fallback_model' => env('AGENTROUTER_FALLBACK_MODEL', 'glm-4.5'),
         'temperature' => (float) env('AGENTROUTER_TEMPERATURE', 0.2),
         'max_tokens' => (int) env('AGENTROUTER_MAX_TOKENS', 700),
         'connect_timeout' => (int) env('AGENTROUTER_CONNECT_TIMEOUT', 8),

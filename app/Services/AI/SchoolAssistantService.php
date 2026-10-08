@@ -46,9 +46,19 @@ class SchoolAssistantService
                 'role' => 'user',
                 'content' => $this->prompts->context($matches)."\n\nQuestion: ".$message,
             ];
-            $result = $this->ai->chat($messages);
-            $answer = $result->content;
-            $responseMeta = ['provider' => $this->ai->providerName(), 'model' => $this->ai->model(), 'latency_ms' => $result->latencyMs];
+            try {
+                $result = $this->ai->chat($messages);
+                $answer = $result->content;
+                $responseMeta = [
+                    'provider' => $this->ai->providerName(),
+                    'model' => $this->ai->model(),
+                    'latency_ms' => $result->latencyMs,
+                ];
+            } catch (\Throwable $e) {
+                report($e);
+                $answer = $this->groundedFallback($matches);
+                $responseMeta = ['provider' => 'local-grounded-fallback'];
+            }
         }
 
         AiMessage::create([
@@ -69,6 +79,19 @@ class SchoolAssistantService
                 'updated_at' => $row->updated_at?->toIso8601String(),
             ], fn ($value) => filled($value)))->values()->all(),
         ];
+    }
+
+    private function groundedFallback(array $matches): string
+    {
+        $content = collect($matches)
+            ->pluck('content')
+            ->filter()
+            ->implode("\n\n");
+        $content = trim((string) preg_replace('/\s+/u', ' ', $content));
+
+        return $content !== ''
+            ? 'Informasi yang tersedia: '.Str::limit($content, 700)
+            : 'Informasi tersebut belum tersedia di sistem sekolah.';
     }
 
     private function conversation(School $school, ?int $id): AiConversation

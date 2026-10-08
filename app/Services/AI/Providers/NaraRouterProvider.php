@@ -5,7 +5,6 @@ namespace App\Services\AI\Providers;
 use App\Services\AI\Contracts\AiProvider;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Str;
 use RuntimeException;
 
 final class AiProviderResponse
@@ -86,18 +85,12 @@ class NaraRouterProvider implements AiProvider
                 'status' => $status,
             ]);
             report(new RuntimeException(sprintf(
-                '%s request failed with HTTP %d: %s',
+                '%s request failed with HTTP %d.',
                 $this->providerName(),
-                $status,
-                Str::limit((string) $response->body(), 500)
+                $status
             )));
 
-            throw new RuntimeException(sprintf(
-                '%s request failed with HTTP %d: %s',
-                $this->providerName(),
-                $status,
-                Str::limit((string) $response->body(), 500)
-            ));
+            throw new RuntimeException(sprintf('%s request failed with HTTP %d.', $this->providerName(), $status));
         }
 
         $json = $response->json();
