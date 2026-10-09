@@ -48,7 +48,12 @@ class PublicPageRendersTest extends TestCase
     /** @test */
     public function the_home_page_degrades_when_landing_schema_is_not_migrated(): void
     {
-        Schema::dropIfExists('landing_sections');
+        // Simulate an un-migrated deployment without changing the schema inside
+        // a RefreshDatabase transaction. MySQL DDL implicitly commits, so
+        // dropping the table here contaminates every later test in the process.
+        Schema::shouldReceive('hasTable')
+            ->andReturnUsing(fn (string $table): bool => $table !== 'landing_sections');
+        Schema::shouldReceive('hasColumn')->andReturnTrue();
 
         $this->get(route('home'))
             ->assertOk()

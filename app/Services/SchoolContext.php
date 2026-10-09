@@ -83,6 +83,13 @@ class SchoolContext
         return $this->school;
     }
 
+    /** Clear process-local state after a database/request reset. */
+    public static function resetProcessState(): void
+    {
+        static::$tableExists = null;
+        static::$consoleSchoolId = null;
+    }
+
     public function reset(): void
     {
         $this->school = null;

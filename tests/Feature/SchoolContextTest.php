@@ -24,15 +24,17 @@ class SchoolContextTest extends TestCase
     public function settings_and_cms_content_are_isolated_per_school(): void
     {
         $default = School::query()->where('is_default', true)->firstOrFail();
-        $second = School::create([
-            'slug' => 'smp-negeri-4-metro',
-            'name' => 'SMP Negeri 4 Metro',
-            'short_name' => 'SMPN 4 Metro',
-            'level' => 'SMP',
-            'status' => 'Negeri',
-            'is_active' => true,
-            'is_default' => false,
-        ]);
+        $second = School::firstOrCreate(
+            ['slug' => 'smp-negeri-4-metro'],
+            [
+                'name' => 'SMP Negeri 4 Metro',
+                'short_name' => 'SMPN 4 Metro',
+                'level' => 'SMP',
+                'status' => 'Negeri',
+                'is_active' => true,
+                'is_default' => false,
+            ]
+        );
 
         $context = app(SchoolContext::class);
         $this->assertSame($context, app(SchoolContext::class));
@@ -69,15 +71,17 @@ class SchoolContextTest extends TestCase
     /** @test */
     public function super_admin_can_switch_the_active_school_from_settings(): void
     {
-        $second = School::create([
-            'slug' => 'smp-negeri-4-metro',
-            'name' => 'SMP Negeri 4 Metro',
-            'short_name' => 'SMPN 4 Metro',
-            'level' => 'SMP',
-            'status' => 'Negeri',
-            'is_active' => true,
-            'is_default' => false,
-        ]);
+        $second = School::firstOrCreate(
+            ['slug' => 'smp-negeri-4-metro'],
+            [
+                'name' => 'SMP Negeri 4 Metro',
+                'short_name' => 'SMPN 4 Metro',
+                'level' => 'SMP',
+                'status' => 'Negeri',
+                'is_active' => true,
+                'is_default' => false,
+            ]
+        );
         $user = \App\Models\User::factory()->create();
         $user->assignRole('super_admin');
 
@@ -92,15 +96,17 @@ class SchoolContextTest extends TestCase
     /** @test */
     public function public_school_query_selector_does_not_change_the_primary_school(): void
     {
-        $second = School::create([
-            'slug' => 'smp-negeri-4-metro',
-            'name' => 'SMP Negeri 4 Metro',
-            'short_name' => 'SMPN 4 Metro',
-            'level' => 'SMP',
-            'status' => 'Negeri',
-            'is_active' => true,
-            'is_default' => false,
-        ]);
+        $second = School::firstOrCreate(
+            ['slug' => 'smp-negeri-4-metro'],
+            [
+                'name' => 'SMP Negeri 4 Metro',
+                'short_name' => 'SMPN 4 Metro',
+                'level' => 'SMP',
+                'status' => 'Negeri',
+                'is_active' => true,
+                'is_default' => false,
+            ]
+        );
 
         app(SchoolContext::class)->use($second);
         app(SettingsService::class)->set('school.name', 'SMP Negeri 4 Metro');

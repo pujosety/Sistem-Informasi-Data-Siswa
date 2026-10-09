@@ -41,6 +41,22 @@ class PublicHomePageTest extends TestCase
         parent::setUp();
 
         $this->seedRoles();
+        School::query()->update(['is_default' => false]);
+        School::firstOrCreate(
+            ['slug' => 'smp-negeri-4-metro'],
+            [
+                'name' => 'SMP Negeri 4 Metro',
+                'short_name' => 'SMPN 4 Metro',
+                'npsn' => '20219876',
+                'contact' => [
+                    'address' => 'Jl. Kemiri 15 A, Iringmulyo, Kota Metro, Lampung',
+                    'city' => 'Kota Metro',
+                    'province' => 'Lampung',
+                ],
+                'is_active' => true,
+                'is_default' => true,
+            ]
+        );
         AcademicYear::query()->delete();
         Subject::query()->delete();
         $this->seedSettings();
@@ -82,18 +98,21 @@ class PublicHomePageTest extends TestCase
     public function the_public_site_uses_smpn4_metro_as_the_primary_school_when_promoted(): void
     {
         School::query()->update(['is_default' => false]);
-        $primary = School::create([
-            'slug' => 'smp-negeri-4-metro',
-            'name' => 'SMP Negeri 4 Metro',
-            'short_name' => 'SMPN 4 Metro',
-            'contact' => [
-                'address' => 'Jl. Kemiri 15 A, Iringmulyo, Kota Metro, Lampung',
-                'city' => 'Kota Metro',
-                'province' => 'Lampung',
-            ],
-            'is_active' => true,
-            'is_default' => true,
-        ]);
+        $primary = School::updateOrCreate(
+            ['slug' => 'smp-negeri-4-metro'],
+            [
+                'name' => 'SMP Negeri 4 Metro',
+                'short_name' => 'SMPN 4 Metro',
+                'npsn' => '20219876',
+                'contact' => [
+                    'address' => 'Jl. Kemiri 15 A, Iringmulyo, Kota Metro, Lampung',
+                    'city' => 'Kota Metro',
+                    'province' => 'Lampung',
+                ],
+                'is_active' => true,
+                'is_default' => true,
+            ]
+        );
 
         $this->assertTrue($primary->fresh()->is_default);
         app(\App\Services\SchoolContext::class)->reset();
@@ -163,18 +182,29 @@ class PublicHomePageTest extends TestCase
      */
     public function test_it_publishes_counts_without_publishing_records(): void
     {
-        $year = AcademicYear::create([
-            'name' => '2026/2027', 'start_date' => '2026-07-01',
-            'end_date' => '2027-06-30', 'is_active' => true, 'status' => AcademicYear::ACTIVE,
-        ]);
+        $year = AcademicYear::firstOrCreate(
+            ['name' => '2026/2027'],
+            [
+                'start_date' => '2026-07-01',
+                'end_date' => '2027-06-30',
+                'is_active' => true,
+                'status' => AcademicYear::ACTIVE,
+            ]
+        );
 
-        $department = Department::create(['name' => 'IPA', 'code' => 'IPA']);
+        $department = Department::firstOrCreate(
+            ['code' => 'IPA'],
+            ['name' => 'IPA']
+        );
         SchoolClass::create([
             'academic_year_id' => $year->id, 'department_id' => $department->id,
             'name' => 'X IPA 1', 'code' => 'X-IPA-1', 'level' => 'X',
             'capacity' => 36, 'status' => SchoolClass::ACTIVE,
         ]);
-        Subject::create(['name' => 'Matematika', 'code' => 'MTK', 'grade_level' => 'X']);
+        Subject::firstOrCreate(
+            ['code' => 'MTK'],
+            ['name' => 'Matematika', 'grade_level' => 'X']
+        );
 
         Student::factory()->count(3)->create();
 
@@ -342,17 +372,28 @@ class PublicHomePageTest extends TestCase
      */
     public function test_the_program_page_lists_subjects_but_not_classes(): void
     {
-        $year = AcademicYear::create([
-            'name' => '2026/2027', 'start_date' => '2026-07-01',
-            'end_date' => '2027-06-30', 'is_active' => true, 'status' => AcademicYear::ACTIVE,
-        ]);
-        $department = Department::create(['name' => 'Ilmu Pengetahuan Alam', 'code' => 'IPA']);
+        $year = AcademicYear::firstOrCreate(
+            ['name' => '2026/2027'],
+            [
+                'start_date' => '2026-07-01',
+                'end_date' => '2027-06-30',
+                'is_active' => true,
+                'status' => AcademicYear::ACTIVE,
+            ]
+        );
+        $department = Department::firstOrCreate(
+            ['code' => 'IPA'],
+            ['name' => 'Ilmu Pengetahuan Alam']
+        );
         SchoolClass::create([
             'academic_year_id' => $year->id, 'department_id' => $department->id,
             'name' => 'X IPA 1', 'code' => 'X-IPA-1', 'level' => 'X',
             'capacity' => 36, 'status' => SchoolClass::ACTIVE,
         ]);
-        Subject::create(['name' => 'Matematika', 'code' => 'MTK', 'grade_level' => 'X']);
+        Subject::firstOrCreate(
+            ['code' => 'MTK'],
+            ['name' => 'Matematika', 'grade_level' => 'X']
+        );
 
         $body = $this->get('/program')->getContent();
 
@@ -387,7 +428,7 @@ class PublicHomePageTest extends TestCase
 
         $body = $this->get('/tentang')->getContent();
 
-        $this->assertStringContainsString('SMP 1 LYFLA', $body);
+        $this->assertStringContainsString('SMP Negeri 4 Metro', $body);
         $this->assertStringContainsString('20219876', $body);
     }
 }

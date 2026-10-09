@@ -120,6 +120,26 @@ class SettingsService
     ];
 
     /**
+     * Clear process-local probes between isolated requests/tests.
+     *
+     * The values are intentionally static for request-level memoization, but
+     * long-lived workers and PHPUnit reuse the PHP process across database
+     * resets. Leaving them set can make a later test read the previous
+     * connection/schema state.
+     */
+    public static function resetProcessState(): void
+    {
+        static::$dbUsable = null;
+        static::$hasSchoolColumn = null;
+    }
+
+    /** Clear this service instance's per-request settings memo. */
+    public function resetRuntimeState(): void
+    {
+        $this->memoizedRows = null;
+    }
+
+    /**
      * Settings rows, or an EMPTY collection when the table is not usable.
      *
      * This runs from a global view composer, so on a fresh deployment it is

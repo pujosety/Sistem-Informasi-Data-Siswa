@@ -38,16 +38,21 @@ class EnrollmentIntegrityTest extends TestCase
         parent::setUp();
         $this->seedRoles();
 
-        $this->year = AcademicYear::create([
-            'name' => '2026/2027',
-            'start_date' => '2026-07-01',
-            'end_date' => '2027-06-30',
-            'status' => AcademicYear::ACTIVE,
-            'is_active' => true,
-            'is_default' => true,
-        ]);
+        $this->year = AcademicYear::firstOrCreate(
+            ['name' => '2026/2027'],
+            [
+                'start_date' => '2026-07-01',
+                'end_date' => '2027-06-30',
+                'status' => AcademicYear::ACTIVE,
+                'is_active' => true,
+                'is_default' => true,
+            ]
+        );
 
-        $department = Department::create(['name' => 'IPA', 'code' => 'IPA']);
+        $department = Department::firstOrCreate(
+            ['code' => 'IPA'],
+            ['name' => 'IPA']
+        );
 
         $this->classA = SchoolClass::create([
             'academic_year_id' => $this->year->id,

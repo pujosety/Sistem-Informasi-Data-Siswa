@@ -89,12 +89,14 @@ class RegistrationDecisionTest extends TestCase
      */
     private function withValidDocuments(): void
     {
-        $type = DocumentType::create([
-            'name' => 'Kartu Keluarga',
-            'label' => 'Kartu Keluarga',
-            'slug' => 'kk',
-            'is_required' => true,
-        ]);
+        $type = DocumentType::firstOrCreate(
+            ['slug' => 'kk'],
+            [
+                'name' => 'Kartu Keluarga',
+                'label' => 'Kartu Keluarga',
+                'is_required' => true,
+            ]
+        );
 
         Document::create([
             'registration_id' => $this->registration->id,
@@ -156,12 +158,14 @@ class RegistrationDecisionTest extends TestCase
         // The blocked path needs a document that is NOT valid. Zero documents is
         // a different case — nothing outstanding, so approve proceeds, which is
         // what the first test proves.
-        $type = DocumentType::create([
-            'name' => 'Ijazah',
-            'label' => 'Ijazah',
-            'slug' => 'ijazah',
-            'is_required' => true,
-        ]);
+        $type = DocumentType::firstOrCreate(
+            ['slug' => 'ijazah'],
+            [
+                'name' => 'Ijazah',
+                'label' => 'Ijazah',
+                'is_required' => true,
+            ]
+        );
 
         Document::create([
             'registration_id' => $this->registration->id,

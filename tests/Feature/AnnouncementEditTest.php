@@ -60,7 +60,10 @@ class AnnouncementEditTest extends TestCase
             ]
         );
 
-        $department = Department::create(['name' => 'IPA', 'code' => 'IPA']);
+        $department = Department::firstOrCreate(
+            ['code' => 'IPA'],
+            ['name' => 'IPA']
+        );
 
         $this->ownClass = SchoolClass::create([
             'academic_year_id' => $this->year->id,

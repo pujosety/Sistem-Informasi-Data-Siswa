@@ -147,7 +147,10 @@ class MasterDataEditTest extends TestCase
     /** @test */
     public function a_department_code_can_be_corrected(): void
     {
-        $department = Department::create(['name' => 'Rekayasa Perangkat Lunak', 'code' => 'RPL']);
+        $department = Department::firstOrCreate(
+            ['code' => 'RPL'],
+            ['name' => 'Rekayasa Perangkat Lunak']
+        );
 
         $this->actingAs($this->admin())
             ->put(route('admin.master.update', ['type' => 'jurusan', 'id' => $department->id]), [

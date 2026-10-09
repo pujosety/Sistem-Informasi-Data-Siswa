@@ -59,7 +59,7 @@ class PreviouslyDeadPermissionsTest extends TestCase
             [
                 'level' => 'XII',
                 'academic_year_id' => $ay->id,
-                'department_id' => Department::firstOrCreate(['name' => 'RPL'], ['code' => 'RPL'])->id,
+                'department_id' => Department::firstOrCreate(['code' => 'RPL'], ['name' => 'RPL'])->id,
             ]
         );
 

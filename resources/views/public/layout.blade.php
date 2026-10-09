@@ -299,7 +299,7 @@
         @yield('body')
     </main>
 
-<x-public.ai-assistant />
+<x-public.ai-assistant :school="$school" />
 
 <footer class="mt-auto border-t border-[var(--app-border)] bg-[var(--app-surface)]">
         <div class="mx-auto max-w-6xl px-5 sm:px-8 py-8">
