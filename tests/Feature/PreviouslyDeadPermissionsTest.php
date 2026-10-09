@@ -36,6 +36,42 @@ class PreviouslyDeadPermissionsTest extends TestCase
         $this->seedRoles();
     }
 
+    public function test_unimplemented_and_non_permission_capabilities_are_not_offered_as_grants(): void
+    {
+        $retired = [
+            'student.delete',
+            'registration.delete',
+            'master.delete',
+            'cms.pages.edit',
+            'cms.pages.publish',
+            'cms.navigation.manage',
+            'cms.themes.manage',
+            'cms.settings.manage',
+            'dashboard.student.view',
+            'role.assign.super_admin',
+        ];
+
+        // Simulate grants left over in an existing installation. Re-seeding
+        // must detach retired permissions from role rows as well as hiding
+        // them from the catalogue UI.
+        $legacyRole = \Spatie\Permission\Models\Role::findByName('admin');
+        foreach ($retired as $permission) {
+            $legacyRole->givePermissionTo(
+                \Spatie\Permission\Models\Permission::findOrCreate($permission, 'web')
+            );
+        }
+        app(\App\Services\RoleSeeder::class)->run();
+
+        foreach ($retired as $permission) {
+            $this->assertNotContains($permission, \App\Services\PermissionCatalog::names(), $permission.' must not be advertised.');
+
+            foreach (['admin', 'kesiswaan', 'operator', 'verifikator', 'wali_kelas', 'siswa'] as $roleName) {
+                $role = \Spatie\Permission\Models\Role::findByName($roleName);
+                $this->assertFalse($role->permissions->contains('name', $permission), $roleName.' must not retain '.$permission.'.');
+            }
+        }
+    }
+
     // ------------------------------------------------------------------ alumni
 
     private int $seq = 0;

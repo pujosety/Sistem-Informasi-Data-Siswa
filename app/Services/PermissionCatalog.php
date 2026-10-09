@@ -10,7 +10,7 @@ namespace App\Services;
  * two places. Names are dot-namespaced by domain:
  *
  *   <domain>.<action>            e.g. student.update
- *   <domain>.<action>.<scope>    e.g. role.assign.super_admin
+ *   <domain>.<action>.<scope>    e.g. classroom.view.all
  */
 class PermissionCatalog
 {
@@ -26,7 +26,6 @@ class PermissionCatalog
                 'label' => 'Dashboard',
                 'permissions' => [
                     'dashboard.admin.view' => 'Lihat dashboard administrasi',
-                    'dashboard.student.view' => 'Lihat dashboard siswa',
                 ],
             ],
 
@@ -36,7 +35,6 @@ class PermissionCatalog
                     'student.view' => 'Lihat daftar & profil siswa',
                     'student.create' => 'Tambah siswa',
                     'student.update' => 'Ubah data siswa',
-                    'student.delete' => 'Hapus siswa',
                     'student.export' => 'Ekspor data siswa',
                 ],
             ],
@@ -169,7 +167,6 @@ class PermissionCatalog
                     'registration.create' => 'Buat pendaftaran',
                     'registration.update' => 'Ubah pendaftaran',
                     'registration.verify' => 'Putuskan pendaftaran',
-                    'registration.delete' => 'Hapus pendaftaran',
                 ],
             ],
 
@@ -186,12 +183,7 @@ class PermissionCatalog
                      * document.view: a school may want a teacher to write the
                      * news and a head to approve it before anyone sees it.
                      */
-                    'cms.pages.edit' => 'Ubah halaman',
-                    'cms.pages.publish' => 'Terbitkan halaman',
                     'cms.media.manage' => 'Kelola media',
-                    'cms.navigation.manage' => 'Kelola menu',
-                    'cms.themes.manage' => 'Kelola tema',
-                    'cms.settings.manage' => 'Kelola pengaturan situs',
                 ],
             ],
 
@@ -241,7 +233,6 @@ class PermissionCatalog
                     'role.update' => 'Ubah role',
                     'role.delete' => 'Hapus role',
                     'role.assign' => 'Tetapkan role ke pengguna',
-                    'role.assign.super_admin' => 'Tetapkan role Super Admin',
                 ],
             ],
 
@@ -275,7 +266,6 @@ class PermissionCatalog
                     'master.view' => 'Lihat master data',
                     'master.create' => 'Tambah master data',
                     'master.update' => 'Ubah master data',
-                    'master.delete' => 'Hapus master data',
                 ],
             ],
 
@@ -452,7 +442,7 @@ class PermissionCatalog
                 // Writes content, does not publish it. cms.posts.publish is
                 // deliberately absent: a school that wants a teacher to draft
                 // the news and a head to approve it grants exactly this.
-                'cms.view', 'cms.posts.create', 'cms.posts.edit', 'cms.pages.edit',
+                'cms.view', 'cms.posts.create', 'cms.posts.edit',
                 'lms.course.view', 'lms.course.create', 'lms.course.update', 'lms.lesson.manage',
                 'lms.assignment.manage', 'lms.assignment.grade', 'lms.enrollment.manage', 'lms.gradebook.view',
                 'lms.discussion.view', 'lms.discussion.create', 'lms.monitor.view',
