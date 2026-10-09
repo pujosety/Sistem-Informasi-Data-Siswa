@@ -172,6 +172,7 @@ class NavigationService
                 ['route' => 'admin.media.index', 'active' => 'admin.media.*', 'label' => 'Media', 'permission' => 'cms.media.manage', 'module' => 'cms'],
                 ['route' => 'admin.contact-messages', 'active' => 'admin.contact-messages*', 'label' => 'Pesan Masuk', 'permission' => 'cms.view', 'module' => 'cms'],
                 ['route' => 'admin.landing.index', 'active' => 'admin.landing.*', 'label' => 'Landing Page', 'permission' => 'cms.view', 'module' => 'cms'],
+                ['route' => 'admin.cms.navigation.index', 'active' => 'admin.cms.navigation.*', 'label' => 'Navigasi Publik', 'permission' => 'cms.navigation.manage', 'module' => 'cms'],
             ]],
 
             ['label' => 'Laporan', 'icon' => 'chart-bar', 'children' => [

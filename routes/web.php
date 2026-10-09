@@ -76,6 +76,9 @@ require __DIR__.'/fitur-guardian.php';
 /* Feature: CMS media */
 require __DIR__.'/fitur-cms-media.php';
 
+/* Feature: CMS public navigation */
+require __DIR__.'/fitur-cms-navigation.php';
+
 // CMS-MEDIA: media library (own file, own permissions)
 require __DIR__.'/media.php';
 

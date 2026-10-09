@@ -44,7 +44,6 @@ class PreviouslyDeadPermissionsTest extends TestCase
             'master.delete',
             'cms.pages.edit',
             'cms.pages.publish',
-            'cms.navigation.manage',
             'cms.themes.manage',
             'cms.settings.manage',
             'dashboard.student.view',
@@ -61,6 +60,10 @@ class PreviouslyDeadPermissionsTest extends TestCase
             );
         }
         app(\App\Services\RoleSeeder::class)->run();
+
+        $this->assertContains('cms.navigation.manage', \App\Services\PermissionCatalog::names());
+        $this->assertTrue(\Spatie\Permission\Models\Role::findByName('admin')->permissions->contains('name', 'cms.navigation.manage'));
+        $this->assertFalse(\Spatie\Permission\Models\Role::findByName('kesiswaan')->permissions->contains('name', 'cms.navigation.manage'));
 
         foreach ($retired as $permission) {
             $this->assertNotContains($permission, \App\Services\PermissionCatalog::names(), $permission.' must not be advertised.');

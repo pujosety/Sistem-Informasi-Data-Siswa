@@ -1,7 +1,7 @@
 # Dead permissions — the honest list
 
-**Date:** 2026-09-30
-**Baseline:** 23 dead permissions. The 10 entries listed below have now been retired from the catalogue.
+**Date:** 2026-10-09
+**Baseline:** 23 dead permissions. Nine remaining permissions from the reviewed group are retired; `cms.navigation.manage` has been restored with a working feature.
 
 Of the 13 cleared, four were not screens that were missing — they were
 **permissions that existed and guarded nothing**:
@@ -99,7 +99,7 @@ The policy now reads `module.*`. That is the right direction of travel —
 `system.*` is host configuration (maintenance mode, environment), and a grant
 that can switch off the CMS does not need to sit in the same hand.
 
-## Retired from the catalogue — 10
+## Retired from the catalogue — 9
 
 ### Group A — delete permissions with no soft-delete story
 
@@ -118,18 +118,17 @@ retention policy is approved.
 
 ### Group B — CMS features that were never built
 
-`cms.pages.edit`, `cms.pages.publish`, `cms.navigation.manage`,
+`cms.pages.edit`, `cms.pages.publish`,
 `cms.themes.manage`, `cms.settings.manage`
 
 The CMS ships with an editor, a publication gate, revisions and a media
-library. Pages, menus, themes and site settings do not exist. `cms.view` and
-the post permissions are live; these five are the rest of the Phase 4 brief
+library. Pages, themes and site settings do not exist. `cms.view` and
+the post permissions are live; the remaining four were the rest of the Phase 4 brief
 wearing catalogue entries.
 
-**Resolved: removed from the catalogue until these screens exist.** Add each
-permission back alongside its real route, policy, UI, and regression tests. The
-role matrix must not imply that a user can edit pages, navigation, themes, or
-site settings when no such capability is shipped.
+**Resolved:** pages, themes, and site settings remain removed until implemented.
+`cms.navigation.manage` was restored only after adding the school-scoped menu
+editor, its route gate, public rendering, audit events, and regression tests.
 
 ### Group C — one permission, one missing screen
 
@@ -164,7 +163,7 @@ is not configurable through ordinary role grants.
 > the catalogue. There is no third state.
 
 The regression test `PreviouslyDeadPermissionsTest::test_unimplemented_and_non_permission_capabilities_are_not_offered_as_grants`
-asserts that all 10 retired names are absent from the catalogue and that
+asserts that all 9 retired names are absent from the catalogue and that
 `RoleSeeder` detaches legacy grants from existing roles. Retired permission rows
 may remain in the Spatie permissions table, but they are not offered or granted;
 re-seeding removes them from the built-in role grants.

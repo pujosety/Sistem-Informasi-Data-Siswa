@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Models\ActivityLog;
+use App\Models\NavigationItem;
 use App\Models\User;
 use App\Services\AI\AiService;
 use App\Services\AI\Contracts\AiProvider;
@@ -11,6 +12,7 @@ use App\Services\NavigationService;
 use App\Services\SchoolContext;
 use App\Services\SettingsService;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
@@ -219,6 +221,43 @@ class AppServiceProvider extends ServiceProvider
                 ->with('moreItems', $nav['more'])
                 ->with('workspaces', $this->safeWorkspaces($user))
                 ->with('unreadNotifications', $this->unreadCount());
+        });
+
+        View::composer('public.layout', function ($view): void {
+            $fallback = [
+                ['label' => 'Beranda', 'route' => 'home'],
+                ['label' => 'Profil', 'route' => 'public.about'],
+                ['label' => 'Program', 'route' => 'public.programs'],
+                ['label' => 'Berita', 'route' => 'public.news'],
+                ['label' => 'Kontak', 'route' => 'public.contact'],
+            ];
+
+            try {
+                $customExists = NavigationItem::query()->exists();
+                $items = $customExists ? NavigationItem::publicItems()->map(fn ($item) => [
+                    'label' => $item->label,
+                    'url' => $item->url,
+                    'open_in_new_tab' => $item->open_in_new_tab,
+                    'external' => str_starts_with($item->url, 'https://'),
+                ])->all() : [];
+            } catch (\Throwable $e) {
+                report($e);
+                $customExists = false;
+                $items = [];
+            }
+
+            if (! $customExists) {
+                $items = collect($fallback)
+                    ->filter(fn ($item) => Route::has($item['route']))
+                    ->map(fn ($item) => [
+                        'label' => $item['label'],
+                        'url' => route($item['route']),
+                        'open_in_new_tab' => false,
+                        'external' => false,
+                    ])->values()->all();
+            }
+
+            $view->with('publicNavigation', $items);
         });
 
         // Components rendered from a page (topbar, badges) do NOT inherit the

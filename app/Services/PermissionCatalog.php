@@ -177,6 +177,7 @@ class PermissionCatalog
                     'cms.posts.create' => 'Tulis artikel',
                     'cms.posts.edit' => 'Ubah artikel',
                     'cms.posts.publish' => 'Terbitkan artikel',
+                    'cms.navigation.manage' => 'Kelola navigasi publik',
                     /*
                      * Publication is a SEPARATE permission from editing, for
                      * the same reason document.verify is separate from

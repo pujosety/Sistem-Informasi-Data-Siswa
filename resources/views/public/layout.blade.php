@@ -111,20 +111,12 @@
             --}}
             <nav aria-label="Navigasi utama" class="hidden lg:block">
                 <ul class="flex items-center gap-1">
-                    @foreach ([
-                        ['route' => 'home',              'label' => 'Beranda'],
-                        ['route' => 'public.about',      'label' => 'Profil'],
-                        ['route' => 'public.programs',   'label' => 'Program'],
-                        ['route' => 'public.news',       'label' => 'Berita'],
-                        ['route' => 'public.contact',    'label' => 'Kontak'],
-                    ] as $item)
-                        @if (Route::has($item['route']))
-                            @php $active = $item['route'] === 'home'
-                                ? request()->routeIs('home')
-                                : request()->routeIs($item['route'], $item['route'].'*'); @endphp
-
-                            <li>
-                                <a href="{{ route($item['route']) }}"
+                    @foreach ($publicNavigation as $item)
+                        @php $itemPath = parse_url($item['url'], PHP_URL_PATH) ?: '/';
+                            $active = ! $item['external'] && trim($itemPath, '/') === trim(request()->path(), '/'); @endphp
+                        <li>
+                                <a href="{{ $item['url'] }}"
+                                   @if ($item['open_in_new_tab']) target="_blank" rel="noopener noreferrer" @endif
                                    @if ($active) aria-current="page" @endif
                                    class="relative block rounded-[var(--radius-sm)] px-3 py-2 text-small font-medium transition-colors
                                           {{ $active
@@ -142,8 +134,7 @@
                                         'bg-white/50 origin-center scale-x-0 group-hover:scale-x-100' => ! $active,
                                     ])></span>
                                 </a>
-                            </li>
-                        @endif
+                        </li>
                     @endforeach
                 </ul>
             </nav>
@@ -242,21 +233,12 @@
             </div>
 
             <ul class="flex-1 overflow-y-auto p-3 space-y-1">
-                @foreach ([
-                    ['route' => 'home',            'label' => 'Beranda'],
-                    ['route' => 'public.about',    'label' => 'Profil Sekolah'],
-                    ['route' => 'public.programs', 'label' => 'Program'],
-                    ['route' => 'public.admission','label' => 'PPDB'],
-                    ['route' => 'public.news',     'label' => 'Berita'],
-                    ['route' => 'public.contact',  'label' => 'Kontak'],
-                ] as $item)
-                    @if (Route::has($item['route']))
-                        @php $active = $item['route'] === 'home'
-                            ? request()->routeIs('home')
-                            : request()->routeIs($item['route'], $item['route'].'*'); @endphp
-
-                        <li>
-                            <a href="{{ route($item['route']) }}"
+                @foreach ($publicNavigation as $item)
+                    @php $itemPath = parse_url($item['url'], PHP_URL_PATH) ?: '/';
+                        $active = ! $item['external'] && trim($itemPath, '/') === trim(request()->path(), '/'); @endphp
+                    <li>
+                            <a href="{{ $item['url'] }}"
+                               @if ($item['open_in_new_tab']) target="_blank" rel="noopener noreferrer" @endif
                                @if ($active) aria-current="page" @endif
                                class="flex items-center min-h-11 rounded-[var(--radius-md)] px-3 text-body transition-colors
                                       {{ $active
@@ -267,8 +249,7 @@
                                     <x-icon name="check" class="w-4 h-4 ml-auto shrink-0 text-[var(--brand-gold)]" />
                                 @endif
                             </a>
-                        </li>
-                    @endif
+                    </li>
                 @endforeach
             </ul>
 
