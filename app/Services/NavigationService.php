@@ -99,7 +99,7 @@ class NavigationService
 
             // Kelas Saya is a CONTEXTUAL workspace: it appears because of an
             // assignment, not because of a role.
-            if ($this->homeroomsAClass($user)) {
+            if ($user->can('classroom.view') && $this->homeroomsAClass($user) && ! collect($items)->contains(fn ($item) => ($item['route'] ?? null) === 'academic.homeroom.index')) {
                 array_splice($items, 1, 0, [[
                     'route' => 'academic.homeroom.index',
                     'active' => 'academic.homeroom.*',
@@ -110,27 +110,62 @@ class NavigationService
             }
         }
 
-        // Workspace is an authenticated personal tool, not an admin permission.
-        // Owner checks remain server-side on every file operation.
+        // Workspace is a shared personal toolkit; Drive hosts Office actions,
+        // Design Studio is the local Canva-style editor, and shares are read-only
+        // unless the owner explicitly grants editing.
         array_unshift($items, [
-            'route' => 'workspace.drive.index',
-            'active' => 'workspace.*',
-            'icon' => 'folder-open',
             'label' => 'Workspace',
+            'active' => 'workspace.*',
+            'icon' => 'files',
+            'children' => [
+                ['route' => 'workspace.drive.index', 'active' => 'workspace.drive.*', 'label' => 'Drive & Office'],
+                ['route' => 'workspace.design.index', 'active' => 'workspace.design.*', 'label' => 'Design Studio'],
+                ['route' => 'workspace.shares.received', 'active' => 'workspace.shares.received', 'label' => 'Dibagikan kepada Saya'],
+            ],
         ]);
 
         return $items;
     }
 
+    private function staffHomeItem(User $user): ?array
+    {
+        if (($user->isSuperAdmin() || $user->hasRole('admin'))
+            && $user->can('dashboard.admin.view')
+            && $user->can('settings.view')) {
+            return ['route' => 'workspace.admin', 'active' => 'workspace.admin', 'icon' => 'layout-dashboard', 'label' => 'Dashboard', 'permission' => 'settings.view'];
+        }
+
+        if ($user->hasRole('kesiswaan')) {
+            return ['route' => 'workspace.kesiswaan', 'active' => 'workspace.kesiswaan', 'icon' => 'briefcase', 'label' => 'Dashboard Kesiswaan', 'permission' => 'student.view'];
+        }
+
+        if ($user->hasRole('verifikator') || $user->can('verification.approve')) {
+            return ['route' => 'workspace.verifikator', 'active' => 'workspace.verifikator', 'icon' => 'clipboard-check', 'label' => 'Antrean Verifikasi', 'permission' => 'verification.approve'];
+        }
+
+        if ($user->hasRole('operator') || $user->can('registration.update')) {
+            return ['route' => 'workspace.operator', 'active' => 'workspace.operator', 'icon' => 'clipboard-check', 'label' => 'Dashboard Operator', 'permission' => 'registration.update'];
+        }
+
+        if ($user->hasRole('wali_kelas') && $this->homeroomsAClass($user)) {
+            return ['route' => 'academic.homeroom.index', 'active' => 'academic.homeroom.*', 'icon' => 'users', 'label' => 'Kelas Saya', 'permission' => 'classroom.view'];
+        }
+
+        return null;
+    }
+
     private function staffItems(User $user): array
     {
         $pending = Registration::where('status', Registration::STATUS_PENDING)->count();
+        $items = [];
+        if ($home = $this->staffHomeItem($user)) {
+            $items[] = $home;
+        }
+        $registrationLabel = $user->can('verification.view') ? 'Verifikasi' : 'Pendaftaran';
 
-        return [
-            ['route' => 'workspace.admin', 'active' => 'workspace.admin', 'icon' => 'layout-dashboard', 'label' => 'Dashboard', 'permission' => 'dashboard.admin.view'],
-
+        return array_merge($items, [
             ['label' => 'PPDB', 'module' => 'ppdb', 'icon' => 'clipboard-check', 'children' => [
-                ['route' => 'admin.registrations', 'active' => 'admin.registrations', 'label' => 'Verifikasi', 'permission' => 'verification.view', 'badge' => $pending, 'module' => 'ppdb'],
+                ['route' => 'admin.registrations', 'active' => 'admin.registrations', 'label' => $registrationLabel, 'permission' => 'registration.view', 'badge' => $pending, 'module' => 'ppdb'],
                 ['route' => 'admin.master', 'active' => 'admin.master*', 'label' => 'Master Data', 'permission' => 'master.view'],
             ]],
 
@@ -142,6 +177,11 @@ class NavigationService
                 // has no standalone route. It is reached from the class page,
                 // where the class is already in context and ClassScope has
                 // already been applied to that page.
+            ]],
+
+            ['label' => 'Pembelajaran', 'icon' => 'book-open', 'module' => 'lms', 'children' => [
+                ['route' => 'lms.teacher.courses.index', 'active' => 'lms.teacher.courses.*', 'label' => 'Ruang Guru', 'permission' => 'lms.course.view', 'module' => 'lms'],
+                ['route' => 'lms.monitoring', 'active' => 'lms.monitoring', 'label' => 'Monitoring LMS', 'permission' => 'lms.monitor.view', 'module' => 'lms'],
             ]],
 
             ['label' => 'Data', 'icon' => 'database', 'children' => [
@@ -195,16 +235,19 @@ class NavigationService
             ]],
 
             ['route' => 'admin.activity', 'active' => 'admin.activity', 'icon' => 'history', 'label' => 'Log Aktivitas', 'permission' => 'activity.view'],
-        ];
+        ]);
     }
 
     private function siswaItems(): array
     {
         return [
             ['route' => 'siswa.dashboard', 'active' => 'siswa.dashboard', 'icon' => 'layout-dashboard', 'label' => 'Beranda'],
-            ['route' => 'siswa.wizard', 'active' => 'siswa.wizard', 'icon' => 'list-checks', 'label' => 'Data Pendaftaran'],
-            ['route' => 'siswa.documents', 'active' => 'siswa.documents', 'icon' => 'files', 'label' => 'Dokumen'],
-            ['route' => 'siswa.status', 'active' => 'siswa.status', 'icon' => 'history', 'label' => 'Status Verifikasi'],
+            ['route' => 'lms.student.dashboard', 'active' => 'lms.student.*', 'icon' => 'book-open', 'label' => 'Pembelajaran', 'permission' => 'lms.student.view', 'module' => 'lms'],
+            ['label' => 'Pendaftaran', 'icon' => 'list-checks', 'children' => [
+                ['route' => 'siswa.wizard', 'active' => 'siswa.wizard', 'label' => 'Lengkapi Data'],
+                ['route' => 'siswa.documents', 'active' => 'siswa.documents', 'label' => 'Dokumen'],
+                ['route' => 'siswa.status', 'active' => 'siswa.status', 'label' => 'Status Verifikasi'],
+            ]],
             ['route' => 'profile.edit', 'active' => 'profile.*', 'icon' => 'user', 'label' => 'Profil'],
         ];
     }
@@ -255,19 +298,38 @@ class NavigationService
             ];
         }
 
-        return [
-            ['route' => 'workspace.admin', 'active' => 'workspace.admin', 'icon' => 'layout-dashboard', 'label' => 'Beranda', 'short' => 'Beranda', 'permission' => 'dashboard.admin.view'],
-            ['route' => 'admin.registrations', 'active' => 'admin.registrations', 'icon' => 'clipboard-check', 'label' => 'Verifikasi', 'short' => 'Verifikasi', 'permission' => 'verification.view', 'badge' => $pending, 'module' => 'ppdb'],
-            ['route' => 'kesiswaan.students', 'active' => 'kesiswaan.students', 'icon' => 'users', 'label' => 'Siswa', 'short' => 'Siswa', 'permission' => 'student.view', 'module' => 'students'],
-            ['route' => 'academic.classes.index', 'active' => 'academic.classes*', 'icon' => 'users-round', 'label' => 'Kelas', 'short' => 'Kelas', 'permission' => 'classroom.view', 'module' => 'academic'],
-            ['route' => 'profile.edit', 'active' => 'profile.*', 'icon' => 'user', 'label' => 'Profil', 'short' => 'Profil'],
-        ];
+        $home = $this->staffHomeItem($user);
+        $candidates = [];
+        if ($home) {
+            $home['short'] = match ($home['route']) {
+                'workspace.operator' => 'Operator',
+                'workspace.verifikator' => 'Antrean',
+                'workspace.kesiswaan' => 'Kesiswaan',
+                'academic.homeroom.index' => 'Kelas Saya',
+                default => 'Dashboard',
+            };
+            $candidates[] = $home;
+        }
+        $registrationLabel = $user->can('verification.view') ? 'Verifikasi' : 'Pendaftaran';
+        $candidates[] = ['route' => 'admin.registrations', 'active' => 'admin.registrations', 'icon' => 'clipboard-check', 'label' => $registrationLabel, 'short' => $registrationLabel, 'permission' => 'registration.view', 'badge' => $pending, 'module' => 'ppdb'];
+        if ($user->can('classroom.view') && $this->homeroomsAClass($user) && ($home['route'] ?? null) !== 'academic.homeroom.index') {
+            $candidates[] = ['route' => 'academic.homeroom.index', 'active' => 'academic.homeroom.*', 'icon' => 'users', 'label' => 'Kelas Saya', 'short' => 'Kelas', 'permission' => 'classroom.view', 'module' => 'academic'];
+        }
+        if ($user->can('lms.course.view')) {
+            $candidates[] = ['route' => 'lms.teacher.courses.index', 'active' => 'lms.teacher.courses.*', 'icon' => 'book-open', 'label' => 'Pembelajaran', 'short' => 'LMS', 'permission' => 'lms.course.view', 'module' => 'lms'];
+        }
+        $candidates[] = ['route' => 'kesiswaan.students', 'active' => 'kesiswaan.students', 'icon' => 'users', 'label' => 'Siswa', 'short' => 'Siswa', 'permission' => 'student.view', 'module' => 'students'];
+        $candidates[] = ['route' => 'academic.classes.index', 'active' => 'academic.classes*', 'icon' => 'users-round', 'label' => 'Kelas', 'short' => 'Kelas', 'permission' => 'classroom.view', 'module' => 'academic'];
+        $candidates[] = ['route' => 'profile.edit', 'active' => 'profile.*', 'icon' => 'user', 'label' => 'Profil', 'short' => 'Profil'];
+
+        return $candidates;
     }
 
     private function siswaDock(): array
     {
         return [
             ['route' => 'siswa.dashboard', 'active' => 'siswa.dashboard', 'icon' => 'layout-dashboard', 'label' => 'Beranda', 'short' => 'Beranda'],
+            ['route' => 'lms.student.dashboard', 'active' => 'lms.student.*', 'icon' => 'book-open', 'label' => 'Pembelajaran', 'short' => 'Belajar', 'permission' => 'lms.student.view', 'module' => 'lms'],
             ['route' => 'siswa.wizard', 'active' => 'siswa.wizard', 'icon' => 'list-checks', 'label' => 'Pendaftaran', 'short' => 'Data'],
             ['route' => 'siswa.documents', 'active' => 'siswa.documents', 'icon' => 'files', 'label' => 'Dokumen', 'short' => 'Dokumen'],
             ['route' => 'siswa.status', 'active' => 'siswa.status', 'icon' => 'history', 'label' => 'Status', 'short' => 'Status'],

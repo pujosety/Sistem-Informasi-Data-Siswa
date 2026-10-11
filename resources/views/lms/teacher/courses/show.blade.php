@@ -4,11 +4,48 @@
 @section('page-title', $course->title)
 @section('page-description', $course->subject?->name.' · '.$course->classroom?->name)
 
+@section('page-actions')
+    <a href="{{ route('lms.teacher.courses.index', ['classroom_id' => $course->classroom_id]) }}" class="btn btn-secondary btn-sm">Daftar Course</a>
+@endsection
+
 @section('content')
 <div class="space-y-4">
     @if (session('success'))
         <x-alert variant="success" class="mb-4" :message="session('success')" />
     @endif
+
+    <x-card title="Alur Course" icon="book-open" description="Ikuti urutan ini agar kelas siap dipakai siswa. Draft materi dan evaluasi belum terlihat oleh siswa.">
+        <ol class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            @can('lms.enrollment.manage')
+                <li><a href="{{ route('lms.teacher.enrollments.index', $course) }}" class="block h-full rounded-lg border border-[var(--app-border)] p-3 hover:border-[var(--app-primary)]">
+                    <p class="text-caption font-semibold text-[var(--app-primary)]">1 · Peserta</p>
+                    <p class="mt-1 font-semibold">Atur peserta</p>
+                    <p class="mt-1 text-caption text-[var(--app-text-muted)]">{{ $course->active_enrollments_count }} siswa aktif. Tambahkan siswa yang belajar di course ini.</p>
+                </a></li>
+            @endcan
+            @can('lms.lesson.manage')
+                <li><a href="#materi" class="block h-full rounded-lg border border-[var(--app-border)] p-3 hover:border-[var(--app-primary)]">
+                    <p class="text-caption font-semibold text-[var(--app-primary)]">2 · Materi</p>
+                    <p class="mt-1 font-semibold">Susun bab dan materi</p>
+                    <p class="mt-1 text-caption text-[var(--app-text-muted)]">{{ $course->lessons->where('status', 'published')->count() }} materi terbit dari {{ $course->lessons->count() }}.</p>
+                </a></li>
+            @endcan
+            @can('lms.assignment.manage')
+                <li><a href="#tugas" class="block h-full rounded-lg border border-[var(--app-border)] p-3 hover:border-[var(--app-primary)]">
+                    <p class="text-caption font-semibold text-[var(--app-primary)]">3 · Evaluasi</p>
+                    <p class="mt-1 font-semibold">Buat tugas dan kuis</p>
+                    <p class="mt-1 text-caption text-[var(--app-text-muted)]">Terbitkan evaluasi setelah instruksi dan pertanyaan siap.</p>
+                </a></li>
+            @endcan
+            @can('lms.gradebook.view')
+                <li><a href="{{ route('lms.teacher.gradebook.index', $course) }}" class="block h-full rounded-lg border border-[var(--app-border)] p-3 hover:border-[var(--app-primary)]">
+                    <p class="text-caption font-semibold text-[var(--app-primary)]">4 · Nilai</p>
+                    <p class="mt-1 font-semibold">Periksa hasil belajar</p>
+                    <p class="mt-1 text-caption text-[var(--app-text-muted)]">Nilai pengumpulan di Gradebook dan beri umpan balik.</p>
+                </a></li>
+            @endcan
+        </ol>
+    </x-card>
 
     <x-card>
         <div class="flex flex-wrap items-start justify-between gap-4">
@@ -17,7 +54,7 @@
                 <h2 class="mt-1 text-h2 font-semibold text-[var(--app-text)]">{{ $course->title }}</h2>
                 <p class="mt-2 text-body text-[var(--app-text-muted)]">{{ $course->description ?: 'Belum ada deskripsi.' }}</p>
             </div>
-            <div class="flex items-center gap-2">
+            <div class="flex flex-wrap items-center justify-end gap-2">
                 <a href="{{ route('lms.teacher.courses.discussions.index', $course) }}" class="btn btn-secondary btn-sm">Diskusi</a>
                 @can('lms.gradebook.view')
                     <a href="{{ route('lms.teacher.gradebook.index', $course) }}" class="btn btn-secondary btn-sm">Gradebook</a>
@@ -69,7 +106,7 @@
         </div>
     </x-card>
 
-    <x-card>
+    <x-card id="materi">
         <div class="flex items-center justify-between gap-3">
             <div>
                 <h2 class="text-h3 font-semibold">Bab pembelajaran</h2>
@@ -140,7 +177,7 @@
         </div>
     </x-card>
 
-    <x-card>
+    <x-card id="tugas">
         <div class="flex flex-wrap items-center justify-between gap-3">
             <div>
                 <h2 class="text-h3 font-semibold">Tugas</h2>
@@ -177,7 +214,7 @@
         </div>
     </x-card>
 
-    <x-card>
+    <x-card id="kuis">
         <div class="flex flex-wrap items-center justify-between gap-3">
             <div>
                 <h2 class="text-h3 font-semibold">Kuis</h2>

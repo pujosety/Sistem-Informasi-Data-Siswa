@@ -19,15 +19,18 @@ class CourseController extends Controller
     public function index(Request $request): View
     {
         $user = $request->user();
+        $filters = $request->validate(['classroom_id' => ['nullable', 'integer']]);
+        $classroomId = $filters['classroom_id'] ?? null;
 
         $courses = Course::query()
             ->with(['academicYear', 'semester', 'subject', 'classroom'])
+            ->when($classroomId, fn ($query) => $query->where('classroom_id', $classroomId))
             ->when(! $user->isSuperAdmin() && ! $user->can('lms.course.view.all'),
                 fn ($query) => $query->where('teacher_id', $user->id))
             ->latest('id')
             ->paginate(15);
 
-        return view('lms.teacher.courses.index', compact('courses'));
+        return view('lms.teacher.courses.index', compact('courses', 'classroomId'));
     }
 
     public function create(): View
@@ -85,13 +88,14 @@ class CourseController extends Controller
     {
         $this->authorize('view', $course);
 
-        return view('lms.teacher.courses.show', [
-            'course' => $course->load([
-                'academicYear', 'semester', 'subject', 'classroom',
-                'modules.lessons',
-                'announcements',
-                'lessons', 'assignments', 'quizzes.questions',
-            ]),
+        $course->load([
+            'academicYear', 'semester', 'subject', 'classroom',
+            'modules.lessons', 'announcements', 'lessons', 'assignments', 'quizzes.questions',
         ]);
+        $course->loadCount([
+            'enrollments as active_enrollments_count' => fn ($query) => $query->where('status', 'active'),
+        ]);
+
+        return view('lms.teacher.courses.show', compact('course'));
     }
 }
