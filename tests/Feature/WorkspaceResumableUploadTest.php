@@ -183,12 +183,12 @@ class WorkspaceResumableUploadTest extends TestCase
             'slug' => 'upload-secondary', 'name' => 'Upload Secondary', 'short_name' => 'US',
             'level' => 'SMP', 'status' => 'Negeri', 'is_active' => true, 'is_default' => false,
         ]);
-        app(SchoolContext::class)->useForRequest($other);
+        app(SchoolContext::class)->use($other);
         $this->getJson($this->url($id))->assertNotFound();
         $this->part($id, 0, 'abcd')->assertNotFound();
         $this->postJson($this->url($id, '/finalize'))->assertNotFound();
         $this->deleteJson($this->url($id))->assertNotFound();
-        app(SchoolContext::class)->useForRequest($primary);
+        app(SchoolContext::class)->use($primary);
         $this->getJson($this->url($id))->assertOk();
     }
 

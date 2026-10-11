@@ -205,21 +205,30 @@ class WorkspaceFileShareTest extends TestCase
 
     public function test_school_switch_unknown_uuids_and_other_recipient_deny_download(): void
     {
+        $superAdmin = $this->makeUser('super_admin');
+        $this->course->update(['teacher_id' => $superAdmin->id]);
+        $this->recipient = $superAdmin;
         $share = $this->grant();
         $other = $this->makeUser('admin');
         $this->actingAs($other)->get(route('workspace.shares.download', $share->public_id))->assertNotFound();
         $this->actingAs($this->recipient)->get(route('workspace.shares.download', (string) Str::uuid()))->assertNotFound();
         $this->get('/workspace/shares/123/download')->assertNotFound();
-        $school = School::create(['name' => 'Switch', 'slug' => 'share-switch', 'is_active' => true]);
-        app(SchoolContext::class)->useForRequest($school);
+        $school = School::create(['name' => 'Switch', 'slug' => 'share-switch', 'is_active' => true, 'is_default' => false]);
+        $this->actingAs($superAdmin);
+        app(SchoolContext::class)->use($school);
         $this->get(route('workspace.shares.download', $share->public_id))->assertNotFound();
     }
 
     public function test_client_internal_ids_paths_and_write_rights_are_rejected(): void
     {
-        foreach (['owner_id', 'recipient_id', 'school_id', 'workspace_file_id', 'path', 'disk', 'rights', 'permission'] as $field) {
-            $this->actingAs($this->owner)->post(route('workspace.shares.grant', $this->file->public_id), ['recipient_email' => $this->recipient->email, $field => 'write'])->assertSessionHasErrors($field);
-        }
+        $forbidden = ['owner_id', 'recipient_id', 'school_id', 'workspace_file_id', 'path', 'disk', 'rights', 'permission'];
+        $input = array_fill_keys($forbidden, 'write');
+        $this->actingAs($this->owner)
+            ->post(route('workspace.shares.grant', $this->file->public_id), array_merge([
+                'recipient_email' => $this->recipient->email,
+            ], $input))
+            ->assertSessionHasErrors($forbidden);
+
         $this->assertDatabaseCount('workspace_file_shares', 0);
     }
 
