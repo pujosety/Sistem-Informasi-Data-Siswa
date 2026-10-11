@@ -5,14 +5,38 @@ namespace Tests;
 use App\Models\AcademicYear;
 use App\Models\DocumentType;
 use App\Models\User;
+use App\Services\ClamdWorkspaceScanner;
 use App\Services\SchoolContext;
 use App\Services\SettingsService;
+use App\Services\WorkspaceMalwareScanResult;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
 
 abstract class TestCase extends BaseTestCase
 {
+    /**
+     * Non-malware integration tests need deterministic clean files without a
+     * host clamd daemon. Malware tests replace this adapter with explicit
+     * infected/unavailable responses; production still fails closed.
+     */
+    protected function fakeCleanWorkspaceScanner(): void
+    {
+        $this->mock(ClamdWorkspaceScanner::class)
+            ->shouldReceive('scan')
+            ->andReturnUsing(static function ($stream, int $expectedBytes): WorkspaceMalwareScanResult {
+                $bytes = stream_get_contents($stream);
+                if (! is_string($bytes)) {
+                    return new WorkspaceMalwareScanResult('unavailable', 'storage');
+                }
+                if (strlen($bytes) !== $expectedBytes) {
+                    return new WorkspaceMalwareScanResult('unavailable', 'integrity', hash('sha256', $bytes), strlen($bytes));
+                }
+
+                return new WorkspaceMalwareScanResult('clean', '', hash('sha256', $bytes), strlen($bytes));
+            });
+    }
+
     protected function tearDown(): void
     {
         if (app()->bound(SchoolContext::class)) {

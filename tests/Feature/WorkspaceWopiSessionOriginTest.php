@@ -25,6 +25,7 @@ class WorkspaceWopiSessionOriginTest extends TestCase
         parent::setUp();
         $this->seedRoles();
         Storage::fake('workspace');
+        $this->fakeCleanWorkspaceScanner();
     }
 
     public function test_owner_can_revoke_their_exact_wopi_session_and_it_stops_authenticating(): void

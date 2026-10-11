@@ -32,6 +32,7 @@ class WorkspaceResumableUploadTest extends TestCase
         $this->seedRoles();
         Storage::fake('workspace');
         Storage::fake('workspace-upload-test');
+        $this->fakeCleanWorkspaceScanner();
         $this->tempRoot = Storage::disk('workspace-upload-test')->path('');
         config([
             'workspace.quota_bytes' => 64,

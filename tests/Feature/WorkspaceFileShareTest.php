@@ -40,17 +40,18 @@ class WorkspaceFileShareTest extends TestCase
         $schoolId = app(SchoolContext::class)->id();
         $student = Student::factory()->create(['user_id' => $this->recipient->id]);
         $year = $this->seedAcademicYear();
+        $suffix = (string) $this->owner->id;
         $semester = DB::table('semesters')->insertGetId([
-            'academic_year_id' => $year->id, 'name' => '1', 'label' => 'Ganjil', 'is_current' => true,
+            'academic_year_id' => $year->id, 'name' => 'SHARE-'.$suffix, 'label' => 'Ganjil', 'is_current' => true,
             'start_date' => '2026-07-01', 'end_date' => '2026-12-31', 'created_at' => now(), 'updated_at' => now(),
         ]);
-        $subject = DB::table('subjects')->insertGetId(['name' => 'Share subject', 'code' => 'SHARE', 'grade_level' => 'VII', 'created_at' => now(), 'updated_at' => now()]);
-        $department = DB::table('departments')->insertGetId(['name' => 'Share department', 'code' => 'SHARE', 'created_at' => now(), 'updated_at' => now()]);
-        $classroom = DB::table('classes')->insertGetId(['academic_year_id' => $year->id, 'department_id' => $department, 'name' => 'VII Share', 'level' => 'VII', 'created_at' => now(), 'updated_at' => now()]);
+        $subject = DB::table('subjects')->insertGetId(['name' => 'Share subject '.$suffix, 'code' => 'SH'.$suffix, 'grade_level' => 'VII', 'created_at' => now(), 'updated_at' => now()]);
+        $department = DB::table('departments')->insertGetId(['name' => 'Share department '.$suffix, 'code' => 'SHD'.$suffix, 'created_at' => now(), 'updated_at' => now()]);
+        $classroom = DB::table('classes')->insertGetId(['academic_year_id' => $year->id, 'department_id' => $department, 'name' => 'VII Share '.$suffix, 'level' => 'VII', 'created_at' => now(), 'updated_at' => now()]);
         $this->course = Course::create([
             'school_id' => $schoolId, 'academic_year_id' => $year->id, 'semester_id' => $semester,
             'subject_id' => $subject, 'classroom_id' => $classroom, 'teacher_id' => $this->owner->id,
-            'code' => 'SHARE', 'title' => 'Share course', 'status' => 'published',
+            'code' => 'SHARE-'.$suffix, 'title' => 'Share course', 'status' => 'published',
         ]);
         CourseEnrollment::create(['school_id' => $schoolId, 'course_id' => $this->course->id, 'student_id' => $student->id, 'status' => 'active']);
         $this->file = WorkspaceFile::create([

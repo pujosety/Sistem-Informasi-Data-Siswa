@@ -19,6 +19,7 @@ class WorkspaceDriveTest extends TestCase
         parent::setUp();
         $this->seedRoles();
         Storage::fake('workspace');
+        $this->fakeCleanWorkspaceScanner();
     }
 
     public function test_authenticated_student_can_store_and_download_a_private_drive_file(): void

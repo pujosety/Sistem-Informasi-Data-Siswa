@@ -9,6 +9,7 @@ use App\Models\LmsAssignmentSubmission;
 use App\Models\Student;
 use App\Models\User;
 use App\Models\WorkspaceFile;
+use App\Models\WorkspaceVersionScan;
 use App\Services\RoleSeeder;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
@@ -33,6 +34,14 @@ class WorkspaceAssignmentSnapshotTest extends LmsTestCase
         Storage::disk('workspace')->put($path, 'first bytes');
         $file = WorkspaceFile::create(['public_id' => (string) \Illuminate\Support\Str::uuid(), 'school_id' => $course->school_id, 'owner_id' => $studentUser->id, 'name' => 'work.txt', 'mime_type' => 'text/plain', 'size_bytes' => 11, 'current_version' => 1]);
         $version = $file->versions()->create(['version_number' => 1, 'disk' => 'workspace', 'path' => $path, 'mime_type' => 'text/plain', 'size_bytes' => 11, 'created_by' => $studentUser->id]);
+        WorkspaceVersionScan::create([
+            'workspace_file_version_id' => $version->id,
+            'status' => 'clean',
+            'checksum_sha256' => hash('sha256', 'first bytes'),
+            'scanned_bytes' => 11,
+            'attempts' => 1,
+            'scanned_at' => now(),
+        ]);
 
         $foreignUser = User::factory()->create(['email_verified_at' => now()]);
         $foreignFile = WorkspaceFile::create(['public_id' => (string) \Illuminate\Support\Str::uuid(), 'school_id' => $course->school_id, 'owner_id' => $foreignUser->id, 'name' => 'foreign.txt', 'mime_type' => 'text/plain', 'size_bytes' => 1, 'current_version' => 1]);

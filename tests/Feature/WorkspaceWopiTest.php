@@ -22,6 +22,7 @@ class WorkspaceWopiTest extends TestCase
         parent::setUp();
         $this->seedRoles();
         Storage::fake('workspace');
+        $this->fakeCleanWorkspaceScanner();
         Cache::forget('workspace.collabora.discovery.'.sha1('http://collabora:9980/hosting/discovery'));
     }
 

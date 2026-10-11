@@ -25,6 +25,7 @@ class WorkspaceQuotaTest extends TestCase
         parent::setUp();
         $this->seedRoles();
         Storage::fake('workspace');
+        $this->fakeCleanWorkspaceScanner();
         config(['workspace.quota_bytes' => 20]);
     }
 

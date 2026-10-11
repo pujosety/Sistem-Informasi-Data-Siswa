@@ -105,7 +105,7 @@ class WorkspaceDesignProjectTest extends TestCase
         $this->actingAs($this->makeUser('super_admin'));
         $project = $this->createProject();
         $other = School::create(['slug' => 'design-other', 'name' => 'Other school', 'is_active' => true, 'is_default' => false]);
-        app(SchoolContext::class)->useForRequest($other);
+        app(SchoolContext::class)->use($other);
         $this->getJson($this->endpoint($project))->assertNotFound();
         $this->putJson($this->endpoint($project), $project)->assertNotFound();
     }
@@ -210,7 +210,10 @@ class WorkspaceDesignProjectTest extends TestCase
         $this->assertFileExists(public_path('workspace-design-build/.vite/manifest.json'));
         $response = $this->get(route('workspace.design.editor', $project['id']))->assertOk();
         $response->assertSee('workspace-design-config', false)->assertSee('type="application/json"', false)->assertSee('/workspace-design-build/assets/', false);
-        $response->assertSee('/workspace/design/'.$project['id'].'/document', false)->assertDontSee('localhost:3000', false);
+        $this->assertDoesNotMatchRegularExpression('/localhost:3000/', $response->getContent());
+        $this->assertSame(1, preg_match('~<script id="workspace-design-config" type="application/json">(.+?)</script>~s', $response->getContent(), $matches));
+        $config = json_decode($matches[1], true, 512, JSON_THROW_ON_ERROR);
+        $this->assertSame('/workspace/design/'.$project['id'].'/document', $config['endpoint']);
         $this->assertStringContainsString("connect-src 'self'", $response->headers->get('Content-Security-Policy'));
         $this->assertTrue($response->headers->hasCacheControlDirective('private'));
         $this->assertTrue($response->headers->hasCacheControlDirective('no-store'));
