@@ -76,7 +76,7 @@ class WorkspaceResumableUploadTest extends TestCase
         $this->assertArrayNotHasKey('temp_key', $first->json());
         $this->cleanup();
         $this->assertSame([], Storage::disk('workspace-upload-test')->allFiles());
-        $this->assertSame(0, $this->session($id)->reserved_bytes);
+        $this->assertSame(0, $this->uploadSession($id)->reserved_bytes);
     }
 
     public function test_real_assembled_file_larger_than_sync_limit_uses_stream_seam(): void
@@ -125,7 +125,7 @@ class WorkspaceResumableUploadTest extends TestCase
         $this->part($id, 0, 'abcd')->assertOk();
         $this->part($id, 0, 'zzzz')->assertUnprocessable()->assertJsonValidationErrors('checksum');
         $this->part($id, 0, 'abcd')->assertOk()->assertJsonPath('received_bytes', 4);
-        $session = $this->session($id);
+        $session = $this->uploadSession($id);
         $this->assertSame('abcd', Storage::disk('workspace-upload-test')->get($session->temp_key.'/0.chunk'));
         $this->assertCount(1, $session->receipts);
     }
@@ -138,15 +138,15 @@ class WorkspaceResumableUploadTest extends TestCase
         $this->assertSame(0, WorkspaceFile::query()->count());
         $this->assertSame(0, WorkspaceFileVersion::query()->count());
         $this->assertSame([], Storage::disk('workspace')->allFiles());
-        Storage::disk('workspace-upload-test')->assertMissing($this->session($id)->temp_key.'/assembled');
-        $this->assertSame('open', $this->session($id)->state);
+        Storage::disk('workspace-upload-test')->assertMissing($this->uploadSession($id)->temp_key.'/assembled');
+        $this->assertSame('open', $this->uploadSession($id)->state);
     }
 
     public function test_corrupt_stored_chunk_is_detected_and_cannot_be_finalized(): void
     {
         $id = $this->begin('abcd');
         $this->part($id, 0, 'abcd')->assertOk();
-        Storage::disk('workspace-upload-test')->put($this->session($id)->temp_key.'/0.chunk', 'zzzz');
+        Storage::disk('workspace-upload-test')->put($this->uploadSession($id)->temp_key.'/0.chunk', 'zzzz');
         $this->postJson($this->url($id, '/finalize'))->assertUnprocessable()->assertJsonValidationErrors('chunk');
         $this->assertSame(0, WorkspaceFileVersion::query()->count());
         $this->assertSame([], Storage::disk('workspace')->allFiles());
@@ -231,7 +231,7 @@ class WorkspaceResumableUploadTest extends TestCase
             ->assertUnprocessable()->assertJsonValidationErrors('size');
         $this->actingAs($this->owner)->deleteJson($this->url($id))->assertOk()->assertJsonPath('state', 'cancelled');
         $this->cleanup();
-        $this->assertSame(0, $this->session($id)->reserved_bytes);
+        $this->assertSame(0, $this->uploadSession($id)->reserved_bytes);
         $this->actingAs($other);
         $this->begin('abcdef');
     }
@@ -255,7 +255,7 @@ class WorkspaceResumableUploadTest extends TestCase
     {
         $id = $this->begin('abcd');
         $this->part($id, 0, 'abcd')->assertOk();
-        $session = $this->session($id);
+        $session = $this->uploadSession($id);
         $orphan = 'schools/'.$session->school_id.'/users/'.$session->owner_id.'/'.$session->target_public_id.'.bin';
         Storage::disk('workspace')->put($orphan, 'orphan');
         $this->travel(61)->minutes();
@@ -301,7 +301,7 @@ class WorkspaceResumableUploadTest extends TestCase
         $this->postJson($this->url($id, '/finalize'))->assertUnprocessable()->assertJsonValidationErrors('file');
         $this->assertSame(1, WorkspaceFileVersion::query()->count());
         $this->assertSame(1, WorkspaceFile::withTrashed()->count());
-        $this->assertSame('open', $this->session($id)->state);
+        $this->assertSame('open', $this->uploadSession($id)->state);
         $this->assertCount(1, Storage::disk('workspace')->allFiles());
         config(['workspace.quota_bytes' => 9]);
         $this->postJson($this->url($id, '/finalize'))->assertOk();
@@ -376,7 +376,7 @@ class WorkspaceResumableUploadTest extends TestCase
         return rtrim(route('workspace.drive.uploads.create'), '/').($id ? '/'.$id : '').$suffix;
     }
 
-    private function session(string $id): WorkspaceUploadSession
+    private function uploadSession(string $id): WorkspaceUploadSession
     {
         return WorkspaceUploadSession::query()->where('public_id', $id)->firstOrFail();
     }
