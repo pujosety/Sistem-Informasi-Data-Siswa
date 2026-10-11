@@ -172,6 +172,11 @@ jobs:
       - name: Build assets
         run: npm run build
 
+      - name: Verify production editor bundle excludes build-time dependencies
+        run: |
+          test -f public/workspace-design-build/.vite/manifest.json
+          test ! -d resources/workspace-design/node_modules
+
   blade:
     name: Blade templates compile
     runs-on: ubuntu-latest

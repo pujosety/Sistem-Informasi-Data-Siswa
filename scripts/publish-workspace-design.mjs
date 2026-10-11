@@ -17,4 +17,11 @@ await rm(target, { recursive: true, force: true });
 await cp(source, target, { recursive: true });
 const published = JSON.parse(await readFile(path.join(target, '.vite/manifest.json'), 'utf8'));
 if (published['src/main.tsx'].file !== entry.file) throw new Error('Published asset manifest mismatch.');
+
+// AnyBuild exports the whole application tree. Its Linux builder can drop these
+// build-only dependencies; preserve the local Windows install for editor tooling.
+if (process.platform !== 'win32') {
+  await rm(path.join(root, 'resources/workspace-design/node_modules'), { recursive: true, force: true });
+}
+
 console.log(`Workspace Design published: ${entry.file}`);
