@@ -2,6 +2,7 @@
 
 > **PHASE 0 audit artifact.** Describes SIDA as it exists today, read from the
 > code rather than from documentation. Nothing here is aspirational.
+> **Historical snapshot:** superseded for current planning by [PHASE0-PLATFORM-AUDIT.md](PHASE0-PLATFORM-AUDIT.md). Its counts and status reflect 2026-09-29.
 
 Audit date: 2026-09-29
 Commit audited: `280d86d`

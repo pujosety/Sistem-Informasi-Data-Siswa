@@ -53,10 +53,15 @@
                             @foreach ($cards as $card)
                                 <article class="group flex gap-4 rounded-[var(--radius-md)] border border-[var(--app-border)] bg-[var(--app-bg)] p-5 transition-all hover:border-[var(--app-primary)]/30 hover:shadow-md">
                                     @if ($card['image'] ?? null)
-                                        <img src="{{ $card['image'] }}"
-                                             alt="{{ $card['title'] ?? '' }}"
-                                             class="size-16 shrink-0 rounded-[var(--radius-sm)] object-cover"
-                                             loading="lazy">
+                                        <x-public.responsive-image
+                                            src="{{ $card['image'] }}"
+                                            alt="{{ $card['title'] ?? '' }}"
+                                            class="size-16 shrink-0 rounded-[var(--radius-sm)] object-cover"
+                                            loading="lazy"
+                                            decoding="async"
+                                            width="1672"
+                                            height="941"
+                                            sizes="64px" />
                                     @else
                                         <span class="grid size-16 shrink-0 place-items-center rounded-[var(--radius-sm)] bg-[var(--brand-gold)]/12 text-[var(--brand-gold)]">
                                             <x-icon name="trophy" class="w-7 h-7" />

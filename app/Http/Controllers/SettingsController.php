@@ -179,6 +179,31 @@ class SettingsController extends BaseController
         ]))->validate();
 
         $this->settings->setMany($data);
+
+        // Keep the tenant identity in sync with the legacy settings store. The
+        // public site reads canonical name/contact data from SchoolContext when
+        // a school row exists; writing only settings would make the save appear
+        // successful in admin while the public profile continued showing the
+        // old tenant identity.
+        if ($school = app(SchoolContext::class)->current()) {
+            $school->forceFill([
+                'name' => $data['school.name'],
+                'npsn' => $data['school.npsn'] ?? null,
+                'contact' => array_merge($school->contact ?? [], array_filter([
+                    'address' => $data['school.address'] ?? null,
+                    'province' => $data['school.province'] ?? null,
+                    'city' => $data['school.city'] ?? null,
+                    'district' => $data['school.district'] ?? null,
+                    'postal_code' => $data['school.postal_code'] ?? null,
+                    'email' => $data['school.email'] ?? null,
+                    'phone' => $data['school.phone'] ?? null,
+                    'website' => $data['school.website'] ?? null,
+                ], static fn ($value) => $value !== null && $value !== '')),
+                'principal' => array_merge($school->principal ?? [], array_filter([
+                    'name' => $data['school.headmaster'] ?? null,
+                ], static fn ($value) => $value !== null && $value !== '')),
+            ])->save();
+        }
         $this->audit->log('settings.school_updated', null, 'Mengubah profil sekolah');
 
         return back()->with('success', 'Profil sekolah berhasil disimpan.');

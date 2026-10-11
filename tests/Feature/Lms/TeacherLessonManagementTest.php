@@ -9,7 +9,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
-class TeacherLessonManagementTest extends TestCase
+class TeacherLessonManagementTest extends LmsTestCase
 {
     use RefreshDatabase;
 
@@ -47,6 +47,7 @@ class TeacherLessonManagementTest extends TestCase
         $course = $this->courseFor($teacher);
         $lessonId = DB::table('lms_lessons')->insertGetId([
             'course_id' => $course->id,
+            'school_id' => $course->school_id,
             'title' => 'Latihan Mandiri',
             'body' => 'Kerjakan latihan berikut.',
             'position' => 1,
@@ -68,7 +69,7 @@ class TeacherLessonManagementTest extends TestCase
     private function courseFor(User $teacher): Course
     {
         $yearId = DB::table('academic_years')->insertGetId([
-            'name' => '2026/2027',
+            'name' => '2026/2027-'.strtolower(substr(md5((string) $teacher->id), 0, 6)),
             'start_date' => '2026-07-01',
             'end_date' => '2027-06-30',
             'is_active' => true,

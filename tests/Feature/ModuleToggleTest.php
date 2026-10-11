@@ -16,11 +16,9 @@ use Tests\TestCase;
  *
  * WHY THE TOGGLE MATTERS MORE THAN IT LOOKS
  *
- * §50 requires that disabling a module leaves no broken navigation. The
- * registry seeds `lms`, `payroll`, `finance` and `procurement` DISABLED
- * precisely so no link leads to a section that does not exist. But a registry
- * that can only be changed from a shell is not a feature — it is a deployment
- * step wearing a data table. This suite pins the screen.
+ * The registry now ships implemented modules enabled and unbuilt modules
+ * disabled. This suite pins the reversible transition by explicitly turning
+ * LMS off before asserting that an operator can turn it back on.
  *
  * The required-module refusal is the part that must not become a 500.
  * `ModuleService::setEnabled()` throws `LogicException` for a required module
@@ -103,9 +101,10 @@ class ModuleToggleTest extends TestCase
     /** @test */
     public function an_optional_module_can_be_switched_on(): void
     {
+        app(ModuleService::class)->setEnabled('lms', false);
         $lms = Module::where('key', 'lms')->firstOrFail();
 
-        $this->assertFalse($lms->is_enabled, 'lms ships disabled — it has no tables.');
+        $this->assertFalse($lms->is_enabled, 'The test explicitly starts with LMS disabled.');
 
         $this->actingAs($this->operator())
             ->put(route('admin.modules.update', $lms), ['is_enabled' => true])

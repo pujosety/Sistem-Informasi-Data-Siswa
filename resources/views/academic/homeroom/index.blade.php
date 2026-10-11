@@ -60,36 +60,45 @@
             </div>
         </div>
 
-        @can('viewAttendance', $c)
+        @if (auth()->user()->can('viewAttendance', $c) || (auth()->user()->can('lms.course.view') && app(\App\Services\ModuleService::class)->allows('lms')))
             <footer class="flex flex-wrap gap-2 border-t border-slate-200 px-4 py-3 sm:px-5">
-                <a href="{{ route('academic.attendance.show', $c) }}"
-                   class="rounded-lg bg-slate-900 px-3 py-2 text-sm font-medium text-white hover:bg-slate-800">
-                    Isi Absensi
-                </a>
-                <a href="{{ route('academic.classes.show', $c) }}#siswa"
-                   class="rounded-lg bg-slate-100 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-200">
-                    Lihat Siswa
-                </a>
-                @can('viewParents', $c)
-                    <a href="{{ route('academic.classes.show', $c) }}#orang-tua"
-                       class="rounded-lg bg-slate-100 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-200">
-                        Orang Tua/Wali
+                @can('viewAttendance', $c)
+                    <a href="{{ route('academic.attendance.show', $c) }}"
+                       class="rounded-lg bg-slate-900 px-3 py-2 text-sm font-medium text-white hover:bg-slate-800">
+                        Isi Absensi
                     </a>
-                @endcan
-                @can('publishAnnouncement', $c)
-                    <a href="{{ route('academic.announcements.create', $c) }}"
+                    <a href="{{ route('academic.classes.show', $c) }}#siswa"
                        class="rounded-lg bg-slate-100 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-200">
-                        Buat Pengumuman
+                        Lihat Siswa
                     </a>
+                    @can('viewParents', $c)
+                        <a href="{{ route('academic.classes.show', $c) }}#ortu"
+                           class="rounded-lg bg-slate-100 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-200">
+                            Orang Tua/Wali
+                        </a>
+                    @endcan
+                    @can('publishAnnouncement', $c)
+                        <a href="{{ route('academic.announcements.create', $c) }}"
+                           class="rounded-lg bg-slate-100 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-200">
+                            Buat Pengumuman
+                        </a>
+                    @endcan
+                    @can('viewReports', $c)
+                        <a href="{{ route('academic.classes.show', $c) }}#laporan"
+                           class="rounded-lg bg-slate-100 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-200">
+                            Lihat Laporan
+                        </a>
+                    @endcan
                 @endcan
-                @can('viewReports', $c)
-                    <a href="{{ route('academic.classes.show', $c) }}#laporan"
-                       class="rounded-lg bg-slate-100 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-200">
-                        Cetak Laporan
+
+                @if (auth()->user()->can('lms.course.view') && app(\App\Services\ModuleService::class)->allows('lms'))
+                    <a href="{{ route('lms.teacher.courses.index', ['classroom_id' => $c->id]) }}"
+                       class="rounded-lg bg-[var(--app-primary)] px-3 py-2 text-sm font-semibold text-white hover:opacity-90">
+                        Ruang Pembelajaran
                     </a>
-                @endcan
+                @endif
             </footer>
-        @endcan
+        @endif
     </article>
 @empty
     <div class="rounded-xl border border-dashed border-slate-300 px-6 py-12 text-center">

@@ -106,7 +106,10 @@ class GradeEntryTest extends TestCase
 
     private function subject(): Subject
     {
-        return Subject::create(['name' => 'Matematika', 'code' => 'MTK']);
+        return Subject::firstOrCreate(
+            ['code' => 'MTK'],
+            ['name' => 'Matematika']
+        );
     }
 
     private function firstEnrollment(SchoolClass $class): Enrollment
@@ -130,7 +133,10 @@ class GradeEntryTest extends TestCase
 
         $this->assertSame(1, $written);
 
-        $grade = Grade::firstOrFail();
+        $grade = Grade::query()
+            ->where('enrollment_id', $enrollment->id)
+            ->where('subject_id', $subject->id)
+            ->firstOrFail();
 
         $this->assertSame(87.5, (float) $grade->score);
         $this->assertSame(Grade::DRAFT, $grade->status);
@@ -154,13 +160,21 @@ class GradeEntryTest extends TestCase
             $class, $semester, $subject, [$enrollment->id => 91], $this->teacher()
         );
 
-        $this->assertSame(Grade::DRAFT, Grade::firstOrFail()->status);
+        $grade = Grade::query()
+            ->where('enrollment_id', $enrollment->id)
+            ->where('subject_id', $subject->id)
+            ->firstOrFail();
+        $this->assertSame(Grade::DRAFT, $grade->status);
 
         // The parent portal is the consumer this protects. A draft score that
         // reached it would be a school publishing a term before it is graded.
         $this->assertSame(
             0,
-            Grade::query()->where('status', Grade::PUBLISHED)->count()
+            Grade::query()
+                ->where('enrollment_id', $enrollment->id)
+                ->where('subject_id', $subject->id)
+                ->where('status', Grade::PUBLISHED)
+                ->count()
         );
     }
 
@@ -185,7 +199,10 @@ class GradeEntryTest extends TestCase
 
         $this->assertSame(1, $count);
 
-        $grade = Grade::firstOrFail();
+        $grade = Grade::query()
+            ->where('enrollment_id', $enrollment->id)
+            ->where('subject_id', $subject->id)
+            ->firstOrFail();
 
         $this->assertSame(Grade::PUBLISHED, $grade->status);
         $this->assertNotNull($grade->published_at);
@@ -208,8 +225,11 @@ class GradeEntryTest extends TestCase
         // The unique key is (enrollment_id, subject_id, term). A second insert
         // would either fail or create a second row for one student and one
         // subject, and a report aggregating both would double-count.
-        $this->assertSame(1, Grade::query()->count());
-        $this->assertSame(75.0, (float) Grade::firstOrFail()->score);
+        $scopedGrades = Grade::query()
+            ->where('enrollment_id', $enrollment->id)
+            ->where('subject_id', $subject->id);
+        $this->assertSame(1, $scopedGrades->count());
+        $this->assertSame(75.0, (float) $scopedGrades->firstOrFail()->score);
     }
 
     /**
@@ -233,7 +253,14 @@ class GradeEntryTest extends TestCase
         $written = $service->save($class, $semester, $subject, [$enrollment->id => ''], $teacher);
 
         $this->assertSame(0, $written);
-        $this->assertSame(82.0, (float) Grade::firstOrFail()->score);
+        $this->assertSame(
+            82.0,
+            (float) Grade::query()
+                ->where('enrollment_id', $enrollment->id)
+                ->where('subject_id', $subject->id)
+                ->firstOrFail()
+                ->score
+        );
     }
 
     /**
@@ -253,7 +280,10 @@ class GradeEntryTest extends TestCase
         );
 
         $this->assertSame(0, $written);
-        $this->assertSame(0, Grade::query()->count());
+        $this->assertSame(
+            0,
+            Grade::query()->where('enrollment_id', $foreignEnrollment->id)->count()
+        );
     }
 
     // ------------------------------------------------------------------- scope

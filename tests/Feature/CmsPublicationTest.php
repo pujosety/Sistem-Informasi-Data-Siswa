@@ -131,7 +131,10 @@ class CmsPublicationTest extends TestCase
         $this->assertFalse($expired->isVisibleToPublic(), 'public_until in the past must hide it.');
         $this->assertTrue($current->isVisibleToPublic());
 
-        $visible = Post::publishedAndPublic()->pluck('slug')->all();
+        $visible = Post::publishedAndPublic()
+            ->whereIn('slug', ['not-yet', 'expired', 'current'])
+            ->pluck('slug')
+            ->all();
         $this->assertSame(['current'], $visible);
     }
 

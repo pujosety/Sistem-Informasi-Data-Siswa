@@ -129,7 +129,7 @@ class ModuleRegistryTest extends TestCase
         // and a section that 403s is worse than an absent one. Now that the
         // editor and the staff list exist, they ship ON — see
         // test_built_modules_are_seeded_enabled.
-        foreach (['lms', 'payroll', 'finance', 'procurement'] as $key) {
+        foreach (['payroll', 'finance', 'procurement'] as $key) {
             $this->assertFalse(
                 \App\Models\Module::where('key', $key)->firstOrFail()->is_enabled,
                 "Module [{$key}] has no implementation and must be seeded disabled."
@@ -145,12 +145,110 @@ class ModuleRegistryTest extends TestCase
         // A module whose screen is built must not ship hidden. A registry that
         // hides finished work is not honesty, it is a switch nobody flipped —
         // and the operator has no way to know it exists.
-        foreach (['cms', 'hris'] as $key) {
+        foreach (['cms', 'hris', 'lms'] as $key) {
             $this->assertTrue(
                 \App\Models\Module::where('key', $key)->firstOrFail()->is_enabled,
                 "Module [{$key}] has a screen and must be seeded enabled."
             );
         }
+    }
+
+    /**
+     * @test
+     */
+    public function test_lms_navigation_is_visible_for_authorized_teacher_and_student_roles(): void
+    {
+        $teacher = User::factory()->create();
+        $teacher->assignRole('kesiswaan');
+        $student = User::factory()->create();
+        $student->assignRole('siswa');
+
+        $teacherLabels = $this->allLabels(app(NavigationService::class), $teacher->refresh());
+        $studentLabels = $this->allLabels(app(NavigationService::class), $student->refresh());
+
+        $this->assertContains('Pembelajaran', $teacherLabels);
+        $this->assertContains('Ruang Guru', $teacherLabels);
+        $this->assertContains('Pembelajaran', $studentLabels);
+    }
+
+    /**
+     * @test
+     */
+    public function test_workspace_tools_are_discoverable_for_each_authenticated_tier(): void
+    {
+        foreach (['super_admin', 'admin', 'kesiswaan', 'operator', 'verifikator', 'wali_kelas', 'siswa'] as $role) {
+            $user = User::factory()->create();
+            $user->assignRole($role);
+            $labels = $this->allLabels(app(NavigationService::class), $user->refresh());
+
+            $this->assertContains('Workspace', $labels, "Workspace group missing for [{$role}].");
+            $this->assertContains('Drive & Office', $labels, "Drive/Office link missing for [{$role}].");
+            $this->assertContains('Design Studio', $labels, "Design link missing for [{$role}].");
+            $this->assertContains('Dibagikan kepada Saya', $labels, "Shared files link missing for [{$role}].");
+        }
+
+        $guardian = User::factory()->create();
+        $child = \App\Models\Student::factory()->create();
+        \App\Models\GuardianRelationship::create([
+            'student_id' => $child->id,
+            'guardian_user_id' => $guardian->id,
+            'relationship' => 'wali',
+            'status' => 'active',
+        ]);
+        $guardianLabels = $this->allLabels(app(NavigationService::class), $guardian->refresh());
+        $this->assertContains('Drive & Office', $guardianLabels, 'Drive/Office link missing for Orang Tua/Wali.');
+        $this->assertContains('Design Studio', $guardianLabels, 'Design link missing for Orang Tua/Wali.');
+    }
+
+    /**
+     * @test
+     */
+    public function test_staff_sidebar_lands_on_their_own_authorized_workspace(): void
+    {
+        foreach ([
+            'super_admin' => 'workspace.admin',
+            'admin' => 'workspace.admin',
+            'kesiswaan' => 'workspace.kesiswaan',
+            'operator' => 'workspace.operator',
+            'verifikator' => 'workspace.verifikator',
+        ] as $role => $expectedRoute) {
+            $user = User::factory()->create();
+            $user->assignRole($role);
+            $items = app(NavigationService::class)->forUser($user->refresh())['items'];
+            $routes = array_values(array_filter(array_map(fn ($item) => $item['route'] ?? null, $items)));
+
+            $this->assertContains($expectedRoute, $routes, "Wrong or missing workspace entry for [{$role}].");
+        }
+    }
+
+    /**
+     * @test
+     */
+    public function test_operator_sees_registration_entry_instead_of_a_verification_menu(): void
+    {
+        $operator = User::factory()->create();
+        $operator->assignRole('operator');
+        $labels = $this->allLabels(app(NavigationService::class), $operator->refresh());
+
+        $this->assertContains('Pendaftaran', $labels);
+        $this->assertNotContains('Verifikasi', $labels);
+        $this->assertContains('Dashboard Operator', $labels);
+    }
+
+    /**
+     * @test
+     */
+    public function test_disabling_lms_hides_teacher_and_student_entry_points(): void
+    {
+        $teacher = User::factory()->create();
+        $teacher->assignRole('kesiswaan');
+        $student = User::factory()->create();
+        $student->assignRole('siswa');
+
+        app(ModuleService::class)->setEnabled('lms', false);
+
+        $this->assertNotContains('Ruang Guru', $this->allLabels(app(NavigationService::class), $teacher->refresh()));
+        $this->assertNotContains('Pembelajaran', $this->allLabels(app(NavigationService::class), $student->refresh()));
     }
 
     /**

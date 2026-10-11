@@ -55,10 +55,15 @@
             <div class="lg:col-span-7">
                 <div class="relative">
                     @if ($image)
-                        <img src="{{ $image }}"
-                             alt="{{ $section->title ? 'Kegiatan di '.$section->title : 'Kegiatan sekolah' }}"
-                             class="aspect-4/3 w-full rounded-[var(--radius-lg)] object-cover shadow-sm"
-                             loading="lazy">
+                        <x-public.responsive-image
+                            src="{{ $image }}"
+                            alt="{{ $section->title ? 'Kegiatan di '.$section->title : 'Kegiatan sekolah' }}"
+                            class="aspect-4/3 w-full rounded-[var(--radius-lg)] object-cover shadow-sm"
+                            loading="lazy"
+                            decoding="async"
+                            width="1672"
+                            height="941"
+                            sizes="(min-width: 1024px) 58vw, 100vw" />
                     @else
                         {{-- No image configured: the layout still holds. A reserved
                              slot with the school mark beats a collapsed box that

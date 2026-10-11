@@ -6,6 +6,7 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Console\Scheduling\Schedule;
 use Spatie\Permission\Exceptions\UnauthorizedException;
 
 
@@ -32,6 +33,7 @@ return Application::configure(basePath: dirname(__DIR__))
              | keeps working.
              */
             Route::get('/', [\App\Http\Controllers\PublicHomeController::class, '__invoke'])
+                ->middleware('web')
                 ->name('home');
 
             // The rest of the public school website. Indonesian paths, matching
@@ -44,19 +46,25 @@ return Application::configure(basePath: dirname(__DIR__))
             // which took out the topbar and nav on every authenticated page.
             // The public page needed a name that was actually free.
             Route::get('/tentang', [\App\Http\Controllers\PublicHomeController::class, 'profile'])
+                ->middleware('web')
                 ->name('public.about');
             Route::get('/tentang/{slug}', [\App\Http\Controllers\PublicCmsController::class, 'page'])
                 ->where('slug', '[a-z0-9-]+')
+                ->middleware('web')
                 ->name('public.page');
 
             Route::get('/program', [\App\Http\Controllers\PublicHomeController::class, 'programs'])
+                ->middleware('web')
                 ->name('public.programs');
             Route::get('/ppdb', [\App\Http\Controllers\PublicHomeController::class, 'admission'])
+                ->middleware('web')
                 ->name('public.admission');
             Route::get('/kontak', [\App\Http\Controllers\PublicHomeController::class, 'contact'])
+                ->middleware('web')
                 ->name('public.contact');
             Route::post('/kontak', [\App\Http\Controllers\PublicHomeController::class, 'submitContact'])
                 ->middleware('throttle:5,1')
+                ->middleware('web')
                 ->name('public.contact.submit');
 
             // News, read from the CMS. Both routes go through
@@ -64,11 +72,20 @@ return Application::configure(basePath: dirname(__DIR__))
             // post and a post outside its window are all excluded by the query
             // rather than by a check a caller has to remember.
             Route::get('/berita', [\App\Http\Controllers\PublicCmsController::class, 'news'])
+                ->middleware('web')
                 ->name('public.news');
             Route::get('/cari', [\App\Http\Controllers\PublicCmsController::class, 'search'])
+                ->middleware('web')
                 ->name('public.search');
             Route::get('/berita/{slug}', [\App\Http\Controllers\PublicCmsController::class, 'post'])
+                ->middleware('web')
                 ->name('public.news.show');
+
+            // Draft previews are bearer links with a short expiry. They remain
+            // disabled with the CMS module and are rejected unless signature-valid.
+            Route::get('/cms/pratinjau/{postId}', [\App\Http\Controllers\PublicCmsController::class, 'preview'])
+                ->middleware(['web', 'module:cms', 'signed', 'throttle:60,1'])
+                ->name('public.cms.preview');
 
             /* The temporary /__diag deployment probe was removed here.
 
@@ -87,10 +104,15 @@ return Application::configure(basePath: dirname(__DIR__))
             */
         },
     )
+    ->withSchedule(function (Schedule $schedule): void {
+        $schedule->command('lms:notify-deadlines')->hourly();
+    })
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             // Legacy role guard, kept so existing routes keep working.
             'role' => EnsureRole::class,
+            // Module toggles must protect direct requests as well as navigation.
+            'module' => \App\Http\Middleware\EnsureModuleEnabled::class,
             // The real enforcement going forward.
             'can' => \App\Http\Middleware\EnsurePermission::class,
         ]);

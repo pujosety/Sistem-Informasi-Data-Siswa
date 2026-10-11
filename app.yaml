@@ -29,13 +29,14 @@ scripts:
       && php artisan cache:clear \
       && php artisan db:seed --class=PermissionSeeder --force --no-interaction \
       && php artisan db:seed --class=Smpn4MetroSeeder --force --no-interaction \
+      && php artisan sida:seed-verification-workflow --no-interaction \
       && php artisan config:cache \
       && php artisan route:cache \
       && php -S 0.0.0.0:${PORT:-8080} -t public
 annotations:
   anybuild.run/config:
     commands:
-      after_deploy: php artisan migrate --force --no-interaction && php artisan lyfla:normalize-identity --no-interaction
+      after_deploy: php artisan migrate --force --no-interaction && php artisan lyfla:normalize-identity --no-interaction && php artisan sida:seed-verification-workflow --no-interaction
     composer_build_script: post-update-cmd
     composer_enable: true
     name: out

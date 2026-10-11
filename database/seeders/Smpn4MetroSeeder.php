@@ -118,7 +118,18 @@ class Smpn4MetroSeeder extends Seeder
         $files = [
             'logo' => ['images/schools/smpn4metro/branding/logo-smpn4metro.png', 'Logo SMP Negeri 4 Metro', self::SOURCE_HOME],
             'history' => ['images/schools/smpn4metro/profile/sejarah.jpg', 'Foto halaman sejarah sekolah', self::SOURCE_HOME.'halaman.php?slug=sejarah-sekolah'],
+            'hero' => ['images/schools/smpn4metro/landing/hero-campus.jpg', 'Siswa SMP Negeri 4 Metro menyampaikan presentasi', self::SOURCE_HOME],
             'vision' => ['images/schools/smpn4metro/profile/visi-misi.jpg', 'Foto halaman visi dan misi', self::SOURCE_HOME.'halaman.php?slug=visi-misi'],
+            'profile' => ['images/schools/smpn4metro/landing/profile-community.jpg', 'Keluarga sekolah SMP Negeri 4 Metro', self::SOURCE_HOME],
+            'program_pramuka' => ['images/schools/smpn4metro/landing/program-pramuka.jpg', 'Kegiatan Pramuka SMP Negeri 4 Metro', self::SOURCE_HOME.'galeri-foto/kegiatan-pramuka'],
+            'program_seni' => ['images/schools/smpn4metro/landing/program-seni.jpg', 'Kegiatan seni SMP Negeri 4 Metro', self::SOURCE_HOME.'berita/pentas-seni-akhir-tahun-tampilkan-bakat-siswa-berprestasi'],
+            'program_olahraga' => ['images/schools/smpn4metro/landing/program-olahraga.jpg', 'Kegiatan olahraga SMP Negeri 4 Metro', self::SOURCE_HOME],
+            'experience_pentas' => ['images/schools/smpn4metro/landing/experience-pentas.jpg', 'Pentas dan kegiatan siswa SMP Negeri 4 Metro', self::SOURCE_HOME.'berita/pentas-seni-akhir-tahun-tampilkan-bakat-siswa-berprestasi'],
+            'facility_learning' => ['images/schools/smpn4metro/landing/facility-learning.jpg', 'Pembelajaran di SMP Negeri 4 Metro', self::SOURCE_HOME],
+            'facility_community' => ['images/schools/smpn4metro/landing/facility-community.jpg', 'Komunitas sekolah SMP Negeri 4 Metro', self::SOURCE_HOME],
+            'facility_campus' => ['images/schools/smpn4metro/landing/facility-campus.jpg', 'Lingkungan sekolah SMP Negeri 4 Metro', self::SOURCE_HOME],
+            'achievement' => ['images/schools/smpn4metro/landing/achievement.jpg', 'Prestasi siswa SMP Negeri 4 Metro', self::SOURCE_HOME],
+            'ppdb_feature' => ['images/schools/smpn4metro/landing/ppdb-feature.jpg', 'Informasi PPDB SMP Negeri 4 Metro', self::SOURCE_HOME.'berita/penerimaan-peserta-didik-baru-tahun-ajaran-2026-2027-resmi-dibuka'],
             'ppdb' => ['images/schools/smpn4metro/news/ppdb-2026.jpg', 'Penerimaan Peserta Didik Baru Tahun Ajaran 2026/2027', self::SOURCE_HOME.'berita/penerimaan-peserta-didik-baru-tahun-ajaran-2026-2027-resmi-dibuka'],
             'robotik' => ['images/schools/smpn4metro/news/robotik-provinsi.jpg', 'Tim robotik SMPN 4 Metro', self::SOURCE_HOME.'berita/tim-robotik-smpn-4-metro-raih-juara-1-tingkat-provinsi-lampung'],
             'uts' => ['images/schools/smpn4metro/news/uts-ganjil.jpg', 'Ujian Tengah Semester Ganjil', self::SOURCE_HOME.'berita/pelaksanaan-ujian-tengah-semester-ganjil-berjalan-lancar'],
@@ -264,20 +275,21 @@ class Smpn4MetroSeeder extends Seeder
                 ['icon' => 'leaf', 'title' => 'Berbudaya Lingkungan', 'body' => 'Menerapkan budaya bersih, sehat, dan peduli lingkungan.'],
             ]]],
             ['programs', 40, 'Program dan Kegiatan Siswa', 'Belajar di Dalam dan di Luar Kelas', null, ['items' => [
-                ['icon' => 'bot', 'title' => 'Robotik', 'body' => 'Pengembangan minat teknologi dan kerja sama melalui robotik.'],
-                ['icon' => 'tent-tree', 'title' => 'Pramuka', 'body' => 'Kegiatan pembentukan karakter, kepemimpinan, dan kepedulian.'],
-                ['icon' => 'palette', 'title' => 'Seni dan Pentas', 'body' => 'Ruang ekspresi siswa melalui tari, musik, dan teater.'],
+                ['icon' => 'bot', 'title' => 'Robotik', 'body' => 'Pengembangan minat teknologi dan kerja sama melalui robotik.', 'image' => '/images/schools/smpn4metro/news/robotik-provinsi.jpg'],
+                ['icon' => 'tent-tree', 'title' => 'Pramuka', 'body' => 'Kegiatan pembentukan karakter, kepemimpinan, dan kepedulian.', 'image' => '/images/schools/smpn4metro/landing/program-pramuka.jpg'],
+                ['icon' => 'palette', 'title' => 'Seni dan Pentas', 'body' => 'Ruang ekspresi siswa melalui tari, musik, dan teater.', 'image' => '/images/schools/smpn4metro/landing/program-seni.jpg'],
+                ['icon' => 'dumbbell', 'title' => 'Olahraga', 'body' => 'Membangun kebugaran, kerja sama, dan sportivitas siswa.', 'image' => '/images/schools/smpn4metro/landing/program-olahraga.jpg'],
             ], 'cta_label' => 'Lihat Kegiatan', 'cta_url' => '/berita?category=kegiatan-siswa&school=smp-negeri-4-metro']],
-            ['achievements', 50, 'Prestasi yang Terverifikasi di Sumber Publik', 'Capaian', null, ['stats' => [['value' => '1', 'label' => 'Juara Provinsi Robotik'], ['value' => '1', 'label' => 'Medali Emas OSN IPA']], 'cards' => []]],
+            ['achievements', 50, 'Prestasi yang Terverifikasi di Sumber Publik', 'Capaian', null, ['stats' => [['value' => '1', 'label' => 'Juara Provinsi Robotik'], ['value' => '1', 'label' => 'Medali Emas OSN IPA']], 'cards' => [['image' => '/images/schools/smpn4metro/landing/achievement.jpg', 'level' => 'Prestasi', 'title' => 'Siswa SMP Negeri 4 Metro meraih penghargaan', 'year' => '2026']]]],
             ['experience', 60, 'Kegiatan Siswa', 'Budaya Sekolah', null, ['items' => [
-                ['icon' => 'leaf', 'title' => 'Jumat Bersih', 'body' => 'Gotong royong membangun budaya Adiwiyata.'],
-                ['icon' => 'music', 'title' => 'Pentas Seni', 'body' => 'Menampilkan bakat siswa dalam seni dan budaya.'],
-                ['icon' => 'landmark', 'title' => 'Kunjungan Edukatif', 'body' => 'Belajar sejarah dan budaya melalui pengalaman langsung.'],
+                ['icon' => 'leaf', 'title' => 'Jumat Bersih', 'body' => 'Gotong royong membangun budaya Adiwiyata.', 'image' => '/images/schools/smpn4metro/news/jumat-bersih.jpg'],
+                ['icon' => 'music', 'title' => 'Pentas Seni', 'body' => 'Menampilkan bakat siswa dalam seni dan budaya.', 'image' => '/images/schools/smpn4metro/landing/experience-pentas.jpg'],
+                ['icon' => 'landmark', 'title' => 'Kunjungan Edukatif', 'body' => 'Belajar sejarah dan budaya melalui pengalaman langsung.', 'image' => '/images/schools/smpn4metro/news/museum-lampung.jpg'],
             ]]],
             ['facilities', 70, 'Fasilitas dan Lingkungan Belajar', 'Ruang untuk Berkembang', null, ['items' => [
-                ['icon' => 'school', 'title' => 'Lingkungan Sekolah', 'body' => 'Lingkungan belajar yang kondusif dan peduli kebersihan.'],
-                ['icon' => 'flask-conical', 'title' => 'Pembelajaran Akademik', 'body' => 'Pengembangan potensi akademik melalui pembelajaran aktif.'],
-                ['icon' => 'users', 'title' => 'Komunitas Sekolah', 'body' => 'Kolaborasi sekolah, orang tua, dan masyarakat.'],
+                ['icon' => 'school', 'title' => 'Lingkungan Sekolah', 'body' => 'Lingkungan belajar yang kondusif dan peduli kebersihan.', 'image' => '/images/schools/smpn4metro/landing/facility-campus.jpg'],
+                ['icon' => 'flask-conical', 'title' => 'Pembelajaran Akademik', 'body' => 'Pengembangan potensi akademik melalui pembelajaran aktif.', 'image' => '/images/schools/smpn4metro/landing/facility-learning.jpg'],
+                ['icon' => 'users', 'title' => 'Komunitas Sekolah', 'body' => 'Kolaborasi sekolah, orang tua, dan masyarakat.', 'image' => '/images/schools/smpn4metro/landing/facility-community.jpg'],
             ]]],
             ['news', 80, 'Berita dan Kegiatan Terbaru', 'Kabar SMP Negeri 4 Metro', null, ['cta_label' => 'Lihat Semua Berita', 'cta_url' => '/berita?school=smp-negeri-4-metro', 'items' => []]],
             ['ppdb', 90, 'Siap Bergabung dengan SMP Negeri 4 Metro?', 'Informasi Pendaftaran', 'Informasi penerimaan peserta didik baru mengikuti pengumuman dan kanal resmi sekolah.', ['cta_label' => 'Lihat Informasi PPDB', 'cta_url' => '/ppdb?school=smp-negeri-4-metro']],
@@ -293,7 +305,9 @@ class Smpn4MetroSeeder extends Seeder
                     'content' => $content,
                     'is_enabled' => true,
                     'position' => $position,
-                    'media_id' => $type === 'hero' ? $media['history']->id : null,
+                    'media_id' => $type === 'hero'
+                        ? $media['hero']->id
+                        : ($type === 'about' ? $media['profile']->id : ($type === 'ppdb' ? $media['ppdb_feature']->id : null)),
                 ]
             );
         }

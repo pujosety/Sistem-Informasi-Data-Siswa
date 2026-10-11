@@ -42,10 +42,15 @@
                     <article class="group lg:col-span-2">
                         <a href="{{ $lead['url'] ?? '#' }}" class="block">
                             @if ($lead['image'] ?? null)
-                                <img src="{{ $lead['image'] }}"
-                                     alt="{{ $lead['title'] ?? '' }}"
-                                     class="aspect-16/9 w-full rounded-[var(--radius-md)] object-cover transition-transform duration-500 group-hover:scale-[1.02]"
-                                     loading="lazy">
+                                <x-public.responsive-image
+                                    src="{{ $lead['image'] }}"
+                                    alt="{{ $lead['title'] ?? '' }}"
+                                    class="aspect-16/9 w-full rounded-[var(--radius-md)] object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+                                    loading="lazy"
+                                    decoding="async"
+                                    width="1672"
+                                    height="941"
+                                    sizes="(min-width: 1024px) 66vw, 100vw" />
                             @else
                                 <div class="grid aspect-16/9 w-full place-items-center rounded-[var(--radius-md)] bg-[var(--app-primary-soft)]">
                                     <x-icon name="newspaper" class="w-12 h-12 text-[var(--app-primary)]/30" />
@@ -76,10 +81,15 @@
                             <article class="group">
                                 <a href="{{ $item['url'] ?? '#' }}" class="flex gap-4">
                                     @if ($item['image'] ?? null)
-                                        <img src="{{ $item['image'] }}"
-                                             alt="{{ $item['title'] ?? '' }}"
-                                             class="size-24 shrink-0 rounded-[var(--radius-sm)] object-cover transition-transform duration-500 group-hover:scale-[1.04]"
-                                             loading="lazy">
+                                        <x-public.responsive-image
+                                            src="{{ $item['image'] }}"
+                                            alt="{{ $item['title'] ?? '' }}"
+                                            class="size-24 shrink-0 rounded-[var(--radius-sm)] object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+                                            loading="lazy"
+                                            decoding="async"
+                                            width="1672"
+                                            height="941"
+                                            sizes="96px" />
                                     @else
                                         <span class="grid size-24 shrink-0 place-items-center rounded-[var(--radius-sm)] bg-[var(--app-surface-muted)]">
                                             <x-icon name="file-text" class="w-7 h-7 text-[var(--app-text-subtle)]" />

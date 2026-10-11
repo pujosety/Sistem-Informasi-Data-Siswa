@@ -194,9 +194,9 @@ class InstallerTest extends TestCase
             '--admin-password' => 'a-sufficiently-long-password',
         ])->assertExitCode(0);
 
-        // Unbuilt modules stay disabled, so a navigation filter cannot surface a
-        // section that leads nowhere.
-        $this->assertSame(0, Module::where('key', 'lms')->firstOrFail()->is_enabled ? 1 : 0);
+        // LMS has a complete authenticated teacher/student surface and ships on;
+        // only modules without an implementation stay disabled.
+        $this->assertSame(1, Module::where('key', 'lms')->firstOrFail()->is_enabled ? 1 : 0);
         $this->assertTrue(Module::where('key', 'students')->firstOrFail()->is_required);
     }
 

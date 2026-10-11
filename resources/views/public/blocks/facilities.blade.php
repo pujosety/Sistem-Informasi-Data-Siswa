@@ -34,10 +34,15 @@
                 @foreach ($items as $item)
                     <article class="group relative overflow-hidden rounded-[var(--radius-md)]">
                         @if ($item['image'] ?? null)
-                            <img src="{{ $item['image'] }}"
-                                 alt="{{ $item['title'] ?? 'Fasilitas sekolah' }}"
-                                 class="aspect-4/5 w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
-                                 loading="lazy">
+                            <x-public.responsive-image
+                                src="{{ $item['image'] }}"
+                                alt="{{ $item['title'] ?? 'Fasilitas sekolah' }}"
+                                class="aspect-4/5 w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+                                loading="lazy"
+                                decoding="async"
+                                width="1672"
+                                height="941"
+                                sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw" />
                         @else
                             <div class="grid aspect-4/5 w-full place-items-center bg-[var(--app-surface-muted)]">
                                 <x-icon :name="$item['icon'] ?? 'building'" class="w-12 h-12 text-[var(--app-text-subtle)]" />

@@ -5,13 +5,34 @@ namespace Tests;
 use App\Models\AcademicYear;
 use App\Models\DocumentType;
 use App\Models\User;
-use App\Services\CompletenessService;
-use App\Services\DocumentService;
+use App\Services\SchoolContext;
+use App\Services\SettingsService;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Spatie\Permission\Models\Role;
+use Spatie\Permission\PermissionRegistrar;
 
 abstract class TestCase extends BaseTestCase
 {
+    protected function tearDown(): void
+    {
+        if (app()->bound(SchoolContext::class)) {
+            app(SchoolContext::class)->reset();
+        }
+
+        SchoolContext::resetProcessState();
+        SettingsService::resetProcessState();
+
+        if (app()->bound(SettingsService::class)) {
+            app(SettingsService::class)->resetRuntimeState();
+        }
+
+        if (app()->bound(PermissionRegistrar::class)) {
+            app(PermissionRegistrar::class)->forgetCachedPermissions();
+        }
+
+        parent::tearDown();
+    }
+
     /**
      * Spatie stores roles in the database, so any test touching authorization
      * needs them present. Doing it centrally avoids every suite re-implementing

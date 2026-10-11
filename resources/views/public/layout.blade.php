@@ -15,14 +15,21 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', $school['name'] ?: config('branding.platform.name'))</title>
     <meta name="description" content="@yield('description', 'Portal informasi dan administrasi ' . ($school['name'] ?: 'sekolah') . '.')">
-    <link rel="canonical" href="{{ url()->current() }}">
+    @if ($isPreview ?? false)
+        <meta name="robots" content="noindex, nofollow, noarchive">
+    @else
+        <link rel="canonical" href="{{ url()->current() }}">
+    @endif
     <meta property="og:type" content="@yield('og_type', 'website')">
     <meta property="og:site_name" content="{{ $school['name'] ?: config('branding.platform.name') }}">
     <meta property="og:title" content="@yield('title', $school['name'] ?: config('branding.platform.name'))">
     <meta property="og:description" content="@yield('description', 'Portal informasi dan administrasi ' . ($school['name'] ?: 'sekolah') . '.')">
-    <meta property="og:url" content="{{ url()->current() }}">
+    @unless ($isPreview ?? false)
+        <meta property="og:url" content="{{ url()->current() }}">
+    @endunless
     <meta property="og:image" content="@yield('og_image', $brandLogo)" />
     <meta name="twitter:card" content="summary_large_image">
     @php
@@ -75,7 +82,7 @@
 <header x-data="{
     open: false,
     openMenu() { this.open = true; document.body.classList.add('overflow-hidden'); this.$nextTick(() => this.$refs.closeButton?.focus()); },
-    closeMenu() { this.open = false; document.body.classList.remove('overflow-hidden'); this.$nextTick(() => this.$refs.menuButton?.focus()); },
+    closeMenu() { if (!this.open) return; this.open = false; document.body.classList.remove('overflow-hidden'); this.$nextTick(() => this.$refs.menuButton?.focus()); },
 }" class="sticky top-0 z-40 bg-[var(--app-sidebar-bg)] text-white">
     <div class="shell-wide">
         <div class="flex items-center justify-between gap-4 h-16">
@@ -83,7 +90,7 @@
             {{-- ============ Brand ============ --}}
             <a href="{{ route('home') }}" class="flex items-center gap-3 min-w-0 group">
                 @if (filled(data_get($brand ?? [], 'logo')))
-                    <x-brand.logo variant="lockup" height="h-9 w-auto max-w-[11rem] object-contain" alt="{{ $school['name'] ?: config('branding.platform.name') }}" />
+                    <x-brand.logo variant="lockup" height="h-9 w-auto max-w-[11rem] object-contain rounded-[0.7rem] bg-white/95 p-1 ring-1 ring-white/30" alt="{{ $school['name'] ?: config('branding.platform.name') }}" />
                 @else
                     <span class="grid place-items-center w-10 h-10 shrink-0 rounded-[var(--radius-lg)] bg-white">
                         <x-brand.logo variant="icon" height="h-8" alt="{{ config('branding.platform.name') }}" />
@@ -110,20 +117,12 @@
             --}}
             <nav aria-label="Navigasi utama" class="hidden lg:block">
                 <ul class="flex items-center gap-1">
-                    @foreach ([
-                        ['route' => 'home',              'label' => 'Beranda'],
-                        ['route' => 'public.about',      'label' => 'Profil'],
-                        ['route' => 'public.programs',   'label' => 'Program'],
-                        ['route' => 'public.news',       'label' => 'Berita'],
-                        ['route' => 'public.contact',    'label' => 'Kontak'],
-                    ] as $item)
-                        @if (Route::has($item['route']))
-                            @php $active = $item['route'] === 'home'
-                                ? request()->routeIs('home')
-                                : request()->routeIs($item['route'], $item['route'].'*'); @endphp
-
-                            <li>
-                                <a href="{{ route($item['route']) }}"
+                    @foreach ($publicNavigation as $item)
+                        @php $itemPath = parse_url($item['url'], PHP_URL_PATH) ?: '/';
+                            $active = ! $item['external'] && trim($itemPath, '/') === trim(request()->path(), '/'); @endphp
+                        <li>
+                                <a href="{{ $item['url'] }}"
+                                   @if ($item['open_in_new_tab']) target="_blank" rel="noopener noreferrer" @endif
                                    @if ($active) aria-current="page" @endif
                                    class="relative block rounded-[var(--radius-sm)] px-3 py-2 text-small font-medium transition-colors
                                           {{ $active
@@ -141,8 +140,7 @@
                                         'bg-white/50 origin-center scale-x-0 group-hover:scale-x-100' => ! $active,
                                     ])></span>
                                 </a>
-                            </li>
-                        @endif
+                        </li>
                     @endforeach
                 </ul>
             </nav>
@@ -241,21 +239,12 @@
             </div>
 
             <ul class="flex-1 overflow-y-auto p-3 space-y-1">
-                @foreach ([
-                    ['route' => 'home',            'label' => 'Beranda'],
-                    ['route' => 'public.about',    'label' => 'Profil Sekolah'],
-                    ['route' => 'public.programs', 'label' => 'Program'],
-                    ['route' => 'public.admission','label' => 'PPDB'],
-                    ['route' => 'public.news',     'label' => 'Berita'],
-                    ['route' => 'public.contact',  'label' => 'Kontak'],
-                ] as $item)
-                    @if (Route::has($item['route']))
-                        @php $active = $item['route'] === 'home'
-                            ? request()->routeIs('home')
-                            : request()->routeIs($item['route'], $item['route'].'*'); @endphp
-
-                        <li>
-                            <a href="{{ route($item['route']) }}"
+                @foreach ($publicNavigation as $item)
+                    @php $itemPath = parse_url($item['url'], PHP_URL_PATH) ?: '/';
+                        $active = ! $item['external'] && trim($itemPath, '/') === trim(request()->path(), '/'); @endphp
+                    <li>
+                            <a href="{{ $item['url'] }}"
+                               @if ($item['open_in_new_tab']) target="_blank" rel="noopener noreferrer" @endif
                                @if ($active) aria-current="page" @endif
                                class="flex items-center min-h-11 rounded-[var(--radius-md)] px-3 text-body transition-colors
                                       {{ $active
@@ -266,8 +255,7 @@
                                     <x-icon name="check" class="w-4 h-4 ml-auto shrink-0 text-[var(--brand-gold)]" />
                                 @endif
                             </a>
-                        </li>
-                    @endif
+                    </li>
                 @endforeach
             </ul>
 
@@ -297,6 +285,8 @@
     <main id="main-content" class="flex-1">
         @yield('body')
     </main>
+
+<x-public.ai-assistant :school="$school" />
 
 <footer class="mt-auto border-t border-[var(--app-border)] bg-[var(--app-surface)]">
         <div class="mx-auto max-w-6xl px-5 sm:px-8 py-8">

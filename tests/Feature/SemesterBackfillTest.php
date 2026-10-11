@@ -50,31 +50,39 @@ class SemesterBackfillTest extends TestCase
     {
         parent::setUp();
 
-        $this->year2026 = AcademicYear::create([
-            'name' => '2026/2027',
-            'start_date' => '2026-07-01',
-            'end_date' => '2027-06-30',
-            'status' => AcademicYear::ACTIVE,
-            'is_active' => true,
-        ]);
+        $this->year2026 = AcademicYear::firstOrCreate(
+            ['name' => '2026/2027'],
+            [
+                'start_date' => '2026-07-01',
+                'end_date' => '2027-06-30',
+                'status' => AcademicYear::ACTIVE,
+                'is_active' => true,
+            ]
+        );
 
-        $this->year2025 = AcademicYear::create([
-            'name' => '2025/2026',
-            'start_date' => '2025-07-01',
-            'end_date' => '2026-06-30',
-            'status' => AcademicYear::ARCHIVED,
-            'is_active' => false,
-        ]);
+        $this->year2025 = AcademicYear::firstOrCreate(
+            ['name' => '2025/2026'],
+            [
+                'start_date' => '2025-07-01',
+                'end_date' => '2026-06-30',
+                'status' => AcademicYear::ARCHIVED,
+                'is_active' => false,
+            ]
+        );
 
         $this->subject = new SubjectFixture(
-            \App\Models\Subject::create(['name' => 'Matematika', 'code' => 'MTK', 'grade_level' => 'X'])
+            \App\Models\Subject::firstOrCreate(
+                ['code' => 'MTK'],
+                ['name' => 'Matematika', 'grade_level' => 'X']
+            )
         );
 
         // 2026 uses both terms; 2025 uses only term 1.
         $this->grade($this->year2026, 1, '1', 88.00);
         $this->grade($this->year2026, 1, '2', 91.50);
         $this->grade($this->year2026, 2, '1', 75.25);
-        $this->grade($this->year2025, 3, '1', 80.00);
+        // Keep the probe scores distinct from the seeded showcase grades.
+        $this->grade($this->year2025, 3, '1', 80.01);
     }
 
     private function grade(AcademicYear $year, int $studentSeq, string $term, float $score): Grade
@@ -139,7 +147,7 @@ class SemesterBackfillTest extends TestCase
 
         // The point of the fixture. '1' exists in both years, so a join on term
         // alone would attach the 2025 score to the 2026 semester.
-        $grade2025 = Grade::where('score', 80.00)->firstOrFail();
+        $grade2025 = Grade::where('score', 80.01)->firstOrFail();
         $grade2026 = Grade::where('score', 88.00)->firstOrFail();
 
         $this->assertSame($this->year2025->id, $grade2025->semester->academic_year_id);

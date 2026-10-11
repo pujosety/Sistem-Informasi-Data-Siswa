@@ -30,7 +30,10 @@ use Illuminate\Validation\ValidationException;
  */
 class CmsPostService
 {
-    public function __construct(private readonly CmsContentSanitizer $sanitizer) {}
+    public function __construct(
+        private readonly CmsContentSanitizer $sanitizer,
+        private readonly CmsBlockService $blockEditor,
+    ) {}
 
 
     /**
@@ -49,6 +52,7 @@ class CmsPostService
         // Cleaned on the way in, so the database never holds a payload that
         // some future renderer might not escape.
         $post->body = $this->sanitizer->clean($attributes['body'] ?? null);
+        $post->blocks = $this->blockEditor->normalize($attributes['blocks'] ?? []);
         $post->excerpt = $attributes['excerpt']
             ?? $this->sanitizer->excerpt($attributes['body'] ?? null);
 
@@ -77,6 +81,10 @@ class CmsPostService
     {
         return DB::transaction(function () use ($post, $actor, $attributes) {
             $this->snapshot($post, $actor);
+
+            if (array_key_exists('blocks', $attributes)) {
+                $attributes['blocks'] = $this->blockEditor->normalize($attributes['blocks']);
+            }
 
             if (array_key_exists('title', $attributes) && $attributes['title'] !== $post->title) {
                 $post->title = $attributes['title'];
@@ -199,6 +207,13 @@ class CmsPostService
             $post->body = $this->sanitizer->clean($payload['body']);
         }
 
+        // Revisions created before typed blocks existed represent the legacy
+        // body-only state. Restoring them clears newer blocks; newer payloads
+        // are revalidated so a tampered/legacy snapshot cannot inject markup.
+        $post->blocks = array_key_exists('blocks', $payload)
+            ? $this->blockEditor->forPublicRender($payload['blocks'])
+            : [];
+
         // Never carried back: publication, authorship, and the window.
         $post->is_public = false;
         $post->author_id = $actor->id;
@@ -281,6 +296,7 @@ class CmsPostService
                 'title' => $post->title,
                 'slug' => $post->slug,
                 'body' => $post->body,
+                'blocks' => $post->blocks,
                 'excerpt' => $post->excerpt,
                 'meta_title' => $post->meta_title,
                 'meta_description' => $post->meta_description,

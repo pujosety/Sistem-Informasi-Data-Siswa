@@ -42,6 +42,7 @@ class VerificationService
         private readonly CompletenessService $completeness,
         private readonly AuditService $audit,
         private readonly NotificationService $notifications,
+        private readonly WorkflowService $workflow,
     ) {}
 
     public function approveDocument(Registration $registration, Document $document, int $adminId, ?string $note = null): Registration
@@ -56,6 +57,7 @@ class VerificationService
         $this->documents->recordVerification($registration, 'approve', $adminId, $document, $note);
         $this->audit->log('document.approved', $document, 'Dokumen disetujui: '.$document->documentType?->name);
         $this->notifications->onDocumentVerified($registration, $document->documentType?->name ?? 'Dokumen');
+        $this->recordOnWorkflow($document, $adminId, WorkflowAction::APPROVE, $note);
 
         return $this->recalculateStatus($registration, $adminId);
     }
@@ -77,6 +79,7 @@ class VerificationService
         $this->documents->recordVerification($registration, 'reject', $adminId, $document, $reason);
         $this->audit->log('document.rejected', $document, 'Dokumen ditolak: '.$document->documentType?->name);
         $this->notifications->onDocumentRejected($registration, $document->documentType?->name ?? 'Dokumen', $reason);
+        $this->recordOnWorkflow($document, $adminId, WorkflowAction::REJECT, $reason);
 
         return $registration->refresh();
     }
@@ -159,5 +162,26 @@ class VerificationService
         }
 
         return $registration->refresh();
+    }
+
+    /**
+     * Keep the shared workflow ledger additive and best-effort. The document
+     * status remains the source of truth so older installations without the
+     * seeded definition continue to process reviews normally.
+     */
+    private function recordOnWorkflow(Document $document, int $adminId, string $action, ?string $note): void
+    {
+        try {
+            $actor = User::find($adminId);
+
+            if (! $actor) {
+                return;
+            }
+
+            $instance = $this->workflow->start(self::WORKFLOW_KEY, $document, $actor);
+            $this->workflow->act($instance, $actor, $action, $note);
+        } catch (\Throwable $e) {
+            report($e);
+        }
     }
 }

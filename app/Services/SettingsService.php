@@ -27,6 +27,7 @@ class SettingsService
      */
     private static ?bool $dbUsable = null;
     private static ?bool $hasSchoolColumn = null;
+    private ?\Illuminate\Support\Collection $memoizedRows = null;
 
     /**
      * key => [value, type, group, label, hint, sort]
@@ -119,6 +120,26 @@ class SettingsService
     ];
 
     /**
+     * Clear process-local probes between isolated requests/tests.
+     *
+     * The values are intentionally static for request-level memoization, but
+     * long-lived workers and PHPUnit reuse the PHP process across database
+     * resets. Leaving them set can make a later test read the previous
+     * connection/schema state.
+     */
+    public static function resetProcessState(): void
+    {
+        static::$dbUsable = null;
+        static::$hasSchoolColumn = null;
+    }
+
+    /** Clear this service instance's per-request settings memo. */
+    public function resetRuntimeState(): void
+    {
+        $this->memoizedRows = null;
+    }
+
+    /**
      * Settings rows, or an EMPTY collection when the table is not usable.
      *
      * This runs from a global view composer, so on a fresh deployment it is
@@ -136,8 +157,12 @@ class SettingsService
      */
     public function all(): \Illuminate\Support\Collection
     {
+        if ($this->memoizedRows instanceof \Illuminate\Support\Collection) {
+            return $this->memoizedRows;
+        }
+
         if (! $this->databaseUsable()) {
-            return new \Illuminate\Support\Collection;
+            return $this->memoizedRows = new \Illuminate\Support\Collection;
         }
 
         try {
@@ -153,7 +178,7 @@ class SettingsService
             // The table is missing: a not-yet-migrated database, not a broken
             // one. DEFAULTS below cover every key, so an empty store is safe.
             if ($this->isMissingTable($e)) {
-                return new \Illuminate\Support\Collection;
+                return $this->memoizedRows = new \Illuminate\Support\Collection;
             }
 
             // A real connection/permission failure. Do not swallow it: the
@@ -161,14 +186,14 @@ class SettingsService
             // error page itself can still render.
             report($e);
 
-            return new \Illuminate\Support\Collection;
+            return $this->memoizedRows = new \Illuminate\Support\Collection;
         } catch (\Throwable $e) {
             report($e);
 
-            return new \Illuminate\Support\Collection;
+            return $this->memoizedRows = new \Illuminate\Support\Collection;
         }
 
-        return $rows;
+        return $this->memoizedRows = $rows;
     }
 
     /**
@@ -214,54 +239,21 @@ class SettingsService
 
     public function get(string $key, mixed $default = null): mixed
     {
-        // Branding is rendered on every public/authenticated surface. Read it
-        // directly so a deployment cache from an earlier worker can never make
-        // login show a stale identity after an admin or migration update.
-        if (($definition = self::DEFAULTS[$key] ?? null) && $this->schoolId() !== null && $this->databaseUsable()) {
-            try {
-                $query = Setting::where('key', $key);
-                $this->applySchoolScope($query);
-                $fresh = $query->first();
-                if ($fresh) {
-                    return $fresh->typedValue();
-                }
-            } catch (\Throwable $e) {
-                report($e);
-            }
-        }
-
-        // all() is memoised per request, so this costs nothing extra.
+        // `all()` is memoized for the current SettingsService instance and
+        // backed by the shared cache. Reusing it avoids one database query per
+        // branding key while keeping cache invalidation centralized in flush().
         $setting = $this->all()->get($key);
 
         if (! $setting) {
-            // No row (or no table): DEFAULTS are the contract, so the UI still
-            // renders with sensible branding before installation.
             return $default ?? (self::DEFAULTS[$key][0] ?? null);
         }
 
-        // The settings table is the source of truth. Legacy identity cleanup
-        // belongs in a one-time migration, not in every read, so administrator
-        // edits are reflected exactly across every surface.
         return $setting->typedValue();
     }
 
     public function group(string $group): array
     {
         $rows = $this->all();
-
-        if ($group === 'branding' && $this->databaseUsable()) {
-            try {
-                $query = Setting::where('group', $group);
-                $this->applySchoolScope($query);
-                $rows = $query
-                    ->orderBy('sort_order')
-                    ->get()
-                    ->mapWithKeys(fn (Setting $setting) => [$setting->key => $setting]);
-            } catch (\Throwable $e) {
-                report($e);
-            }
-        }
-
         $keys = collect(self::DEFAULTS)
             ->filter(fn (array $definition) => $definition[2] === $group)
             ->keys()
@@ -318,6 +310,7 @@ class SettingsService
 
     public function flush(): void
     {
+        $this->memoizedRows = null;
         Cache::forget($this->cacheKey());
     }
 
@@ -370,22 +363,7 @@ class SettingsService
      */
     public function asset(string $key): ?string
     {
-        // Asset paths must be read fresh. A forever-cached settings collection
-        // can briefly retain the empty pre-upload value in another PHPix worker
-        // even after the upload request flushed the cache in its own worker.
-        // The database row is the source of truth for these two URLs.
         $path = $this->get($key);
-
-        if (in_array($key, ['branding.logo', 'branding.icon', 'branding.logo_dark', 'branding.logo_compact', 'branding.favicon', 'branding.app_icon', 'branding.login_logo'], true)) {
-            try {
-                $query = Setting::where('key', $key);
-                $this->applySchoolScope($query);
-                $fresh = $query->first();
-                $path = $fresh?->typedValue() ?? $path;
-            } catch (\Throwable $e) {
-                report($e);
-            }
-        }
 
         if (! filled($path)) {
             return null;

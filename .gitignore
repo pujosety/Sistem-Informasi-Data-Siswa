@@ -23,6 +23,7 @@ Thumbs.db
 # --- Node / frontend build -------------------------------------------------
 /node_modules
 /public/build
+/public/workspace-design-build
 /public/hot
 npm-debug.log*
 yarn-error.log*

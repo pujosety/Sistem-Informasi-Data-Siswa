@@ -1,7 +1,7 @@
 # Dead permissions — the honest list
 
-**Date:** 2026-09-30
-**Baseline:** 23 dead permissions before this batch, **10 after**.
+**Date:** 2026-10-09
+**Baseline:** 23 dead permissions. Nine remaining permissions from the reviewed group are retired; `cms.navigation.manage` has been restored with a working feature.
 
 Of the 13 cleared, four were not screens that were missing — they were
 **permissions that existed and guarded nothing**:
@@ -99,7 +99,7 @@ The policy now reads `module.*`. That is the right direction of travel —
 `system.*` is host configuration (maintenance mode, environment), and a grant
 that can switch off the CMS does not need to sit in the same hand.
 
-## Still dead — 10
+## Retired from the catalogue — 9
 
 ### Group A — delete permissions with no soft-delete story
 
@@ -112,22 +112,23 @@ The documents module solved this by **not offering delete** and disabling
 accounts instead. These three should get the same answer, or a real one — not a
 button that hides data from a report card.
 
-**Recommendation: delete from the catalogue.** The soft-delete-by-disabling
-pattern already exists and is proven.
+**Resolved: removed from the catalogue.** The soft-delete-by-disabling pattern
+already exists and is proven; destructive deletion remains unavailable until a
+retention policy is approved.
 
 ### Group B — CMS features that were never built
 
-`cms.pages.edit`, `cms.pages.publish`, `cms.navigation.manage`,
+`cms.pages.edit`, `cms.pages.publish`,
 `cms.themes.manage`, `cms.settings.manage`
 
 The CMS ships with an editor, a publication gate, revisions and a media
-library. Pages, menus, themes and site settings do not exist. `cms.view` and
-the post permissions are live; these five are the rest of the Phase 4 brief
+library. Pages, themes and site settings do not exist. `cms.view` and
+the post permissions are live; the remaining four were the rest of the Phase 4 brief
 wearing catalogue entries.
 
-**Recommendation: keep, and mark as unbuilt in the role editor**, or delete.
-The important part is that the matrix stops implying a teacher can change the
-site theme.
+**Resolved:** pages, themes, and site settings remain removed until implemented.
+`cms.navigation.manage` was restored only after adding the school-scoped menu
+editor, its route gate, public rendering, audit events, and regression tests.
 
 ### Group C — one permission, one missing screen
 
@@ -140,11 +141,10 @@ site theme.
 current assignment rather than a form field), `master.update` (edit forms for
 years, departments, classes and document types, which had none at all).
 
-**Still open:** `dashboard.student.view`. The student portal is gated by
-`role:siswa`, not by a permission, so this one has no natural home — either the
-portal starts consulting it, or it goes.
+**Resolved: removed from the catalogue.** The student portal's supported access
+boundary is the `siswa` role, so this permission had no enforcement point.
 
-### Group D — deliberate, keep
+### Group D — Super Admin assignment boundary
 
 `role.assign.super_admin`
 
@@ -153,13 +153,18 @@ is not Super Admin, but they do so by checking `isSuperAdmin()` rather than by
 consulting this permission. That check is the correct security boundary and it
 should stay regardless — but the permission is then decorative.
 
-**Recommendation: either wire it into the check, or delete it and let the
-`isSuperAdmin()` rule stand undocumented in the matrix.**
+**Resolved: removed from the catalogue.** Assignment remains guarded by the
+explicit `isSuperAdmin()` check in the role editor and user-management flow; it
+is not configurable through ordinary role grants.
 
 ## The one-line rule
 
 > Every permission in the catalogue is either enforced by code or deleted from
 > the catalogue. There is no third state.
 
-This was already the definition of done in the batch plan. It is not met yet.
+The regression test `PreviouslyDeadPermissionsTest::test_unimplemented_and_non_permission_capabilities_are_not_offered_as_grants`
+asserts that all 9 retired names are absent from the catalogue and that
+`RoleSeeder` detaches legacy grants from existing roles. Retired permission rows
+may remain in the Spatie permissions table, but they are not offered or granted;
+re-seeding removes them from the built-in role grants.
 

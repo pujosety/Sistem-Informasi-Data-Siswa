@@ -112,7 +112,10 @@ class EmployeeRecordTest extends TestCase
      */
     public function test_an_employee_can_exist_without_an_account(): void
     {
-        $department = Department::create(['name' => 'Administrasi', 'code' => 'ADM']);
+        $department = Department::firstOrCreate(
+            ['code' => 'ADM'],
+            ['name' => 'Administrasi']
+        );
 
         $employee = Employee::create([
             'department_id' => $department->id,
@@ -154,10 +157,14 @@ class EmployeeRecordTest extends TestCase
 
         // A resignation must not erase the teaching history. A hard delete here
         // would cascade through homeroom assignments and grades.
-        $year = AcademicYear::create([
-            'name' => '2026/2027', 'start_date' => '2026-07-01',
-            'end_date' => '2027-06-30', 'is_active' => true,
-        ]);
+        $year = AcademicYear::firstOrCreate(
+            ['name' => '2026/2027'],
+            [
+                'start_date' => '2026-07-01',
+                'end_date' => '2027-06-30',
+                'is_active' => true,
+            ]
+        );
         $class = SchoolClass::create([
             'academic_year_id' => $year->id, 'name' => 'X IPA 1',
             'code' => 'X-IPA-1', 'level' => 'X', 'status' => SchoolClass::ACTIVE,

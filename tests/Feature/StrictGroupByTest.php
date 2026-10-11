@@ -40,18 +40,23 @@ class StrictGroupByTest extends TestCase
             $this->previousMode = null;
         }
 
-        $year = AcademicYear::create([
-            'name' => '2026/2027',
-            'start_date' => '2026-07-01',
-            'end_date' => '2027-06-30',
-            'status' => AcademicYear::ACTIVE,
-            'is_active' => true,
-            'is_default' => true,
-        ]);
+        $year = AcademicYear::firstOrCreate(
+            ['name' => '2026/2027'],
+            [
+                'start_date' => '2026-07-01',
+                'end_date' => '2027-06-30',
+                'status' => AcademicYear::ACTIVE,
+                'is_active' => true,
+                'is_default' => true,
+            ]
+        );
 
-        $dept = Department::create(['name' => 'IPA', 'code' => 'IPA']);
+        $dept = Department::firstOrCreate(
+            ['code' => 'IPA'],
+            ['name' => 'IPA']
+        );
 
-        foreach ([['X IPA 1', 'X'], ['X IPA 2', 'X'], ['XI IPA 1', 'XI']] as [$name, $level]) {
+        foreach ([['Strict X IPA 1', 'STRICT-X'], ['Strict X IPA 2', 'STRICT-X'], ['Strict XI IPA 1', 'STRICT-XI']] as [$name, $level]) {
             SchoolClass::create([
                 'academic_year_id' => $year->id,
                 'department_id' => $dept->id,
@@ -122,11 +127,10 @@ class StrictGroupByTest extends TestCase
 
         $rows = $response->viewData('byLevel');
 
-        // Two X classes and one XI class.
-        $this->assertCount(2, $rows);
-
         $byLevel = $rows->keyBy('level');
-        $this->assertSame(2, (int) $byLevel['X']->c);
-        $this->assertSame(1, (int) $byLevel['XI']->c);
+        // The migration suite includes showcase classes, so assert the isolated
+        // fixture levels rather than assuming the database starts empty.
+        $this->assertSame(2, (int) $byLevel['STRICT-X']->c);
+        $this->assertSame(1, (int) $byLevel['STRICT-XI']->c);
     }
 }

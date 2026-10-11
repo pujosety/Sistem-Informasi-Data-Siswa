@@ -26,6 +26,7 @@ use App\Http\Controllers\EnrollmentController;
 use App\Http\Controllers\HomeroomController;
 use App\Http\Controllers\WorkspaceController;
 use App\Http\Controllers\HealthController;
+use App\Http\Controllers\AiChatController;
 use App\Http\Controllers\ParentPortalController;
 use App\Http\Controllers\PublicHomeController;
 use Illuminate\Support\Facades\Route;
@@ -74,6 +75,22 @@ require __DIR__.'/fitur-guardian.php';
 
 /* Feature: CMS media */
 require __DIR__.'/fitur-cms-media.php';
+
+/* Feature: CMS public navigation */
+require __DIR__.'/fitur-cms-navigation.php';
+
+/* Feature: CMS Studio workspace */
+require __DIR__.'/fitur-cms-workspace.php';
+
+/* Feature: authenticated Workspace Drive */
+require __DIR__.'/fitur-workspace-drive.php';
+require __DIR__.'/fitur-workspace-uploads.php';
+require __DIR__.'/fitur-workspace-scans.php';
+require __DIR__.'/fitur-workspace-sharing.php';
+require __DIR__.'/fitur-workspace-design.php';
+
+/* Feature: Collabora WOPI host */
+require __DIR__.'/fitur-wopi.php';
 
 // CMS-MEDIA: media library (own file, own permissions)
 require __DIR__.'/media.php';
@@ -124,6 +141,10 @@ require __DIR__.'/fitur-workflow-ppdb.php';
 // ours win. Do not add a competing `home` route here.
 
 Route::get('/health', HealthController::class)->name('health');
+
+Route::post('/api/ai/chat', AiChatController::class)
+    ->middleware('throttle:10,1')
+    ->name('ai.chat');
 
 /*
 |--------------------------------------------------------------------------
@@ -284,16 +305,16 @@ Route::middleware(['auth', 'can:dashboard.admin.view'])->prefix('admin')->name('
         Route::delete('/pengguna/{user}', [UserManagementController::class, 'destroy'])->name('users.destroy');
     });
 
-    Route::middleware('can:cms.view')->group(function () {
+    Route::middleware(['module:cms', 'can:cms.view'])->group(function () {
         Route::get('/landing', [\App\Http\Controllers\LandingSectionController::class, 'index'])->name('landing.index');
         Route::get('/landing/{landingSection}/ubah', [\App\Http\Controllers\LandingSectionController::class, 'edit'])->name('landing.edit');
     });
 
-    Route::middleware('can:cms.posts.edit')->group(function () {
+    Route::middleware(['module:cms', 'can:cms.posts.edit'])->group(function () {
         Route::put('/landing/{landingSection}', [\App\Http\Controllers\LandingSectionController::class, 'update'])->name('landing.update');
     });
 
-    Route::middleware('can:cms.view')->group(function () {
+    Route::middleware(['module:cms', 'can:cms.view'])->group(function () {
         Route::get('/pesan', [\App\Http\Controllers\ContactMessageController::class, 'index'])->name('contact-messages');
         Route::put('/pesan/{contactMessage}', [\App\Http\Controllers\ContactMessageController::class, 'update'])->name('contact-messages.update');
     });
@@ -308,24 +329,30 @@ Route::middleware(['auth', 'can:dashboard.admin.view'])->prefix('admin')->name('
      | so a school can grant a teacher the ability to draft without granting
      | the ability to publish. See PostPolicy for why that split exists.
      */
-    Route::middleware('can:cms.view')->group(function () {
+    // Keep this static path ahead of /konten/{post}, whose slug binding would
+    // otherwise treat the reserved word "baru" as a post and return 404.
+    Route::middleware(['module:cms', 'can:cms.posts.create'])
+        ->get('/konten/baru', [CmsAdminController::class, 'create'])
+        ->name('cms.create');
+
+    Route::middleware(['module:cms', 'can:cms.view'])->group(function () {
         Route::get('/konten', [CmsAdminController::class, 'index'])->name('cms.index');
         Route::get('/konten/{post}', [CmsAdminController::class, 'show'])->name('cms.show');
     });
 
-    Route::middleware('can:cms.posts.create')->group(function () {
-        Route::get('/konten/baru', [CmsAdminController::class, 'create'])->name('cms.create');
+    Route::middleware(['module:cms', 'can:cms.posts.create'])->group(function () {
         Route::post('/konten', [CmsAdminController::class, 'store'])->name('cms.store');
     });
 
-    Route::middleware('can:cms.posts.edit')->group(function () {
+    Route::middleware(['module:cms', 'can:cms.posts.edit'])->group(function () {
         Route::get('/konten/{post}/ubah', [CmsAdminController::class, 'edit'])->name('cms.edit');
         Route::put('/konten/{post}', [CmsAdminController::class, 'update'])->name('cms.update');
+        Route::post('/konten/{post}/pratinjau', [CmsAdminController::class, 'preview'])->name('cms.preview');
         Route::get('/konten/{post}/revisi', [CmsAdminController::class, 'revisions'])->name('cms.revisions');
         Route::post('/konten/{post}/revisi/{revision}/kembalikan', [CmsAdminController::class, 'restoreRevision'])->name('cms.revisions.restore');
     });
 
-    Route::middleware('can:cms.posts.publish')->group(function () {
+    Route::middleware(['module:cms', 'can:cms.posts.publish'])->group(function () {
         Route::post('/konten/{post}/terbitkan', [CmsAdminController::class, 'publish'])->name('cms.publish');
         Route::post('/konten/{post}/tarik', [CmsAdminController::class, 'unpublish'])->name('cms.unpublish');
         // The scheduler is not running on a single-container host, so a due
@@ -334,7 +361,7 @@ Route::middleware(['auth', 'can:dashboard.admin.view'])->prefix('admin')->name('
     });
 
     // Sending a draft for review is an edit, not a publication.
-    Route::middleware('can:cms.posts.edit')->group(function () {
+    Route::middleware(['module:cms', 'can:cms.posts.edit'])->group(function () {
         Route::post('/konten/{post}/tinjau', [CmsAdminController::class, 'submitForReview'])->name('cms.submit');
     });
 

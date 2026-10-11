@@ -10,6 +10,8 @@ use App\Models\Semester;
 use App\Models\Subject;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use App\Services\SchoolContext;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class CourseController extends Controller
@@ -17,15 +19,18 @@ class CourseController extends Controller
     public function index(Request $request): View
     {
         $user = $request->user();
+        $filters = $request->validate(['classroom_id' => ['nullable', 'integer']]);
+        $classroomId = $filters['classroom_id'] ?? null;
 
         $courses = Course::query()
             ->with(['academicYear', 'semester', 'subject', 'classroom'])
+            ->when($classroomId, fn ($query) => $query->where('classroom_id', $classroomId))
             ->when(! $user->isSuperAdmin() && ! $user->can('lms.course.view.all'),
                 fn ($query) => $query->where('teacher_id', $user->id))
             ->latest('id')
             ->paginate(15);
 
-        return view('lms.teacher.courses.index', compact('courses'));
+        return view('lms.teacher.courses.index', compact('courses', 'classroomId'));
     }
 
     public function create(): View
@@ -44,10 +49,28 @@ class CourseController extends Controller
 
         $data = $request->validate([
             'academic_year_id' => ['required', 'integer', 'exists:academic_years,id'],
-            'semester_id' => ['required', 'integer', 'exists:semesters,id'],
+            'semester_id' => [
+                'required',
+                'integer',
+                Rule::exists('semesters', 'id')->where(fn ($query) => $query
+                    ->where('academic_year_id', $request->input('academic_year_id'))),
+            ],
             'subject_id' => ['required', 'integer', 'exists:subjects,id'],
-            'classroom_id' => ['required', 'integer', 'exists:classes,id'],
-            'code' => ['required', 'string', 'max:80', 'unique:lms_courses,code'],
+            'classroom_id' => [
+                'required',
+                'integer',
+                Rule::exists('classes', 'id')->where(fn ($query) => $query
+                    ->where('academic_year_id', $request->input('academic_year_id'))
+                    ->where('status', '!=', SchoolClass::ARCHIVED)),
+            ],
+            'code' => [
+                'required',
+                'string',
+                'max:80',
+                Rule::unique('lms_courses', 'code')->where(
+                    fn ($query) => $query->where('school_id', app(SchoolContext::class)->id())
+                ),
+            ],
             'title' => ['required', 'string', 'max:180'],
             'description' => ['nullable', 'string'],
         ]);
@@ -65,8 +88,14 @@ class CourseController extends Controller
     {
         $this->authorize('view', $course);
 
-        return view('lms.teacher.courses.show', [
-            'course' => $course->load(['academicYear', 'semester', 'subject', 'classroom', 'lessons']),
+        $course->load([
+            'academicYear', 'semester', 'subject', 'classroom',
+            'modules.lessons', 'announcements', 'lessons', 'assignments', 'quizzes.questions',
         ]);
+        $course->loadCount([
+            'enrollments as active_enrollments_count' => fn ($query) => $query->where('status', 'active'),
+        ]);
+
+        return view('lms.teacher.courses.show', compact('course'));
     }
 }

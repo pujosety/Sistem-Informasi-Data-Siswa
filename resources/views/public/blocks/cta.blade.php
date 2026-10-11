@@ -18,10 +18,15 @@
         <div class="relative mx-auto max-w-4xl overflow-hidden rounded-[var(--radius-lg)] bg-[var(--app-primary-dark)] px-6 py-14 text-center sm:px-14 sm:py-20">
 
             @if ($section->media?->url())
-                <img src="{{ $section->media->url() }}"
-                     alt=""
-                     class="absolute inset-0 h-full w-full object-cover opacity-20"
-                     loading="lazy">
+                <x-public.responsive-image
+                    src="{{ $section->media->url() }}"
+                    alt=""
+                    class="absolute inset-0 h-full w-full object-cover opacity-20"
+                    loading="lazy"
+                    decoding="async"
+                    width="1672"
+                    height="941"
+                    sizes="100vw" />
                 <div class="absolute inset-0 bg-[var(--app-primary-dark)]/70"></div>
             @endif
 

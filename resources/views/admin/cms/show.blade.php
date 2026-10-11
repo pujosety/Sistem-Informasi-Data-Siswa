@@ -36,6 +36,17 @@
     <x-card>
         <div class="flex flex-wrap items-center gap-3">
             <x-status-badge :status="$post->status" />
+            @can('cms.posts.edit')
+                @unless ($post->isVisibleToPublic())
+                    <form method="POST" action="{{ route('admin.cms.preview', $post) }}">
+                        @csrf
+                        <button type="submit" class="btn btn-secondary">
+                            <x-icon name="eye" class="w-4 h-4" />
+                            Pratinjau Sementara
+                        </button>
+                    </form>
+                @endunless
+            @endcan
             @if ($post->is_public)
                 <a href="{{ $post->url() }}" target="_blank" rel="noopener"
                    class="btn btn-secondary">

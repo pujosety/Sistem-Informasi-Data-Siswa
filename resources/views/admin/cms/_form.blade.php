@@ -12,6 +12,7 @@
      */
     $isEdit = $post->exists;
     $tagValue = old('tags', $isEdit ? $post->tags->pluck('name')->implode(', ') : '');
+    $initialBlocks = old('blocks', $post->blocks ?? []);
 @endphp
 
 <div class="max-w-3xl space-y-4 sm:space-y-5">
@@ -55,6 +56,112 @@
 
                 <x-form-field name="body" type="textarea" label="Isi" :rows="14" :value="$post->body"
                               placeholder="Tulis isi artikel di sini. Formatting dasar didukung; skrip dan tag berbahaya dibuang saat disimpan." />
+            </div>
+        </x-card>
+
+        <x-card title="Blok konten" icon="layout-dashboard"
+                description="Blok terstruktur tampil saat halaman dibaca publik. Jika tidak ada blok, isi klasik di atas tetap digunakan.">
+            <div x-data="{
+                blocks: @js(is_array($initialBlocks) ? array_values($initialBlocks) : []),
+                add(type) {
+                    const block = { type, text: '' };
+                    if (type === 'heading') block.level = 2;
+                    if (type === 'button') block.url = '';
+                    this.blocks.push(block);
+                },
+                move(index, direction) {
+                    const destination = index + direction;
+                    if (destination < 0 || destination >= this.blocks.length) return;
+                    const [block] = this.blocks.splice(index, 1);
+                    this.blocks.splice(destination, 0, block);
+                },
+                remove(index) {
+                    this.blocks.splice(index, 1);
+                }
+            }" class="space-y-4">
+                <input type="hidden" name="blocks_present" value="1">
+
+                <p x-show="blocks.length === 0" role="status" aria-live="polite"
+                   class="rounded-[var(--radius-md)] border border-dashed border-[var(--app-border)] p-4 text-sm text-[var(--app-text-muted)]">
+                    Belum ada blok. Tambahkan judul, paragraf, atau tombol.
+                </p>
+
+                <template x-for="(block, index) in blocks" :key="index">
+                    <fieldset class="space-y-4 rounded-[var(--radius-md)] border border-[var(--app-border)] p-4">
+                        <legend class="px-1 text-sm font-semibold text-[var(--app-text)]">
+                            Blok <span x-text="index + 1"></span>
+                        </legend>
+
+                        <div class="flex flex-wrap items-center gap-2">
+                            <button type="button" class="btn btn-secondary"
+                                    x-on:click="move(index, -1)" x-bind:disabled="index === 0"
+                                    x-bind:aria-label="'Pindahkan blok ke atas, posisi ' + (index + 1)">
+                                Pindahkan ke atas
+                            </button>
+                            <button type="button" class="btn btn-secondary"
+                                    x-on:click="move(index, 1)" x-bind:disabled="index === blocks.length - 1"
+                                    x-bind:aria-label="'Pindahkan blok ke bawah, posisi ' + (index + 1)">
+                                Pindahkan ke bawah
+                            </button>
+                            <button type="button" class="btn btn-secondary text-[var(--app-danger)]"
+                                    x-on:click="remove(index)" x-bind:aria-label="'Hapus blok ' + (index + 1)">
+                                Hapus blok
+                            </button>
+                        </div>
+
+                        <div>
+                            <label class="label" x-bind:for="'cms-block-type-' + index">Jenis blok</label>
+                            <select class="field" x-bind:id="'cms-block-type-' + index"
+                                    x-bind:name="'blocks[' + index + '][type]'" x-model="block.type">
+                                <option value="heading">Judul</option>
+                                <option value="paragraph">Paragraf</option>
+                                <option value="button">Tombol tautan</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="label" x-bind:for="'cms-block-text-' + index">Teks</label>
+                            <textarea class="field" rows="3" maxlength="5000"
+                                      x-bind:id="'cms-block-text-' + index"
+                                      x-bind:name="'blocks[' + index + '][text]'" x-model="block.text"></textarea>
+                        </div>
+
+                        <template x-if="block.type === 'heading'">
+                            <div>
+                                <label class="label" x-bind:for="'cms-block-level-' + index">Tingkat judul</label>
+                                <select class="field" x-bind:id="'cms-block-level-' + index"
+                                        x-bind:name="'blocks[' + index + '][level]'" x-model="block.level">
+                                    <option value="2">H2</option>
+                                    <option value="3">H3</option>
+                                    <option value="4">H4</option>
+                                </select>
+                            </div>
+                        </template>
+
+                        <template x-if="block.type === 'button'">
+                            <div>
+                                <label class="label" x-bind:for="'cms-block-url-' + index">Tautan tombol</label>
+                                <input class="field" type="text" maxlength="2048" autocomplete="url"
+                                       placeholder="/ppdb atau https://contoh.id"
+                                       x-bind:id="'cms-block-url-' + index"
+                                       x-bind:name="'blocks[' + index + '][url]'" x-model="block.url">
+                                <p class="mt-1 text-caption text-[var(--app-text-subtle)]">Gunakan path internal atau alamat HTTPS.</p>
+                            </div>
+                        </template>
+                    </fieldset>
+                </template>
+
+                <div class="flex flex-wrap gap-2">
+                    <button type="button" class="btn btn-secondary" x-on:click="add('heading')">Tambah judul</button>
+                    <button type="button" class="btn btn-secondary" x-on:click="add('paragraph')">Tambah paragraf</button>
+                    <button type="button" class="btn btn-secondary" x-on:click="add('button')">Tambah tombol</button>
+                </div>
+
+                @foreach ($errors->getMessages() as $field => $messages)
+                    @if (str_starts_with($field, 'blocks'))
+                        <p role="alert" class="text-sm text-[var(--app-danger)]">{{ $messages[0] }}</p>
+                    @endif
+                @endforeach
             </div>
         </x-card>
 

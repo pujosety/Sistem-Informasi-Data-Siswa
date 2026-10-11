@@ -2,6 +2,7 @@
 
 > **PHASE 0 audit artifact.** The complete URL surface, what guards it, and
 > where it conflicts with the target route architecture.
+> **Historical snapshot:** route counts and public surfaces have changed; see [PHASE0-PLATFORM-AUDIT.md](PHASE0-PLATFORM-AUDIT.md) for the current route-table check.
 
 Audit date: 2026-09-29 · Source: `routes/web.php`, 119 named routes, 8 prefixes
 

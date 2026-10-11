@@ -2,6 +2,7 @@
 
 > **PHASE 0 audit artifact.** The current 86-permission catalogue, the
 > role→permission mapping, and the naming scheme the new modules must follow.
+> **Historical snapshot:** permission counts and grants have changed; current catalogue (108 names) and development DB drift are recorded in [PHASE0-PLATFORM-AUDIT.md](PHASE0-PLATFORM-AUDIT.md).
 
 Audit date: 2026-09-29 · Source: `app/Services/PermissionCatalog.php`
 

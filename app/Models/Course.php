@@ -2,12 +2,15 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToSchool;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Course extends \Illuminate\Database\Eloquent\Model
 {
+    use BelongsToSchool;
+
     public const DRAFT = 'draft';
     public const PUBLISHED = 'published';
     public const ARCHIVED = 'archived';
@@ -15,9 +18,14 @@ class Course extends \Illuminate\Database\Eloquent\Model
     protected $table = 'lms_courses';
 
     protected $fillable = [
-        'academic_year_id', 'semester_id', 'subject_id', 'classroom_id',
+        'school_id', 'academic_year_id', 'semester_id', 'subject_id', 'classroom_id',
         'teacher_id', 'code', 'title', 'description', 'status',
     ];
+
+    public function school(): BelongsTo
+    {
+        return $this->belongsTo(School::class);
+    }
 
     public function academicYear(): BelongsTo
     {
@@ -52,6 +60,36 @@ class Course extends \Illuminate\Database\Eloquent\Model
     public function lessons(): HasMany
     {
         return $this->hasMany(Lesson::class)->orderBy('position');
+    }
+
+    public function modules(): HasMany
+    {
+        return $this->hasMany(LmsModule::class)->orderBy('position');
+    }
+
+    public function lessonProgress(): HasMany
+    {
+        return $this->hasMany(LessonProgress::class);
+    }
+
+    public function discussions(): HasMany
+    {
+        return $this->hasMany(LmsDiscussion::class)->latest();
+    }
+
+    public function announcements(): HasMany
+    {
+        return $this->hasMany(LmsAnnouncement::class)->latest('published_at');
+    }
+
+    public function assignments(): HasMany
+    {
+        return $this->hasMany(LmsAssignment::class)->latest('due_at');
+    }
+
+    public function quizzes(): HasMany
+    {
+        return $this->hasMany(LmsQuiz::class)->latest('due_at');
     }
 
     public function scopePublished(Builder $query): Builder

@@ -9,8 +9,10 @@ use App\Models\Tag;
 use App\Services\AuditService;
 use App\Services\CmsPostService;
 use App\Services\CompletenessService;
+use App\Services\SchoolContext;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 
@@ -89,6 +91,29 @@ class CmsAdminController extends BaseController
         $this->authorize('update', $post);
 
         return view('admin.cms.edit', $this->formOptions(['post' => $post->load('tags')]));
+    }
+
+    public function preview(Post $post): RedirectResponse
+    {
+        $this->authorize('update', $post);
+
+        $school = app(SchoolContext::class)->current();
+        abort_unless($school && (int) $post->school_id === (int) $school->id, 404);
+
+        $expiresAt = now()->addMinutes(15);
+        $previewUrl = URL::temporarySignedRoute('public.cms.preview', $expiresAt, [
+            'postId' => $post->getKey(),
+            'school' => $school->slug,
+        ]);
+
+        app(AuditService::class)->log(
+            'cms.post.preview_link_generated',
+            $post,
+            'Membuat tautan pratinjau bertanda tangan yang berlaku 15 menit.',
+            ['school_id' => $school->id, 'expires_at' => $expiresAt->toIso8601String()],
+        );
+
+        return redirect()->to($previewUrl);
     }
 
     public function show(Post $post): View
@@ -238,7 +263,19 @@ class CmsAdminController extends BaseController
             'tags' => ['nullable', 'string', 'max:255'],
             'public_from' => ['nullable', 'date'],
             'public_until' => ['nullable', 'date', 'after_or_equal:public_from'],
+            'blocks_present' => ['sometimes', 'boolean'],
+            'blocks' => ['sometimes', 'nullable', 'array', 'max:40'],
+            'blocks.*' => ['required', 'array'],
+            'blocks.*.type' => ['required', 'string', 'in:heading,paragraph,button'],
+            'blocks.*.text' => ['required', 'string', 'max:5000'],
+            'blocks.*.level' => ['nullable', 'integer', 'in:2,3,4'],
+            'blocks.*.url' => ['nullable', 'string', 'max:2048'],
         ]);
+
+        if ($request->boolean('blocks_present')) {
+            $data['blocks'] = $data['blocks'] ?? [];
+        }
+        unset($data['blocks_present']);
 
         // A page has no date; a post without a body is an empty shell. Neither
         // is worth storing, and both are easier to catch here than in review.

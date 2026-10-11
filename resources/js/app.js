@@ -1,7 +1,16 @@
-import './bootstrap';
 import Alpine from 'alpinejs';
-import './landing-crowd';
 import { registerSW } from './pwa.js';
+import './workspace-resumable-upload.js';
+
+// Keep route-specific animation and companion code out of pages that cannot use
+// it. The modules register their Alpine hooks before Alpine starts below.
+const optionalModules = [];
+if (document.querySelector('[data-landing-crowd]')) {
+    optionalModules.push(import('./landing-crowd.js'));
+}
+if (document.querySelector('.lyfla-ai')) {
+    optionalModules.push(import('./ai-assistant.js'));
+}
 
 const THEME_KEY = 'lyfla.theme';
 const themeOptions = [
@@ -149,7 +158,10 @@ document.addEventListener('alpine:init', () => {
 });
 
 window.Alpine = Alpine;
-Alpine.start();
+
+Promise.all(optionalModules).finally(() => {
+    Alpine.start();
+});
 
 /* Surface Laravel's flash messages through the toast queue. */
 document.addEventListener('DOMContentLoaded', () => {

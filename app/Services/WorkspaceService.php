@@ -24,6 +24,8 @@ class WorkspaceService
     public const TIER_OPERATIONAL = 'operational';
     public const TIER_PORTAL = 'portal';
     public const TIER_ASSIGNED = 'assigned';
+    public const TIER_LEARNING = 'learning';
+    public const TIER_CONTENT = 'content';
 
     /**
      * Every workspace the user can reach, in priority order.
@@ -80,6 +82,22 @@ class WorkspaceService
             array_splice($workspaces, 1, 0, [$this->ws(
                 'parent', 'Orang Tua/Wali', 'parent.dashboard', 'heart-handshake', self::TIER_PORTAL, false,
             )]);
+        }
+
+        $learnRoute = $this->learnRouteFor($user);
+        if ($learnRoute && app(ModuleService::class)->isEnabled('lms')) {
+            $workspaces[] = $this->ws(
+                'learn', 'LYFLA Learn', $learnRoute, 'book-open', self::TIER_LEARNING, false,
+            );
+        }
+
+        // Content Management is a permission- and module-scoped workspace,
+        // not a role. It is offered only to users who can read CMS content and
+        // only while the operator has the CMS module enabled.
+        if ($user->can('cms.view') && app(ModuleService::class)->isEnabled('cms')) {
+            $workspaces[] = $this->ws(
+                'cms', 'LYFLA Studio', 'cms.workspace', 'file-text', self::TIER_CONTENT, false,
+            );
         }
 
         // The switcher is only meaningful when there is genuinely a choice.
@@ -180,6 +198,8 @@ class WorkspaceService
             self::TIER_OPERATIONAL => 'Operasional',
             self::TIER_PORTAL => 'Portal',
             self::TIER_ASSIGNED => 'Penugasan',
+            self::TIER_LEARNING => 'Pembelajaran',
+            self::TIER_CONTENT => 'Konten',
             default => 'Lainnya',
         };
     }
@@ -205,6 +225,23 @@ class WorkspaceService
             ->where('user_id', $user->id)
             ->where('status', \App\Models\HomeroomAssignment::ACTIVE)
             ->count();
+    }
+
+    private function learnRouteFor(\App\Models\User $user): ?string
+    {
+        if (($user->isSuperAdmin() || $user->hasRole('admin')) && $user->can('lms.monitor.view')) {
+            return 'lms.monitoring';
+        }
+
+        if ($user->can('lms.course.view')) {
+            return 'lms.teacher.courses.index';
+        }
+
+        if ($user->can('lms.student.view')) {
+            return 'lms.student.dashboard';
+        }
+
+        return $user->can('lms.monitor.view') ? 'lms.monitoring' : null;
     }
 
     /**

@@ -36,16 +36,21 @@ class ClassScopeAuthorizationTest extends TestCase
         parent::setUp();
         $this->seedRoles();
 
-        $year = AcademicYear::create([
-            'name' => '2026/2027',
-            'start_date' => '2026-07-01',
-            'end_date' => '2027-06-30',
-            'status' => AcademicYear::ACTIVE,
-            'is_active' => true,
-            'is_default' => true,
-        ]);
+        $year = AcademicYear::firstOrCreate(
+            ['name' => '2026/2027'],
+            [
+                'start_date' => '2026-07-01',
+                'end_date' => '2027-06-30',
+                'status' => AcademicYear::ACTIVE,
+                'is_active' => true,
+                'is_default' => true,
+            ]
+        );
 
-        $department = Department::create(['name' => 'IPA', 'code' => 'IPA']);
+        $department = Department::firstOrCreate(
+            ['code' => 'IPA'],
+            ['name' => 'IPA']
+        );
 
         $this->ownClass = SchoolClass::create([
             'academic_year_id' => $year->id,

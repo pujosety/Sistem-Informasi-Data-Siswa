@@ -21,10 +21,15 @@
     {{-- The supplied campus render, heavily overlaid: readable at any
          contrast, and it grounds the block in the actual school. --}}
     @if ($section->media?->url())
-        <img src="{{ $section->media->url() }}"
-             alt=""
-             class="absolute inset-0 h-full w-full object-cover opacity-20"
-             loading="lazy">
+        <x-public.responsive-image
+            src="{{ $section->media->url() }}"
+            alt=""
+            class="absolute inset-0 h-full w-full object-cover opacity-20"
+            loading="lazy"
+            decoding="async"
+            width="1672"
+            height="941"
+            sizes="100vw" />
     @endif
 
     <div class="absolute inset-0 bg-gradient-to-r from-[var(--app-primary-dark)] via-[var(--app-primary)]/90 to-[var(--app-primary-alt)]/80"></div>

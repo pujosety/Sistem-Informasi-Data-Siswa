@@ -17,6 +17,10 @@ services:
       - .:/var/www/html
       - vendor-data:/var/www/html/vendor
     working_dir: /var/www/html
+    environment:
+      WORKSPACE_WOPI_HOST_URL: "${WORKSPACE_WOPI_HOST_URL:-http://host.docker.internal:8000}"
+      COLLABORA_INTERNAL_URL: "${COLLABORA_INTERNAL_URL:-http://collabora:9980}"
+      COLLABORA_PUBLIC_URL: "${COLLABORA_PUBLIC_URL:-http://localhost:9980}"
     # `artisan serve` is a SINGLE-process server, and it caches the framework
     # in memory on boot. That combination is why it answered 500 while the very
     # same request returned 200 through the kernel: the boot happened before
@@ -49,6 +53,34 @@ services:
       timeout: 5s
       retries: 20
 
+  # Optional local-only WOPI client. Do not use CODE as a production service.
+  collabora:
+    image: collabora/code:26.04.4.2.1
+    profiles: ["collabora"]
+    restart: unless-stopped
+    cap_add:
+      - MKNOD
+    environment:
+      aliasgroup1: "${WORKSPACE_WOPI_HOST_URL:-http://host.docker.internal:8000}"
+      extra_params: "--o:ssl.enable=false --o:ssl.termination=false --o:welcome.enable=false"
+    ports:
+      - "127.0.0.1:9980:9980"
+    depends_on:
+      app:
+        condition: service_started
+
+  # Opt-in only: check Docker RAM/free disk before starting. No host port.
+  clamav:
+    image: "${WORKSPACE_CLAMAV_IMAGE:-clamav/clamav:1.4_base}"
+    profiles: ["scanner"]
+    restart: unless-stopped
+    mem_limit: 4g
+    cpus: 2.0
+    volumes:
+      - clamav-signatures:/var/lib/clamav
+      - ./docker/clamd-workspace.conf:/etc/clamav/clamd.conf:ro
+
 volumes:
+  clamav-signatures:
   mysql-data:
   vendor-data:

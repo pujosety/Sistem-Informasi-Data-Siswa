@@ -2,9 +2,18 @@
 
 use App\Http\Controllers\Lms\CourseController;
 use App\Http\Controllers\Lms\LessonController;
+use App\Http\Controllers\Lms\StudentLmsController;
+use App\Http\Controllers\Lms\AssignmentController;
+use App\Http\Controllers\Lms\QuizController;
+use App\Http\Controllers\Lms\ModuleController;
+use App\Http\Controllers\Lms\EnrollmentController;
+use App\Http\Controllers\Lms\GradebookController;
+use App\Http\Controllers\Lms\AnnouncementController;
+use App\Http\Controllers\Lms\DiscussionController;
+use App\Http\Controllers\Lms\MonitoringController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['auth', 'can:lms.course.view'])
+Route::middleware(['auth', 'module:lms', 'can:lms.course.view'])
     ->prefix('lms/teaching')
     ->name('lms.teacher.')
     ->scopeBindings()
@@ -17,6 +26,48 @@ Route::middleware(['auth', 'can:lms.course.view'])
             ->middleware('can:lms.course.create')
             ->name('courses.store');
         Route::get('/courses/{course}', [CourseController::class, 'show'])->name('courses.show');
+        Route::get('/courses/{course}/modules/create', [ModuleController::class, 'create'])
+            ->middleware('can:lms.lesson.manage')
+            ->name('modules.create');
+        Route::post('/courses/{course}/modules', [ModuleController::class, 'store'])
+            ->middleware('can:lms.lesson.manage')
+            ->name('modules.store');
+        Route::get('/courses/{course}/modules/{module}/edit', [ModuleController::class, 'edit'])
+            ->middleware('can:lms.lesson.manage')
+            ->name('modules.edit');
+        Route::put('/courses/{course}/modules/{module}', [ModuleController::class, 'update'])
+            ->middleware('can:lms.lesson.manage')
+            ->name('modules.update');
+        Route::post('/courses/{course}/modules/{module}/publish', [ModuleController::class, 'publish'])
+            ->middleware('can:lms.lesson.manage')
+            ->name('modules.publish');
+        Route::get('/courses/{course}/enrollments', [EnrollmentController::class, 'index'])
+            ->middleware('can:lms.enrollment.manage')
+            ->name('enrollments.index');
+        Route::post('/courses/{course}/enrollments', [EnrollmentController::class, 'store'])
+            ->middleware('can:lms.enrollment.manage')
+            ->name('enrollments.store');
+        Route::delete('/courses/{course}/enrollments/{enrollment}', [EnrollmentController::class, 'destroy'])
+            ->middleware('can:lms.enrollment.manage')
+            ->name('enrollments.destroy');
+        Route::get('/courses/{course}/gradebook', [GradebookController::class, 'index'])
+            ->middleware('can:lms.gradebook.view')
+            ->name('gradebook.index');
+        Route::get('/courses/{course}/announcements/create', [AnnouncementController::class, 'create'])
+            ->middleware('can:lms.lesson.manage')
+            ->name('announcements.create');
+        Route::post('/courses/{course}/announcements', [AnnouncementController::class, 'store'])
+            ->middleware('can:lms.lesson.manage')
+            ->name('announcements.store');
+        Route::post('/courses/{course}/announcements/{announcement}/publish', [AnnouncementController::class, 'publish'])
+            ->middleware('can:lms.lesson.manage')
+            ->name('announcements.publish');
+        Route::get('/courses/{course}/discussions', [DiscussionController::class, 'index'])
+            ->middleware('can:lms.discussion.view')
+            ->name('courses.discussions.index');
+        Route::post('/courses/{course}/discussions', [DiscussionController::class, 'store'])
+            ->middleware('can:lms.discussion.create')
+            ->name('courses.discussions.store');
 
         Route::get('/courses/{course}/lessons/create', [LessonController::class, 'create'])
             ->middleware('can:lms.lesson.manage')
@@ -33,4 +84,57 @@ Route::middleware(['auth', 'can:lms.course.view'])
         Route::post('/courses/{course}/lessons/{lesson}/publish', [LessonController::class, 'publish'])
             ->middleware('can:lms.lesson.manage')
             ->name('lessons.publish');
+        Route::get('/courses/{course}/assignments/create', [AssignmentController::class, 'create'])
+            ->middleware('can:lms.assignment.manage')->name('assignments.create');
+        Route::post('/courses/{course}/assignments', [AssignmentController::class, 'store'])
+            ->middleware('can:lms.assignment.manage')->name('assignments.store');
+        Route::post('/courses/{course}/assignments/{assignment}/publish', [AssignmentController::class, 'publish'])
+            ->middleware('can:lms.assignment.manage')->name('assignments.publish');
+        Route::get('/courses/{course}/assignments/{assignment}/submissions', [AssignmentController::class, 'submissions'])
+            ->middleware('can:lms.assignment.grade')->name('assignments.submissions');
+        Route::put('/courses/{course}/assignments/{assignment}/submissions/{submission}', [AssignmentController::class, 'grade'])
+            ->middleware('can:lms.assignment.grade')->name('submissions.grade');
+        Route::get('/submissions/{submission}/workspace-file', [AssignmentController::class, 'downloadWorkspaceSnapshot'])
+            ->middleware('can:lms.assignment.grade')->name('submissions.workspace-download');
+        Route::post('/courses/{course}/quizzes', [QuizController::class, 'store'])
+            ->middleware('can:lms.assignment.manage')->name('quizzes.store');
+        Route::post('/courses/{course}/quizzes/{quiz}/questions', [QuizController::class, 'storeQuestion'])
+            ->middleware('can:lms.assignment.manage')->name('quizzes.questions.store');
+        Route::post('/courses/{course}/quizzes/{quiz}/publish', [QuizController::class, 'publish'])
+            ->middleware('can:lms.assignment.manage')->name('quizzes.publish');
+    });
+
+Route::middleware(['auth', 'module:lms', 'can:lms.monitor.view'])
+    ->prefix('lms')
+    ->name('lms.')
+    ->group(function () {
+        Route::get('/monitoring', [MonitoringController::class, 'index'])->name('monitoring');
+    });
+
+Route::middleware(['auth', 'module:lms', 'can:lms.student.view'])
+    ->prefix('lms')
+    ->name('lms.student.')
+    ->scopeBindings()
+    ->group(function () {
+        Route::get('/dashboard', [StudentLmsController::class, 'dashboard'])->name('dashboard');
+        Route::get('/courses/{course}', [StudentLmsController::class, 'show'])->name('courses.show');
+        Route::get('/courses/{course}/discussions', [DiscussionController::class, 'index'])
+            ->middleware('can:lms.discussion.view')
+            ->name('courses.discussions.index');
+        Route::post('/courses/{course}/discussions', [DiscussionController::class, 'store'])
+            ->middleware('can:lms.discussion.create')
+            ->name('courses.discussions.store');
+        Route::post('/courses/{course}/lessons/{lesson}/complete', [StudentLmsController::class, 'completeLesson'])
+            ->middleware('can:lms.lesson.complete')
+            ->name('lessons.complete');
+        Route::get('/courses/{course}/assignments/{assignment}', [AssignmentController::class, 'showForStudent'])
+            ->name('assignments.show');
+        Route::post('/courses/{course}/assignments/{assignment}', [AssignmentController::class, 'submit'])
+            ->middleware('can:lms.assignment.submit')->name('assignments.submit');
+        Route::get('/submissions/{submission}/workspace-file', [AssignmentController::class, 'downloadWorkspaceSnapshot'])
+            ->name('submissions.workspace-download');
+        Route::get('/courses/{course}/quizzes/{quiz}', [QuizController::class, 'showForStudent'])
+            ->name('quizzes.show');
+        Route::post('/courses/{course}/quizzes/{quiz}', [QuizController::class, 'submit'])
+            ->name('quizzes.submit');
     });

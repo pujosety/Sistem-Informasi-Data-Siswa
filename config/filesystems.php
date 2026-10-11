@@ -157,6 +157,37 @@ return [
             'report' => false,
         ],
 
+        // Workspace objects are private and never use the public disk. S3 uses
+        // a separate bucket setting to prevent accidental reuse of a public
+        // media bucket. Bytes are served only through owner-checked controllers.
+        'workspace' => [
+            'driver' => env('WORKSPACE_STORAGE_DRIVER', 'local'),
+            'root' => env('WORKSPACE_STORAGE_DRIVER', 'local') === 's3'
+                ? env('WORKSPACE_STORAGE_PREFIX', 'lyfla-workspace')
+                : env('WORKSPACE_STORAGE_ROOT', storage_path('app/workspace')),
+            'key' => env('WORKSPACE_STORAGE_ACCESS_KEY', env('AWS_ACCESS_KEY_ID')),
+            'secret' => env('WORKSPACE_STORAGE_SECRET_KEY', env('AWS_SECRET_ACCESS_KEY')),
+            'region' => env('WORKSPACE_STORAGE_REGION', env('AWS_DEFAULT_REGION', 'us-east-1')),
+            'bucket' => env('WORKSPACE_STORAGE_BUCKET'),
+            'endpoint' => env('WORKSPACE_STORAGE_ENDPOINT'),
+            'use_path_style_endpoint' => env('WORKSPACE_STORAGE_USE_PATH_STYLE_ENDPOINT', false),
+            'http' => [
+                'verify' => file_exists(base_path('resources/certs/cacert.pem'))
+                    ? base_path('resources/certs/cacert.pem')
+                    : true,
+            ],
+            'options' => [
+                'http' => [
+                    'verify' => file_exists(base_path('resources/certs/cacert.pem'))
+                        ? base_path('resources/certs/cacert.pem')
+                        : true,
+                ],
+            ],
+            'visibility' => 'private',
+            'throw' => true,
+            'report' => true,
+        ],
+
     ],
 
     /*
