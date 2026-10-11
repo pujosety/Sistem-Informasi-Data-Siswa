@@ -131,6 +131,17 @@ jobs:
           DB_PASSWORD: ${{ env.CI_DB_PASSWORD }}
         run: php artisan migrate --force --env=testing
 
+      - name: Run Workspace quota and resumable upload tests in isolation
+        env:
+          APP_ENV: testing
+          DB_CONNECTION: mysql
+          DB_HOST: ${{ env.CI_DB_HOST }}
+          DB_PORT: ${{ env.CI_DB_PORT }}
+          DB_DATABASE: ${{ env.CI_DB_DATABASE }}
+          DB_USERNAME: ${{ env.CI_DB_USERNAME }}
+          DB_PASSWORD: ${{ env.CI_DB_PASSWORD }}
+        run: php artisan test --filter='WorkspaceQuotaTest|WorkspaceResumableUploadTest'
+
       - name: Run test suite
         env:
           APP_ENV: testing
