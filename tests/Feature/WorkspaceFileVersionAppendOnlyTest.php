@@ -3,12 +3,15 @@
 namespace Tests\Feature;
 
 use App\Models\WorkspaceFile;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class WorkspaceFileVersionAppendOnlyTest extends TestCase
 {
+    use RefreshDatabase;
+
     public function test_existing_version_cannot_be_updated_or_deleted_but_relationship_create_remains_available(): void
     {
         $schoolId = DB::table('schools')->value('id');
