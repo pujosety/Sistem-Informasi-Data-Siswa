@@ -1,5 +1,7 @@
 # LYFLA LMS Audit — 7 October 2026
 
+> **Historical snapshot:** LMS status was rechecked on 2026-10-09; current module state, tenant risks, test result and remaining capability gaps are summarized in [PHASE0-PLATFORM-AUDIT.md](PHASE0-PLATFORM-AUDIT.md).
+
 ## Scope
 
 This audit covers the LMS implementation currently present in the Laravel/Blade project. It is based on the route table, models, migrations, controllers, views, permissions, and the existing LMS test suite.

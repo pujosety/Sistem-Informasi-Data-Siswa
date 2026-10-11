@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
-class LmsDeadlineNotificationTest extends TestCase
+class LmsDeadlineNotificationTest extends LmsTestCase
 {
     use RefreshDatabase;
 

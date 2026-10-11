@@ -11,7 +11,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
-class CourseDiscussionTest extends TestCase
+class CourseDiscussionTest extends LmsTestCase
 {
     use RefreshDatabase;
 

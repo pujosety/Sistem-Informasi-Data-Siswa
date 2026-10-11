@@ -3,6 +3,7 @@
 > **PHASE 0 audit artifact.** What works today, what is partial, what is
 > duplicated, what is missing — and how each piece maps into the target
 > module architecture.
+> **Historical snapshot:** the 2026-09-29 status table is superseded by [PHASE0-PLATFORM-AUDIT.md](PHASE0-PLATFORM-AUDIT.md); CMS, LMS, public site, HRIS and workflow have since been implemented further.
 
 Audit date: 2026-09-29
 

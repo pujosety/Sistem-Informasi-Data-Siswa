@@ -14,7 +14,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
-class TeacherGradebookTest extends TestCase
+class TeacherGradebookTest extends LmsTestCase
 {
     use RefreshDatabase;
 

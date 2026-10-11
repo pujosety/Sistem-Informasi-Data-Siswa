@@ -81,6 +81,12 @@ return Application::configure(basePath: dirname(__DIR__))
                 ->middleware('web')
                 ->name('public.news.show');
 
+            // Draft previews are bearer links with a short expiry. They remain
+            // disabled with the CMS module and are rejected unless signature-valid.
+            Route::get('/cms/pratinjau/{postId}', [\App\Http\Controllers\PublicCmsController::class, 'preview'])
+                ->middleware(['web', 'module:cms', 'signed', 'throttle:60,1'])
+                ->name('public.cms.preview');
+
             /* The temporary /__diag deployment probe was removed here.
 
                It existed while the production database was unreachable and the
@@ -105,6 +111,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             // Legacy role guard, kept so existing routes keep working.
             'role' => EnsureRole::class,
+            // Module toggles must protect direct requests as well as navigation.
+            'module' => \App\Http\Middleware\EnsureModuleEnabled::class,
             // The real enforcement going forward.
             'can' => \App\Http\Middleware\EnsurePermission::class,
         ]);

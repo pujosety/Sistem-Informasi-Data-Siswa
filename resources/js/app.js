@@ -1,5 +1,6 @@
 import Alpine from 'alpinejs';
 import { registerSW } from './pwa.js';
+import './workspace-resumable-upload.js';
 
 // Keep route-specific animation and companion code out of pages that cannot use
 // it. The modules register their Alpine hooks before Alpine starts below.

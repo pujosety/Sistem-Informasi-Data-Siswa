@@ -33,6 +33,9 @@
         <x-card title="Pengumpulan Terakhir" icon="check-circle">
             <p class="text-small text-[var(--app-text-muted)]">Dikirim {{ $submission->submitted_at?->format('d M Y H:i') }}{{ $submission->is_late ? ' · Terlambat' : '' }}</p>
             @if ($submission->body)<p class="mt-3 whitespace-pre-line text-body">{{ $submission->body }}</p>@endif
+            @if ($submission->workspace_file_version_id)
+                <a class="btn btn-secondary mt-3" href="{{ route('lms.student.submissions.workspace-download', $submission) }}">Unduh file Drive yang dikumpulkan</a>
+            @endif
             @if ($submission->status === 'graded')
                 <div class="mt-4 rounded-[var(--radius-md)] bg-[var(--app-success-soft)] p-4">
                     <p class="text-small font-semibold text-[var(--app-success)]">Nilai: {{ $submission->score }} / {{ $assignment->max_score }}</p>
@@ -49,6 +52,14 @@
                 @endif
                 @if (in_array($assignment->submission_type, ['file', 'text_file'], true))
                     <x-form-field name="file" label="File jawaban" type="file" class="mt-4" hint="PDF, Office, gambar; maksimal 10 MB." />
+                    <label class="mt-4 block text-small font-medium">Atau pilih file Workspace Drive
+                        <select name="workspace_file" class="form-input mt-1 w-full">
+                            <option value="">Tidak memilih</option>
+                            @foreach ($driveFiles as $driveFile)
+                                <option value="{{ $driveFile->public_id }}">{{ $driveFile->name }}</option>
+                            @endforeach
+                        </select>
+                    </label>
                 @endif
                 <div class="mt-5 flex justify-end"><button class="btn btn-primary">Kirim Tugas</button></div>
             </x-card>

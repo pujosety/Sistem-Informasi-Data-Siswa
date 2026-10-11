@@ -27,7 +27,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::prefix('admin')->name('admin.')->middleware(['auth', 'can:dashboard.admin.view'])->group(function () {
+Route::prefix('admin')->name('admin.')->middleware(['auth', 'module:cms', 'can:dashboard.admin.view'])->group(function () {
     // --- read / write, wider than managing -------------------------------
     Route::middleware('can:cms.view')->group(function () {
         Route::get('/media', [MediaController::class, 'index'])->name('media.index');

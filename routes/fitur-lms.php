@@ -13,7 +13,7 @@ use App\Http\Controllers\Lms\DiscussionController;
 use App\Http\Controllers\Lms\MonitoringController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['auth', 'can:lms.course.view'])
+Route::middleware(['auth', 'module:lms', 'can:lms.course.view'])
     ->prefix('lms/teaching')
     ->name('lms.teacher.')
     ->scopeBindings()
@@ -94,6 +94,8 @@ Route::middleware(['auth', 'can:lms.course.view'])
             ->middleware('can:lms.assignment.grade')->name('assignments.submissions');
         Route::put('/courses/{course}/assignments/{assignment}/submissions/{submission}', [AssignmentController::class, 'grade'])
             ->middleware('can:lms.assignment.grade')->name('submissions.grade');
+        Route::get('/submissions/{submission}/workspace-file', [AssignmentController::class, 'downloadWorkspaceSnapshot'])
+            ->middleware('can:lms.assignment.grade')->name('submissions.workspace-download');
         Route::post('/courses/{course}/quizzes', [QuizController::class, 'store'])
             ->middleware('can:lms.assignment.manage')->name('quizzes.store');
         Route::post('/courses/{course}/quizzes/{quiz}/questions', [QuizController::class, 'storeQuestion'])
@@ -102,14 +104,14 @@ Route::middleware(['auth', 'can:lms.course.view'])
             ->middleware('can:lms.assignment.manage')->name('quizzes.publish');
     });
 
-Route::middleware(['auth', 'can:lms.monitor.view'])
+Route::middleware(['auth', 'module:lms', 'can:lms.monitor.view'])
     ->prefix('lms')
     ->name('lms.')
     ->group(function () {
         Route::get('/monitoring', [MonitoringController::class, 'index'])->name('monitoring');
     });
 
-Route::middleware(['auth', 'can:lms.student.view'])
+Route::middleware(['auth', 'module:lms', 'can:lms.student.view'])
     ->prefix('lms')
     ->name('lms.student.')
     ->scopeBindings()
@@ -129,6 +131,8 @@ Route::middleware(['auth', 'can:lms.student.view'])
             ->name('assignments.show');
         Route::post('/courses/{course}/assignments/{assignment}', [AssignmentController::class, 'submit'])
             ->middleware('can:lms.assignment.submit')->name('assignments.submit');
+        Route::get('/submissions/{submission}/workspace-file', [AssignmentController::class, 'downloadWorkspaceSnapshot'])
+            ->name('submissions.workspace-download');
         Route::get('/courses/{course}/quizzes/{quiz}', [QuizController::class, 'showForStudent'])
             ->name('quizzes.show');
         Route::post('/courses/{course}/quizzes/{quiz}', [QuizController::class, 'submit'])

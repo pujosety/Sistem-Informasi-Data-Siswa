@@ -14,6 +14,9 @@
                     <h2 class="font-semibold">{{ $submission->student?->full_name ?? 'Siswa' }}</h2>
                     <p class="text-caption text-[var(--app-text-muted)]">{{ $submission->submitted_at?->format('d M Y H:i') }}{{ $submission->is_late ? ' · Terlambat' : '' }}</p>
                     @if ($submission->body)<p class="mt-3 whitespace-pre-line text-small">{{ $submission->body }}</p>@endif
+                    @if ($submission->workspace_file_version_id)
+                        <a class="btn btn-secondary mt-3" href="{{ route('lms.teacher.submissions.workspace-download', $submission) }}">Unduh file Drive yang dikumpulkan</a>
+                    @endif
                 </div>
                 <form method="POST" action="{{ route('lms.teacher.submissions.grade', [$course, $assignment, $submission]) }}" class="w-full max-w-sm space-y-3">
                     @csrf @method('PUT')

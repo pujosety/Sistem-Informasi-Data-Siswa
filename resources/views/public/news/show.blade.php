@@ -11,6 +11,13 @@
 @section('og_image', $pageImage)
 
 @section('body')
+@if ($isPreview ?? false)
+    <div class="mx-auto max-w-3xl px-5 pt-4 sm:px-8">
+        <p role="status" aria-live="polite" class="rounded-[var(--radius-md)] border border-[var(--app-border)] bg-[var(--app-surface-muted)] px-4 py-3 text-small text-[var(--app-text)]">
+            Pratinjau sementara. Konten ini belum dipublikasikan; tautan berlaku 15 menit.
+        </p>
+    </div>
+@endif
 <article>
     <header class="bg-[var(--app-sidebar-bg)] text-white">
         <div class="mx-auto max-w-3xl px-5 sm:px-8 py-12">
@@ -54,7 +61,11 @@
             from the write path, this line becomes the XSS it was written to
             avoid; CmsSanitisationTest fails in that case and says so.
         --}}
-        <div class="prose-sida max-w-none">{!! $post->body !!}</div>
+        @if ($renderableBlocks !== [])
+            @include('components.cms.block-renderer', ['blocks' => $renderableBlocks])
+        @else
+            <div class="prose-sida max-w-none">{!! $post->body !!}</div>
+        @endif
 
         @if ($post->tags->isNotEmpty())
             <ul class="mt-10 flex flex-wrap gap-2">

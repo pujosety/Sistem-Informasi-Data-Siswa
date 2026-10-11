@@ -14,7 +14,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
-class AssignmentFlowTest extends TestCase
+class AssignmentFlowTest extends LmsTestCase
 {
     use RefreshDatabase;
 

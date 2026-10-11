@@ -91,6 +91,9 @@ class SchoolContextTest extends TestCase
             ->assertSessionHas('active_school_slug', 'smp-negeri-4-metro');
 
         $this->assertSame('smp-negeri-4-metro', session('active_school_slug'));
+
+        $this->get(route('settings.index'))->assertOk();
+        $this->assertSame($second->id, app(SchoolContext::class)->id(), 'The selected school must survive the redirect and next request.');
     }
 
     /** @test */
@@ -121,5 +124,28 @@ class SchoolContextTest extends TestCase
         $this->get('/?school=smp-negeri-1-metro')
             ->assertOk()
             ->assertSee('SMP 1 LYFLA');
+    }
+
+    public function test_non_super_admin_session_cannot_switch_school_context(): void
+    {
+        School::firstOrCreate(
+            ['slug' => 'smp-negeri-4-metro'],
+            [
+                'name' => 'SMP Negeri 4 Metro',
+                'short_name' => 'SMPN 4 Metro',
+                'level' => 'SMP',
+                'status' => 'Negeri',
+                'is_active' => true,
+                'is_default' => false,
+            ],
+        );
+        $user = $this->makeUser('kesiswaan');
+
+        $response = $this->actingAs($user)
+            ->withSession(['active_school_slug' => 'smp-negeri-4-metro'])
+            ->get('/');
+
+        $response->assertOk()->assertSee('SMP 1 LYFLA')->assertDontSee('SMP Negeri 4 Metro');
+        $this->assertSame('smp-negeri-1-metro', app(SchoolContext::class)->slug());
     }
 }

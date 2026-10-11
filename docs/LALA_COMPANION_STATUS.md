@@ -68,5 +68,5 @@ No unrestricted database, shell, or generic model lookup tool is allowed.
 ## Known verification limits
 
 - Focused LALA and LMS tests pass in Docker.
-- The broader application suite still has known fixture/data-isolation failures in `ClassScopeAuthorizationTest` and `CmsPublicationTest`.
+- The full application suite passed on 2026-10-09: **547 tests, 2,870 assertions**. This is local test evidence, not a production data/security read-back.
 - Production deployment uses the existing Wasmer path; each completed slice is deployed and browser-verified separately.

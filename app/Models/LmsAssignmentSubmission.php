@@ -15,7 +15,7 @@ class LmsAssignmentSubmission extends Model
 
     protected $table = 'lms_assignment_submissions';
     protected $fillable = [
-        'school_id', 'assignment_id', 'student_id', 'body', 'file_path', 'submitted_at',
+        'school_id', 'assignment_id', 'student_id', 'body', 'file_path', 'workspace_file_version_id', 'submitted_at',
         'is_late', 'score', 'feedback', 'graded_by', 'graded_at', 'status',
     ];
     protected $casts = [
@@ -24,6 +24,7 @@ class LmsAssignmentSubmission extends Model
 
     public function school(): BelongsTo { return $this->belongsTo(School::class); }
     public function assignment(): BelongsTo { return $this->belongsTo(LmsAssignment::class, 'assignment_id'); }
+    public function workspaceFileVersion(): BelongsTo { return $this->belongsTo(WorkspaceFileVersion::class, 'workspace_file_version_id'); }
     public function student(): BelongsTo { return $this->belongsTo(Student::class); }
     public function grader(): BelongsTo { return $this->belongsTo(User::class, 'graded_by'); }
 }

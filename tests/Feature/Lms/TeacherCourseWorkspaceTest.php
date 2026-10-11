@@ -6,7 +6,7 @@ use App\Services\RoleSeeder;
 use App\Models\User;
 use Tests\TestCase;
 
-class TeacherCourseWorkspaceTest extends TestCase
+class TeacherCourseWorkspaceTest extends LmsTestCase
 {
     /** @test */
     public function a_staff_lms_user_can_open_the_teacher_course_workspace(): void

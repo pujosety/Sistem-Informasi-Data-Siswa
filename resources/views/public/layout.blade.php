@@ -18,12 +18,18 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', $school['name'] ?: config('branding.platform.name'))</title>
     <meta name="description" content="@yield('description', 'Portal informasi dan administrasi ' . ($school['name'] ?: 'sekolah') . '.')">
-    <link rel="canonical" href="{{ url()->current() }}">
+    @if ($isPreview ?? false)
+        <meta name="robots" content="noindex, nofollow, noarchive">
+    @else
+        <link rel="canonical" href="{{ url()->current() }}">
+    @endif
     <meta property="og:type" content="@yield('og_type', 'website')">
     <meta property="og:site_name" content="{{ $school['name'] ?: config('branding.platform.name') }}">
     <meta property="og:title" content="@yield('title', $school['name'] ?: config('branding.platform.name'))">
     <meta property="og:description" content="@yield('description', 'Portal informasi dan administrasi ' . ($school['name'] ?: 'sekolah') . '.')">
-    <meta property="og:url" content="{{ url()->current() }}">
+    @unless ($isPreview ?? false)
+        <meta property="og:url" content="{{ url()->current() }}">
+    @endunless
     <meta property="og:image" content="@yield('og_image', $brandLogo)" />
     <meta name="twitter:card" content="summary_large_image">
     @php

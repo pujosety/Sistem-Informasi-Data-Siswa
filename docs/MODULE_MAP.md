@@ -2,6 +2,7 @@
 
 > **PHASE 0 audit artifact.** How the 21 target modules map onto what exists,
 > what is new, and which phase owns each.
+> **Historical snapshot:** the module inventory and completion state have changed; see [PHASE0-PLATFORM-AUDIT.md](PHASE0-PLATFORM-AUDIT.md) for current CMS/LMS/Core mapping.
 
 Audit date: 2026-09-29
 

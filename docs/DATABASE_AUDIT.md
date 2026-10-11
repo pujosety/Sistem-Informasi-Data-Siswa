@@ -2,6 +2,7 @@
 
 > **PHASE 0 audit artifact.** The live schema as it exists, and the gaps that
 > block the target modules. Read before writing any migration.
+> **Historical snapshot:** production/local schema status has changed; use [PHASE0-PLATFORM-AUDIT.md](PHASE0-PLATFORM-AUDIT.md) for the 2026-10-09 read-only development DB inventory and its explicit production limits.
 
 Audit date: 2026-09-29 · Source: live MySQL 8.4 on Wasmer (`e61f6ff8`), 35 tables
 

@@ -2,6 +2,7 @@
 
 > **PHASE 0 audit artifact.** How to get from today's 35 tables to the target
 > platform without losing history or breaking the 13 feature test files.
+> **Historical snapshot:** table count, module status, and phase ordering have changed. Use [PHASE0-PLATFORM-AUDIT.md](PHASE0-PLATFORM-AUDIT.md) before planning new migrations.
 
 Audit date: 2026-09-29
 

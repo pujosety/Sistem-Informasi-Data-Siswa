@@ -8,15 +8,21 @@ use App\Models\CourseEnrollment;
 use App\Models\LmsAssignment;
 use App\Models\LmsAssignmentSubmission;
 use App\Models\Student;
+use App\Models\WorkspaceFile;
 use App\Services\NotificationService;
+use App\Services\WorkspaceDriveService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class AssignmentController extends Controller
 {
-    public function __construct(private readonly NotificationService $notifications) {}
+    public function __construct(
+        private readonly NotificationService $notifications,
+        private readonly WorkspaceDriveService $drive,
+    ) {}
 
     public function create(Course $course): View
     {
@@ -111,8 +117,9 @@ class AssignmentController extends Controller
         $student = $this->student($request);
         $this->authorizeEnrollment($student, $course);
         abort_unless($assignment->course_id === $course->id && $assignment->status === LmsAssignment::PUBLISHED, 404);
+        $driveFiles = $this->drive->searchFilesFor($request->user(), '');
         $submission = $assignment->submissions()->where('student_id', $student->id)->latest('id')->first();
-        return view('lms.student.assignments.show', compact('course', 'assignment', 'submission'));
+        return view('lms.student.assignments.show', compact('course', 'assignment', 'submission', 'driveFiles'));
     }
 
     public function submit(Request $request, Course $course, LmsAssignment $assignment): RedirectResponse
@@ -124,6 +131,7 @@ class AssignmentController extends Controller
         $data = $request->validate([
             'body' => ['nullable', 'string', 'max:30000'],
             'file' => ['nullable', 'file', 'mimes:pdf,doc,docx,ppt,pptx,xls,xlsx,jpg,jpeg,png', 'max:10240'],
+            'workspace_file' => ['nullable', 'uuid'],
         ]);
         if ($assignment->submission_type === 'text' && blank($data['body'] ?? null)) {
             return back()->withErrors(['body' => 'Jawaban teks wajib diisi.']);
@@ -133,6 +141,18 @@ class AssignmentController extends Controller
         $late = $assignment->due_at?->isPast() ?? false;
         abort_if($late && ! $assignment->allow_late, 422, 'Batas waktu tugas sudah lewat.');
 
+        $workspaceVersionId = null;
+        if (! empty($data['workspace_file'])) {
+            $workspaceVersionId = DB::transaction(function () use ($request, $data, $student, $course): int {
+                $file = WorkspaceFile::query()->where('public_id', $data['workspace_file'])
+                    ->where('owner_id', $request->user()->id)->where('school_id', $course->school_id)
+                    ->lockForUpdate()->firstOrFail();
+                $this->drive->assertOwner($request->user(), $file);
+                $version = $file->versions()->where('version_number', $file->current_version)->firstOrFail();
+                app(\App\Services\WorkspaceMalwareScanService::class)->assertClean($version);
+                return (int) $version->id;
+            });
+        }
         $filePath = $data['file'] ?? null
             ? $data['file']->store('lms/'.$course->school_id.'/assignments', 'local')
             : null;
@@ -141,6 +161,7 @@ class AssignmentController extends Controller
             'student_id' => $student->id,
             'body' => $data['body'] ?? null,
             'file_path' => $filePath,
+            'workspace_file_version_id' => $workspaceVersionId,
             'submitted_at' => now(),
             'is_late' => $late,
             'status' => LmsAssignmentSubmission::SUBMITTED,
@@ -154,6 +175,29 @@ class AssignmentController extends Controller
         );
         return redirect()->route('lms.student.assignments.show', [$course, $assignment])
             ->with('success', 'Tugas berhasil dikirim.');
+    }
+
+    public function downloadWorkspaceSnapshot(Request $request, LmsAssignmentSubmission $submission)
+    {
+        $submission->load(['assignment.course', 'student', 'workspaceFileVersion']);
+        $assignment = $submission->assignment;
+        $course = $assignment?->course;
+        abort_unless($course && (int) $assignment->school_id === (int) $course->school_id && (int) $submission->school_id === (int) $course->school_id, 404);
+        $user = $request->user();
+        if ($user->student()->whereKey($submission->student_id)->exists()) {
+            abort_unless(CourseEnrollment::query()->where('school_id', $course->school_id)->where('course_id', $course->id)->where('student_id', $submission->student_id)->where('status', CourseEnrollment::ACTIVE)->exists(), 403);
+        } else {
+            abort_unless($user->can('lms.assignment.grade'), 403);
+            $this->authorizeTeacher($course);
+        }
+        $version = $submission->workspaceFileVersion;
+        $file = $version
+            ? WorkspaceFile::withTrashed()->where('school_id', $course->school_id)->whereKey($version->workspace_file_id)->first()
+            : null;
+        abort_unless($version && $file && (int) $file->owner_id === (int) $submission->student?->user_id && (int) $file->school_id === (int) $course->school_id, 404);
+        abort_unless($version->disk === 'workspace' && Storage::disk('workspace')->exists($version->path), 404);
+        app(\App\Services\WorkspaceMalwareScanService::class)->assertClean($version);
+        return Storage::disk('workspace')->download($version->path, basename($file->name), ['Cache-Control' => 'private, no-store', 'X-Content-Type-Options' => 'nosniff']);
     }
 
     private function authorizeTeacher(Course $course): void

@@ -12,7 +12,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
-class TeacherEnrollmentManagementTest extends TestCase
+class TeacherEnrollmentManagementTest extends LmsTestCase
 {
     use RefreshDatabase;
 

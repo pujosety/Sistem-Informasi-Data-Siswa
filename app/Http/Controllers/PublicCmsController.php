@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use App\Models\Department;
 use App\Models\Post;
+use App\Services\CmsBlockService;
 use App\Services\SchoolContext;
 use App\Services\SettingsService;
 use Illuminate\Contracts\View\View;
@@ -13,28 +14,28 @@ use Illuminate\Http\Request;
 /**
  * The public reading side of the CMS.
  *
- * THE ONLY WAY TO READ A POST HERE
+ * PUBLIC READ BOUNDARY
  *
- * Every query in this controller goes through publishedAndPublic(). That scope
- * is not a convenience — it is the boundary. §10 requires that internal data
- * never becomes public by accident, and a controller that filtered on
- * `status = published` alone would publish every finished draft in the school
- * the moment somebody ticked a status.
+ * Public listings, search results, and slug pages go through
+ * publishedAndPublic(), so a draft, unpublished post, future post, expired
+ * post, or post outside the active school is excluded in the query.
  *
- * So there is deliberately no code path here that builds a Post query
- * without that scope, and no per-post re-check afterwards. A second check
- * would be the place a future change forgets one of the two conditions, and it
- * would be invisible: the page would simply look empty.
+ * preview() is the single deliberate exception: its route requires a valid,
+ * expiring signature; the signed school value selects a request-only tenant
+ * scope; and the response is noindex/no-store. Do not add any other draft read
+ * path here or weaken the public scope above.
  *
- * A post that is not visible 404s rather than redirecting, for the same reason
- * as any other absent record: distinguishing "exists but private" from "does
- * not exist" tells an anonymous visitor which slugs the school has drafted.
+ * An unsigned request cannot distinguish "exists but private" from "does not
+ * exist"; ordinary public routes 404 in either case.
  */
 class PublicCmsController extends Controller
 {
     private const PER_PAGE = 12;
 
-    public function __construct(private readonly SettingsService $settings) {}
+    public function __construct(
+        private readonly SettingsService $settings,
+        private readonly CmsBlockService $blockEditor,
+    ) {}
 
     /**
      * The news index.
@@ -79,6 +80,7 @@ class PublicCmsController extends Controller
         return view('public.news.show', [
             'school' => $this->school(),
             'post' => $post,
+            'renderableBlocks' => $this->blockEditor->forPublicRender($post->blocks),
             // Related reading, drawn from the same gate. A post outside it is
             // simply not a candidate.
             'related' => Post::query()
@@ -90,6 +92,60 @@ class PublicCmsController extends Controller
                 ->limit(3)
                 ->get(),
         ]);
+    }
+
+    public function preview(Request $request, int $postId): \Illuminate\Http\Response
+    {
+        $schoolSlug = trim($request->string('school')->toString());
+        abort_if($schoolSlug === '', 404);
+
+        $school = \App\Models\School::query()
+            ->where('is_active', true)
+            ->where('slug', $schoolSlug)
+            ->firstOrFail();
+
+        // The signed query binds the bearer token to one tenant. This override
+        // lasts only for this request and never changes a visitor's session.
+        app(SchoolContext::class)->useForRequest($school);
+
+        $post = Post::query()
+            ->with(['category', 'tags', 'author', 'media'])
+            ->whereKey($postId)
+            ->firstOrFail();
+
+        app(\App\Services\AuditService::class)->log(
+            'cms.post.previewed',
+            $post,
+            'Membuka pratinjau bertanda tangan.',
+            ['school_id' => $school->id],
+        );
+
+        $data = [
+            'school' => $this->school(),
+            'isPreview' => true,
+            'renderableBlocks' => $this->blockEditor->forPublicRender($post->blocks),
+        ];
+
+        if ($post->isPage()) {
+            $data['page'] = $post;
+            $view = 'public.page';
+        } else {
+            $data['post'] = $post;
+            $data['related'] = Post::query()
+                ->posts()
+                ->publishedAndPublic()
+                ->whereKeyNot($post->id)
+                ->when($post->category_id, fn ($query) => $query->where('category_id', $post->category_id))
+                ->orderByDesc('published_at')
+                ->limit(3)
+                ->get();
+            $view = 'public.news.show';
+        }
+
+        return response()->view($view, $data)
+            ->header('X-Robots-Tag', 'noindex, nofollow, noarchive')
+            ->header('Referrer-Policy', 'no-referrer')
+            ->header('Cache-Control', 'private, no-store');
     }
 
     public function search(Request $request): View
@@ -140,9 +196,12 @@ class PublicCmsController extends Controller
             ->where('slug', $slug)
             ->firstOrFail();
 
+        $renderableBlocks = $this->blockEditor->forPublicRender($page->blocks);
+
         return view('public.page', [
             'school' => $this->school(),
             'page' => $page,
+            'renderableBlocks' => $renderableBlocks,
         ]);
     }
 

@@ -13,7 +13,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
-class StudentLearningFlowTest extends TestCase
+class StudentLearningFlowTest extends LmsTestCase
 {
     use RefreshDatabase;
 

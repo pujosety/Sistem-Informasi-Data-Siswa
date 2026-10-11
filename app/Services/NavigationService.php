@@ -91,26 +91,33 @@ class NavigationService
     private function sidebar(User $user): array
     {
         if ($user->isStudent()) {
-            return $this->visible($user, $this->siswaItems());
+            $items = $this->visible($user, $this->siswaItems());
+        } elseif ($this->isParent($user)) {
+            $items = $this->visible($user, $this->parentItems());
+        } else {
+            $items = $this->visible($user, $this->staffItems($user));
+
+            // Kelas Saya is a CONTEXTUAL workspace: it appears because of an
+            // assignment, not because of a role.
+            if ($this->homeroomsAClass($user)) {
+                array_splice($items, 1, 0, [[
+                    'route' => 'academic.homeroom.index',
+                    'active' => 'academic.homeroom.*',
+                    'icon' => 'users-round',
+                    'label' => 'Kelas Saya',
+                    'badge' => $this->homeroomCount($user),
+                ]]);
+            }
         }
 
-        if ($this->isParent($user)) {
-            return $this->visible($user, $this->parentItems());
-        }
-
-        $items = $this->visible($user, $this->staffItems($user));
-
-        // Kelas Saya is a CONTEXTUAL workspace: it appears because of an
-        // assignment, not because of a role.
-        if ($this->homeroomsAClass($user)) {
-            array_splice($items, 1, 0, [[
-                'route' => 'academic.homeroom.index',
-                'active' => 'academic.homeroom.*',
-                'icon' => 'users-round',
-                'label' => 'Kelas Saya',
-                'badge' => $this->homeroomCount($user),
-            ]]);
-        }
+        // Workspace is an authenticated personal tool, not an admin permission.
+        // Owner checks remain server-side on every file operation.
+        array_unshift($items, [
+            'route' => 'workspace.drive.index',
+            'active' => 'workspace.*',
+            'icon' => 'folder-open',
+            'label' => 'Workspace',
+        ]);
 
         return $items;
     }

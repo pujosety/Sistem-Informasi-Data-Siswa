@@ -7,7 +7,7 @@ use App\Services\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-class LmsMonitoringTest extends TestCase
+class LmsMonitoringTest extends LmsTestCase
 {
     use RefreshDatabase;
 

@@ -41,8 +41,19 @@ trait BelongsToSchool
 
     private static function hasSchoolColumn(string $table): bool
     {
-        return static::$schoolColumnCache[$table]
-            ??= Schema::hasColumn($table, 'school_id');
+        if ((static::$schoolColumnCache[$table] ?? false) === true) {
+            return true;
+        }
+
+        // Do not cache a negative result: schema migrations can add the tenant
+        // column later in the same long-lived PHP process (notably in tests).
+        // A stale false would silently remove the school global scope.
+        $hasColumn = Schema::hasColumn($table, 'school_id');
+        if ($hasColumn) {
+            static::$schoolColumnCache[$table] = true;
+        }
+
+        return $hasColumn;
     }
 
     public function school()

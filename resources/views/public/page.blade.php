@@ -2,12 +2,19 @@
 
 @php
     $pageTitle = $page->metaTitle();
-    $pageDescription = $page->meta_description ?: $page->excerpt;
+    $pageDescription = $page->meta_description ?: $page->excerpt ?: 'Informasi seputar '.$page->title.'.';
 @endphp
 @section('title', $pageTitle)
 @section('description', $pageDescription)
 
 @section('body')
+@if ($isPreview ?? false)
+    <div class="mx-auto max-w-3xl px-5 pt-4 sm:px-8">
+        <p role="status" aria-live="polite" class="rounded-[var(--radius-md)] border border-[var(--app-border)] bg-[var(--app-surface-muted)] px-4 py-3 text-small text-[var(--app-text)]">
+            Pratinjau sementara. Konten ini belum dipublikasikan; tautan berlaku 15 menit.
+        </p>
+    </div>
+@endif
 <article>
     <header class="bg-[var(--app-sidebar-bg)] text-white">
         <div class="mx-auto max-w-3xl px-5 py-12 sm:px-8">
@@ -30,7 +37,9 @@
 
     <div class="mx-auto max-w-3xl px-5 py-12 sm:px-8">
         @if ($page->media->isNotEmpty())
-            @php($cover = $page->media->first())
+            @php
+                $cover = $page->media->first();
+            @endphp
             <figure class="mb-10 overflow-hidden rounded-[var(--radius-lg)] border border-[var(--app-border)] bg-[var(--app-surface)]">
                 <x-public.responsive-image
                     src="{{ $cover->url() }}"
@@ -49,7 +58,11 @@
             <p class="mb-8 text-xl leading-relaxed text-[var(--app-text-muted)]">{{ $page->excerpt }}</p>
         @endif
 
-        <div class="prose-sida max-w-none">{!! $page->body !!}</div>
+        @if ($renderableBlocks !== [])
+            @include('components.cms.block-renderer', ['blocks' => $renderableBlocks])
+        @else
+            <div class="prose-sida max-w-none">{!! $page->body !!}</div>
+        @endif
     </div>
 </article>
 @endsection

@@ -21,7 +21,14 @@ class SchoolContext
         }
 
         if (app()->bound('request')) {
+            $request = request();
             $selectorKey = '__primary__';
+
+            // The school switch is an admin capability, not a public query
+            // selector. Restore its session value only for Super Admin requests.
+            if ($request->hasSession() && $request->user()?->isSuperAdmin()) {
+                $selectorKey = trim((string) $request->session()->get('active_school_slug', '')) ?: '__primary__';
+            }
 
             if ($this->requestSelector !== $selectorKey) {
                 $this->requestSelector = $selectorKey;
@@ -31,6 +38,21 @@ class SchoolContext
 
         if ($this->school) {
             return $this->school;
+        }
+
+        if ($this->requestSelector !== null && $this->requestSelector !== '__primary__') {
+            $selected = School::query()
+                ->where('is_active', true)
+                ->where('slug', $this->requestSelector)
+                ->first();
+
+            if ($selected) {
+                return $this->school = $selected;
+            }
+
+            // A deleted/deactivated session selection is not permission to
+            // fall through to a different tenant with a similar identifier.
+            $this->requestSelector = '__primary__';
         }
 
         if (static::$tableExists !== true && Schema::hasTable('schools')) {
@@ -59,6 +81,16 @@ class SchoolContext
     public function slug(): ?string
     {
         return $this->current()?->slug;
+    }
+
+    /** Set tenant scope for this request only; unlike use(), do not persist it in the session. */
+    public function useForRequest(School $school): School
+    {
+        $this->manualOverride = true;
+        $this->school = $school;
+        $this->requestSelector = $school->slug;
+
+        return $this->school;
     }
 
     public function use(School|int|string|null $school): ?School

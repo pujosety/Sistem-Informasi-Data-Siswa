@@ -8,7 +8,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
-class CourseConsistencyTest extends TestCase
+class CourseConsistencyTest extends LmsTestCase
 {
     use RefreshDatabase;
 

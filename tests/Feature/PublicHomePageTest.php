@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\AcademicYear;
 use App\Models\Department;
+use App\Models\LandingSection;
 use App\Models\SchoolClass;
 use App\Models\School;
 use App\Models\Student;
@@ -87,6 +88,16 @@ class PublicHomePageTest extends TestCase
     /** @test */
     public function the_hero_exposes_the_accessible_interactive_crowd_canvas(): void
     {
+        $school = School::query()->where('slug', 'smp-negeri-4-metro')->firstOrFail();
+        LandingSection::create([
+            'school_id' => $school->id,
+            'page_key' => 'home',
+            'type' => LandingSection::TYPE_HERO,
+            'title' => 'Hero untuk sekolah aktif',
+            'is_enabled' => true,
+            'position' => 1,
+        ]);
+
         $html = $this->get('/')->assertOk()->getContent();
 
         $this->assertStringContainsString('data-landing-crowd', $html);
