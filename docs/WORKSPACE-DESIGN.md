@@ -40,7 +40,7 @@ From the repository root:
 
 ```bash
 npm ci
-npm --prefix resources/workspace-design ci --ignore-scripts
+npm --prefix resources/workspace-design install --ignore-scripts --no-audit --no-fund
 npm --prefix resources/workspace-design run typecheck
 npm run build
 ```
@@ -51,7 +51,7 @@ Root build wiring (owned by the integration parent):
 
 ```text
 build = vite build && npm run build:workspace-design
-build:workspace-design = npm --prefix resources/workspace-design run build && node scripts/publish-workspace-design.mjs
+build:workspace-design = npm --prefix resources/workspace-design install --ignore-scripts --no-audit --no-fund && npm --prefix resources/workspace-design run build && node scripts/publish-workspace-design.mjs
 ```
 
 For an editor-only build/publish:

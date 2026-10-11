@@ -4,7 +4,7 @@
     "type": "module",
     "scripts": {
         "build": "vite build && npm run build:workspace-design",
-        "build:workspace-design": "npm --prefix resources/workspace-design run build && node scripts/publish-workspace-design.mjs",
+        "build:workspace-design": "npm --prefix resources/workspace-design install --ignore-scripts --no-audit --no-fund && npm --prefix resources/workspace-design run build && node scripts/publish-workspace-design.mjs",
         "dev": "vite"
     },
     "devDependencies": {
